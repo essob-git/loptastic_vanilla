@@ -1,0 +1,136 @@
+#items-container {
+    flex: 1 1 auto;
+    min-height: 0;         /* WICHTIG für Flexbox + Scrollbar */
+    overflow-y: auto;
+    max-height: 100%;
+    /* Optional für sanftes Scrolling: */
+    scroll-behavior: smooth;
+}
+
+.item-card {
+    margin-bottom:-1px;
+    cursor: grab;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* ITEM Farben der Headline Elemente */
+    .item-h1 {
+        border-left: 4px solid var(--h1-color); 
+        background: #cccccc;
+        margin-top:5px;
+    }
+
+    .item-h2 { 
+        border-left: 4px solid var(--h2-color);
+        background: #bbbbbb;
+        margin-top:5px;
+     }
+
+    .item-h3 { 
+        border-left: 4px solid var(--h3-color); 
+        background: #efefef;
+        margin-top:5px;
+    }
+
+  
+
+    .item-p  { 
+        border-left: 4px solid var(--p-color); 
+    }
+
+    .child-item-h1{ margin-left: 40px; }
+    .child-item-h2{ margin-left: 60px; }
+    .child-item-h3{ margin-left: 80px; }
+    
+    .children-container {
+        margin-top: 5px;
+        margin-bottom: 10px;
+    }
+
+    .children-container + .item-h1
+    {
+        margin-top: 20px !important;
+        
+    }
+    .dragging + .children-container{
+        background-color: rgb(233, 156, 156);
+        padding: 5px;
+        margin: 5px;
+        border-radius: 6px;
+        border: 2px solid rgb(175, 38, 38);
+
+    }
+
+/* Abhängigkeiten */
+   /* .dependencies {
+        position: absolute;
+        left: -40px;
+        width: 30px;
+    }*/
+
+    /*.successor{ background-color: red !important}*/
+    /*.multi {
+        background: #ff0000;
+        background: linear-gradient(90deg, rgba(255, 0, 0, 1) 0%, rgba(0, 153, 3, 1) 100%);   
+    }*/
+    /*.predecessor{ background-color: green !important}
+
+    .dependencies i{font-size: 10px; font-weight: 700;}
+*/
+
+    .table-bordered :not(caption)
+    {
+        border: none;
+    }
+
+
+    .card-body {
+        padding: 5px 5px 0px 5px;
+    }
+    .card-body h5 {
+        font-size: 16px;
+
+    }
+
+    .no-parent {
+        background-color: #fb8c00 !important;
+    }
+
+
+
+    .item-card:active {
+        cursor: grabbing;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    /*
+    .item-h1 { border-left: 4px solid var(--h1-color); }
+    .item-h2 { border-left: 4px solid var(--h2-color); margin-left: 20px; }
+    .item-h3 { border-left: 4px solid var(--h3-color); margin-left: 40px; }
+    .item-p  { border-left: 4px solid var(--p-color);  margin-left: 60px; }
+    */
+
+
+    /* FILTER */
+    body.filter-status-erledigt-hide .filter-status-erledigt,
+    body.filter-status-verworfen-hide .filter-status-verworfen,
+    body.filter-status-abgebrochen-hide .filter-status-abgebrochen,
+    body.filter-status-ausstehend-hide .filter-status-ausstehend,
+    body.filter-typ-information-hide .filter-typ-information,
+    body.filter-typ-entscheidung-hide .filter-typ-entscheidung,
+    body.filter-typ-aufgabe-hide .filter-typ-aufgabe {
+        display: none !important;
+    }
+
+
+    .children-container .card-body table .table-warning {
+        font-size: 12px;
+    }
+    .children-container .card-body table td h5 {
+        font-size: 1.10rem;
+    }
+    .children-container .card-body table td p {
+        font-size: 0.9rem;
+    }
+

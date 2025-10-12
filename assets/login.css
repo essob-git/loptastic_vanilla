@@ -1,0 +1,104 @@
+html,body {
+  height:100%; margin:0;
+  font-family:system-ui, sans-serif;
+}
+.splash-bg {
+  background: linear-gradient(120deg, #ffeaa7, #a8e6cf);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.login-wrapper {
+  width:100%;
+  max-width:800px;
+  padding:1rem;
+}
+
+.login-card {
+  display:flex;
+  background:rgba(255,255,255,0.95);
+  border-radius:16px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.2);
+  overflow:hidden;
+  min-height:400px;
+}
+/* Linke Seite – 2/3 */
+/* Linke Seite – 2/3 */
+.login-left {
+  flex:2;
+  padding:2rem 2.5rem;   /* mehr Innenabstand */
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.login-left h2 {
+  margin-top:0;
+  margin-bottom:1.5rem;
+  font-size:1.5rem;
+}
+/* Eingabefelder */
+.form-group {
+  margin-bottom:1.2rem; /* mehr Platz zwischen Inputs */
+}
+.form-group label {
+  display:block;
+  font-size:0.85rem;
+  margin-bottom:0.25rem;
+}
+.form-group input,
+.form-group select {
+  width:100%;
+  padding:0.75rem 1rem;
+  border:1px solid #ccc;
+  border-radius:8px;
+  font-size:1rem;
+  box-sizing:border-box; 
+
+}
+.login-left button {
+  width:100%;
+  padding:0.75rem;
+  background:#4b9fff;
+  border:0;
+  color:#fff;
+  font-weight:bold;
+  border-radius:8px;
+  cursor:pointer;
+}
+.msg {
+  margin-top:0.75rem;
+  color:#b00020;
+  text-align:center;
+}
+
+/* Rechte Seite – 1/3 */
+/* Rechte Seite – 1/3 */
+.login-right {
+  flex:1;
+  background:linear-gradient(135deg,#4b9fff,#7aa9ff);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:2rem 1.5rem;   /* mehr Abstand innen */
+  border-left: 1px solid rgba(255,255,255,0.3); /* Trennlinie */
+}
+.logo-box .logo-img {
+  width:80px; height:auto;
+  margin-bottom:1rem;
+}
+.logo-box .app-name {
+  font-family:"Pacifico", cursive;
+  font-size:1.5rem;
+  margin:0;
+}
+.logo-box .tagline {
+  margin:0.5rem 0 0;
+  font-size:0.9rem;
+  opacity:0.9;
+}
+#splash-logo{
+  width: 95%
+}

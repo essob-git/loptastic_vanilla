@@ -1,0 +1,43 @@
+/* /listify/assets/login.css */
+:root{
+  --card-bg: rgba(255,255,255,0.85);
+  --accent: #4b9fff;
+}
+*{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif}
+html,body{height:100%;margin:0}
+.splash-bg{
+  /* gleiches Muster wie dein Splash (vereinfachte Variante) */
+  background: radial-gradient(1200px 600px at 20% 10%, #0f172a 0, #0b1226 40%, #080f21 60%, #060c1c 100%),
+              radial-gradient(800px 400px at 80% 80%, #1e3a8a 0, #0b1226 60%, transparent 100%);
+  color:#fff;
+}
+.login-wrap{
+  min-height:100%;
+  display:grid;
+  place-items:center;
+  padding:2rem;
+}
+.brand{
+  position:absolute; top:24px; left:24px;
+  font-weight:800; letter-spacing:.04em; font-size:24px; opacity:.9;
+}
+.card{
+  width:min(420px, 92vw);
+  background:var(--card-bg);
+  border-radius:16px;
+  padding:24px;
+  color:#0b1226;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 40px rgba(0,0,0,.35);
+}
+.card h1{margin:0 0 16px 0; font-size:22px}
+.card label{display:block; font-size:13px; opacity:.8; margin-top:10px}
+.card input{
+  width:100%; margin-top:6px; padding:12px 14px; border-radius:10px; border:1px solid #d0d6e0;
+}
+.card button{
+  margin-top:16px; width:100%; padding:12px 16px; border:0; border-radius:10px;
+  background:linear-gradient(135deg, var(--accent), #7aa9ff);
+  color:#fff; font-weight:700; cursor:pointer;
+}
+.msg{margin-top:10px; color:#b00020}

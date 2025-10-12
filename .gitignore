@@ -1,0 +1,19 @@
+# ===========================================
+# Listify - lokale Daten & Logs
+# ===========================================
+
+# Auth-Log (soll niemals ins Repo)
+app/data/auth.log
+
+# Settings-Datei (lokale Einstellungen)
+app/data/settings.json
+
+# User-Datei (lokale Benutzer)
+app/data/users.json
+
+# ===========================================
+# Aber Templates sollen versioniert bleiben
+# ===========================================
+!app/data/settings.template.json
+!app/data/users.template.json
+

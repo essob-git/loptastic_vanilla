@@ -1,0 +1,345 @@
+ :root {
+			--h1-color: #0e6bf4; /* Blau */
+			--h2-color: #188452; /* Grün */
+			--h3-color: #906e06; /* Gelb */
+			--p-color:  #606870; /* Grau */
+            --sidebar-width: 420px;
+        }
+
+        .btn-outline-warning{
+            --bs-btn-color: #906e06;
+            --bs-btn-border: #906e06;
+            --bs-btn-border-color: #906e06;
+        }
+        
+        .btn-outline-success{
+            --bs-btn-color: #188452;
+            --bs-btn-border: #188452;
+            --bs-btn-border-color: #188452;
+        }
+
+        .btn-outline-primary{
+            --bs-btn-color: #0e6bf4;
+            --bs-btn-border: #0e6bf4;
+            --bs-btn-border-color: #0e6bf4;
+        }
+        .btn-outline-secondary{
+            --bs-btn-color: #606870;
+            --bs-btn-border: #606870;
+            --bs-btn-border-color: #606870;
+        }
+        .btn-outline-danger{
+            --bs-btn-color: #ce303f;
+            --bs-btn-border: #ce303f;
+            --bs-btn-border-color: #ce303f;
+        }
+
+
+
+
+
+        
+        .lop-container {
+            display: flex;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+        }
+        .sidebar {
+            position: relative;   /* WICHTIG: damit der Button korrekt positioniert */
+            width: 420px;
+            background: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            opacity: 1;
+            visibility: visible;
+        }
+     /* Zustand: Sidebar eingeklappt (Klasse am Container) */
+        .sidebar-collapsed .sidebar {
+            width: 0;
+            padding: 0;
+            border: none;
+            box-shadow: none;
+            opacity: 0;
+            visibility: hidden;
+            height: 0px !important;
+        }
+
+        /* Toggle-Button – eigenes, immer sichtbares Element */
+        .sidebar-toggle-btn {
+            position: absolute;
+            top: 20px;
+            left: calc(var(--sidebar-width) - 16px); /* sitzt am rechten Rand der Sidebar */
+            width: 36px;
+            height: 36px;
+            /**border-radius: 50%;**/
+            border: none;
+            background-color: #0d6efd;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: left .3s ease, transform .12s ease;
+            /**box-shadow: 0 2px 6px rgba(0,0,0,0.2);**/
+            z-index: 1000; /* stets über Content */
+        }
+
+        .sidebar-toggle-btn:active {
+            transform: scale(0.98);
+        }
+        .sidebar-toggle-btn:after {
+            background: none !important;
+        }
+
+        /* Wenn eingeklappt, Button an den linken Bildschirmrand ziehen */
+        .sidebar-collapsed .sidebar-toggle-btn {
+            left: var(--sidebar-toggle-offset);
+        }
+
+        /* Optionaler „Griff“: kleine Klammer, wenn Sidebar offen ist */
+        .sidebar-toggle-btn::after {
+            content: '';
+            position: absolute;
+            right: 34px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 30px;
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+            background: rgba(13,110,253,0.15);
+            transition: opacity .3s ease, width .3s ease;
+            opacity: 1;
+        }
+        .sidebar-collapsed .sidebar-toggle-btn::after {
+            opacity: 0;
+            width: 0;
+        }
+
+        .sidebar h4 {
+            font-size: 18px;
+            font-weight: 100;
+        }
+
+
+    /* Standard: Items nehmen die ganze Breite */
+#main-content, #items-container {
+  transition: margin-right 0.3s ease;
+}
+
+
+
+        .main-content {
+            flex: 1;
+            padding-top: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 20px;;
+            overflow-y: auto;
+            background-color: #f9fafb;
+            transition: margin-left .3s ease, padding .3s ease;
+            padding-left: 40px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            min-height: 0;
+            
+        }
+
+          /* Wenn Hilfe offen ist → rechts Platz machen */
+        body.help-mode .main-content,
+        body.help-mode .items-container {
+        margin-right: 399px !important;  /* gleiche Breite wie Sidebar */
+        }
+        #helpSidebar {
+        z-index: 1200 !important; /* höher als .modal (1055) und .modal-backdrop (1050) */
+        }
+        body.help-mode .modal-dialog {
+        max-width: calc(100% - 399px); /* Sidebar-Breite abziehen */
+        margin-right: 399px !important;           /* Platz lassen für Sidebar */
+        }
+        .drop-zone { 
+            min-height: 100px;
+            border: 2px dashed #dee2e6;
+            margin-bottom: 15px;
+            padding: 15px;
+            transition: all 0.3s;
+            border-radius: 5px;
+            /*background-color: #fff;*/
+            background: #fff url('app/images/listify_background.png') no-repeat center center;
+            background-size: 300px auto;
+
+        }
+        
+        .drop-zone.active {
+            background-color: #e9f7fe;
+            border-color: #0dcaf0;
+        }
+        
+        .history-entry {
+            border-left: 3px solid #6c757d;
+            padding-left: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            background: #fff;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .snapshot-card {
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+
+
+        
+        .snapshot-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-section {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        
+        .added { background-color: #e8f5e9; }
+        .removed { background-color: #ffebee; }
+        .changed { background-color: #e3f2fd; }
+        
+		.dragging {
+		    opacity: 0.5;
+			transform: scale(0.98);
+			box-shadow: 0 0 10px rgba(0,0,0,0.2);
+		}
+		
+        .drop-indicator {
+            position: absolute;
+            z-index: 1000;
+            pointer-events: none;
+			transition: all 0.2s;
+        }
+        
+        .drop-above { border-top: 3px solid #0d6efd; }
+        .drop-below { border-bottom: 3px solid #0d6efd; }
+        .drop-into { 
+			background-color: rgba(13, 110, 253, 0.1);
+			border: 2px dashed #0d6efd; 
+			border-left: 3px solid #0d6efd !important;
+		}
+        
+		
+        .status-badge {
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        .phase-indicator {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.5rem;
+            font-weight: 500;
+            background-color: #e0e0e0;
+        }
+		
+		.lists-overview {
+			max-height: 50vh;
+			overflow-y: auto;
+			/**border: 1px solid #dee2e6;**/
+            padding: 3px;
+			border-radius: 0.25rem;
+		}
+    
+		.list-item {
+			padding: 12px;
+			margin-bottom: 8px;
+			border-radius: 6px;
+			transition: all 0.2s;
+		}
+        .list-item-meta {
+            font-size: 10px;
+        }
+
+		.list-item.active {
+			box-shadow: 0 0 0 2px #0d6efd;
+		}
+
+		.list-title {
+			margin: 0;
+			font-size: 1.1rem;
+		}
+
+		.list-description {
+			margin: 8px 0 0;
+			font-size: 0.9rem;
+			color: #555;
+		}
+		
+		.list-item.finalized {
+			background-color: #fff3cd;
+		}
+		
+		.list-item-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+		
+		.phase-1 { background-color: #e3f2fd; color: #0d6efd; }
+		.phase-2 { background-color: #e8f5e9; color: #198754; }
+		.phase-3 { background-color: #fff3cd; color: #ffc107; }
+		.phase-4 { background-color: #ffe0b2; color: #fb8c00; }
+        .phase-5 { background-color: #ffe0b2; color: #fb8c00; }
+        .phase-6 { background-color: #ffe0b2; color: #fb8c00; }
+        .phase-7 { background-color: #ffe0b2; color: #fb8c00; }
+        .phase-8 { background-color: #ffe0b2; color: #fb8c00; }
+		
+        .modal-dialog {
+            /*max-width: 800px;*/
+        }
+
+        .btn-grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            min-width: 64px; /* je nach Bedarf */
+            max-width: 64px;
+        }
+        .btn-grid-2x2 .btn {
+            width: 100%;
+            padding: 0.2rem 0;
+            text-align: center;
+        }
+
+
+        #version {
+            margin-top: 10px !important;   
+        }
+        #version p {
+            color: rgb(14, 150, 66);
+            display: inline;
+            
+        }
+        #version p.dot{
+            font-weight: 1000 !important;
+            font-size: 15px;
+            color: black;
+        }
+        
+        #version > #versionsnumber,
+        #version > #copyright
+         {
+            font-size: 12px;
+            
+            display: inline-block;
+        }
+        #version h2 { font-weight: 700; font-size: 13px;}
+
+

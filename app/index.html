@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listify</title>
+<link rel="icon" type="image/x-icon" href="app/images/favicon.ico">
+       <!-- CSS Bootstrap -->
+    <link rel="stylesheet" href="app/css/bootstrap.css">
+    <link rel="stylesheet" href="app/css/bootstrap-icons.css">
+
+    <!-- CSS Datepicker -->
+    <link rel="stylesheet" href="app/css/tempus-dominus.min.css">
+
+    <!-- CSS FontAweSome -->
+    <link rel="stylesheet" href="app/css/all.min.css">
+
+    <!-- CSS Listify spezifisch-->
+    
+    <link rel="stylesheet" href="app/css/listManager.css">
+    <link rel="stylesheet" href="app/css/itemmanager.css">
+    <link rel="stylesheet" href="app/css/splashscreen.css">
+    <link rel="stylesheet" href="app/css/collapseManager.css">
+    <link rel="stylesheet" href="app/css/style.css">
+
+    <!--
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.10.1/dist/css/tempus-dominus.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    -->
+
+    <!-- JS Popper -->
+    <script src="app/js/libs/popper.min.js"></script>
+
+    <!-- JS Datepicker -->
+    <script src="app/js/libs/tempus-dominus.min.js"></script>
+
+    <!-- JS jsZip -->
+    <script src="app/js/libs/jszip.min.js"></script>
+
+    <!-- JS pdfLib -->
+    <script src="app/js/libs/pdf-lib.min.js"></script>
+
+    <!-- JS xlsxLib -->
+    <script src="app/js/libs/xlsx.full.min.js"></script>
+
+    <!-- JS diffMatch -->
+    <script src="app/js/diff_match_patch.js"></script>
+
+    <!-- MarkDown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+
+    <!-- JS + Dependency Popper -->
+    <!--
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.10.1/dist/js/tempus-dominus.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    -->
+   
+    <!-- NEU: SheetJS (XLSX) für Excel-Export -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> -->
+    <link rel="stylesheet" href="app/css/frappe-gantt.css">
+    <script src="app/js/libs/frappe-gantt.umd.js"></script>
+
+</head>
+<body>
+
+
+    <div class="lop-container container-fluid p-0 d-flex h-100">
+        <!-- Button toggle Sidebar-->
+        <button id="sidebar-toggle"
+                class="sidebar-toggle-btn"
+                type="button"
+                aria-label="Seitenleiste ein-/ausblenden"
+                aria-expanded="true"
+                title="Sidebar ein-/ausblenden">
+            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+        </button>
+
+        <!-- Sidebar -->
+        <div class="sidebar d-flex flex-column offcanvas-md offcanvas-start" role="complementary" aria-label="Seitennavigation">
+            <!-- Logo Listify -->
+            <div class="d-flex justify-content-between mb-1 pb-3">
+                <img src="app/images/listify_logo_inline.png" alt="Listify Logo" style="height: 50px;">
+            </div>
+            
+            <!-- Div Button Group Project-->
+            <div class="btn-group btn-group-sm mb-4" role="group" aria-label="Projekt">
+                 <button id="new-project" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i>  Neues Projekt
+                </button>
+                <button id="open-project" class="btn btn-outline-secondary ">
+                    <i class="bi bi-folder2-open"></i> Öffnen
+                </button>
+                <button id="save-project" class="btn btn-success ">
+                    <i class="bi bi-save"></i> Speichern
+                </button>
+            </div>
+
+            <!-- Div Projektdaten-->
+            <div class="mb-4 pb-3 border-bottom">
+                <!-- <h4>Projektinfo</h4> -->
+                <div id="project-info"></div>
+
+                <div class="btn-group w-100" role="group">
+                    <button class="btn btn-sm btn-outline-secondary w-100" id="showDashboard">📊 Dashboard</button>
+                    <button class="btn btn-sm btn-outline-secondary w-100" id="showItems">📋 Item-Liste</button>
+                </div>    
+            </div>
+
+          
+
+        <div class="accordion accordion-flush" id="accordionFlushExample">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                    Listen & Vorlagen
+                </button>
+                </h2>
+                <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                    <div class="accordion-body">
+                        <!-- Listen -->
+                        <div class="mb-4 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                
+                              
+                                <h4>Listen-Verwaltung</h4>
+                                <div class="btn-group" role="group">
+                                    <button id="overview-list" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-list-ul"></i> Überischt
+                                    </button>
+                                    <button id="add-list" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-plus-lg"></i> Neu
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="lists-container" class="lists-overview">
+                                <!-- Hier werden die Listen dynamisch eingefügt -->
+                            </div>
+                        </div>
+                        <!-- Vorlagen -->
+ 
+                        <div class="mb-3 pb-3 border-bottom">
+                                            <h4>Vorlagen</h4>
+
+                            <div class="d-flex mb-2">
+                                <div class="input-group input-group-sm mb-1">
+                                    <select id="template-select" class="form-select"></select>
+                                    <button id="apply-template" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-check-lg"></i>
+                                    </button>
+                                </div>    
+                            </div>
+                            <div class="d-grid">
+                                <input type="file" id="template-file-input" accept=".json" style="display: none;">
+                                <div class="btn-group" role="group" >
+                                    <button id="import-template" class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-upload"></i> Vorlage importieren
+                                    </button>
+                                    <button id="export-template" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-download"></i> Vorlage exportieren
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+                    Snapshot-Verwaltung
+                </button>
+                </h2>
+                <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                    <div class="accordion-body">
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h4>Snapshots</h4>
+                                <div class="btn-group" role="group">
+                                    <button id="view-all-snapshot" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-list-ul"></i> Übersicht
+                                </button>
+                                <button id="take-snapshot" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-plus-lg"></i> Neu
+                                </button>
+                            </div>
+                        </div>
+                
+                        <div id="snapshots-container" class="me-2"></div>
+                        <div id="snapshots-all" class="d-none"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+           <div class="mb-3 pb-3 border-bottom pt-4 border-top">
+                <h4>Benutzer</h4>
+                    <div id="me-userdata"></div>
+                    <div class="input-group">
+                        <div id="admin-menu" class="d-none">
+                            <a href="user_admin.php" class="btn btn-sm btn-primary" >Admin Menu</a>
+                        </div>
+
+                        <button id="logout-link" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-check"></i> Logout
+                        </button>
+                    </div>
+            </div>
+
+            <!-- div User -->
+            <div class="mb-3 pb-3 border-bottom pt-4 border-top d-none">
+                <h4>Benutzer</h4>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input type="text" id="user-name" class="form-control" placeholder="Ihr Name">
+                    <button id="save-user" class="btn btn-outline-secondary">
+                        <i class="bi bi-check"></i>
+                    </button>
+                </div>               
+            </div>
+			
+ 
+
+            <div class="form-check form-switch mb-3  pb-3 border-bottom">
+                <input class="form-check-input" type="checkbox" id="helpModeSwitch"/>
+                <label class="form-check-label" for="helpModeSwitch">
+                    Hilfe-Modus
+                </label>
+                </div>
+			<div id="version" class="mt-2 text-muted small text-center"></div>
+            <p class="text-muted small text-center"><a href="#" id="credits" class="">credits</a> & <a href="#" id="disclaimer">disclaimer</a></p>
+
+        </div>
+        
+        <!-- Hauptbereich -->
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <h2 id="list-title">Liste</h2>
+                    <p id="list-description" class="text-muted"></p>
+                    <div id="list-phase" class="phase-indicator" style="display: none"></div>
+                </div>
+
+                <div class="justify-content-end">
+                    <button id="finalize-list" class="btn btn-warning me-2 d-none" disabled>
+                        <i class="bi bi-lock"></i> Finalisieren
+                    </button>
+         
+                    <!-- Export -->
+
+                    
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                           <i class="bi bi-printer"></i> Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li class="ms-2 text-primary" ><i class="bi bi-file-earmark-pdf"></i><span class="strong ps-2">PDF-Datei</span></li>
+                            <ul class="list-unstyled pt-1">
+                                <li class="d-none"><a class="dropdown-item text-muted" href="#" id="export-pdf">Easy PDF-Export</a></li>
+                                <li><a class="dropdown-item" href="#" id="export-file">Advancend PDF-Export</a></li>
+                                
+                                <li><a class="dropdown-item" href="#" id="compare-snapshots">Snapshot-Vergleich</a></li>
+                                <!-- <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" id="btn-delete-list">Liste löschen</a></li> -->
+                            </ul>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="ms-2 text-primary"><i class="bi bi-file-earmark-excel"></i><span class="ps-2">Excel Datei</span></li>
+                            <ul class="list-unstyled pt-1">
+                                <li><a class="dropdown-item" href="#" id="export-xlsx"> Ausgabe Excel</a></li>
+                            </ul>
+                        </ul>
+                    </div>
+
+                    <button class="btn btn-outline-primary" id="showGantt">
+                        <i class="bi bi-diagram-3"></i> Gantt anzeigen
+                        </button>
+                    </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mb-1">
+                <div class="justify-content-start">
+                <h4>Einträge</h4>
+                </div>
+
+                <div class=".justify-content-end">
+                <!-- Btn Vorlagenverwaltung-->
+
+                <!-- Btn Headlines -->
+                <button id="add-Vorlage" data-editable="true" class="btn btn-sm btn-outline-secondary me-5 d-none" disabled>
+                    <i class="bi bi-text-paragraph"></i> Vorlagenblock
+                </button>
+
+                <div class="btn-group btn-group-sm" role="group" aria-label="Headlines">
+                    <button id="add-h1" data-editable="true" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-type-h1"></i> Überschrift 1
+                    </button>
+                    <button id="add-h2" data-editable="true" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-type-h2"></i> Überschrift 2
+                    </button>
+                    <button id="add-h3" data-editable="true" class="btn btn-sm btn-outline-warning">
+                        <i class="bi bi-type-h3"></i> Überschrift 3
+                    </button>
+                </div>
+                
+                <button id="add-p" data-editable="true" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-text-paragraph"></i> Punkt
+                </button>
+                
+                </div>
+            </div>
+            
+            <!-- Filter ItemList -->
+            <div id="item-filter-container"></div>
+            <div id="readonly-notice"></div>
+
+            <div id="drop-container" class="drop-zone h-100">
+			    <div id="readonly-notice"></div>
+                <div id="items-container"></div>
+                <div id="dashboard-container" style="display: none;"></div>
+            </div>
+            
+            <div id="history-container" class="mt-5" style="display: none;">
+                <h4>Änderungshistorie</h4>
+                <div id="history-content" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="mainModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modalBody"></div>
+                <div class="modal-footer" id="modalFooter"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toasts -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">System</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toast-message"></div>
+        </div>
+    </div>
+
+    <!-- Helper -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="helpSidebar">
+        <div class="offcanvas-header">
+            <h5>Listify Hilfe</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body overflow-auto">
+            <div id="helpContent"></div>
+        </div>
+    </div>
+
+    <!-- Splash-->
+     <div id="splashscreen">
+        <div class="splash-logo-wrapper">
+            <img src="app/images/splash.png" alt="listify Logo" id="splash-logo">
+            <div class="splash-text">Liste offener Punkte</div>
+            <div class="splash-progress">
+            <div class="splash-progress-bar"></div>
+            </div>
+        </div>
+       </div>
+
+
+    <script src="app/collapseManager.js"></script>
+    <script src="app/app.js" type="module"></script>
+    <script src="app/js/libs/bootstrap.bundle.min.js"></script>
+    <script src="app/js/diff_match_patch.js"></script>
+
+<!-- Sidebar Toggle Logic -->
+    <script>
+// Custom Markdown Erweiterung für underline (__text__) und strike (--text--)
+marked.use({
+  extensions: [
+    {
+      name: 'underline',
+      level: 'inline', // inline token
+      start(src) { return src.match(/__/)?.index; },
+      tokenizer(src) {
+        const rule = /^__([^_]+?)__/; // __Text__
+        const match = rule.exec(src);
+        if (match) {
+          return {
+            type: 'underline',
+            raw: match[0],
+            text: match[1],
+          };
+        }
+      },
+      renderer(token) {
+        return `<u>${token.text}</u>`;
+      },
+    },
+    {
+      name: 'strikeAlt',
+      level: 'inline',
+      start(src) { return src.match(/--/)?.index; },
+      tokenizer(src) {
+        const rule = /^--([^-\n]+?)--/; // --Text--
+        const match = rule.exec(src);
+        if (match) {
+          return {
+            type: 'strikeAlt',
+            raw: match[0],
+            text: match[1],
+          };
+        }
+      },
+      renderer(token) {
+        return `<del>${token.text}</del>`;
+      },
+    },
+  ],
+});
+
+
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            
+  setTimeout(() => {
+    const splash = document.getElementById('splashscreen');
+    if (splash) {
+      splash.style.opacity = '0';
+      setTimeout(() => splash.remove(), 900);
+    }
+  }, 2000);
+});
+        (function () {
+            const container = document.querySelector('.lop-container');
+            const toggleBtn = document.getElementById('sidebar-toggle');
+            const icon = toggleBtn.querySelector('i');
+
+            const setAria = (expanded) => {
+                toggleBtn.setAttribute('aria-expanded', String(expanded));
+                toggleBtn.setAttribute('title', expanded ? 'Sidebar ausblenden' : 'Sidebar einblenden');
+                icon.classList.toggle('bi-chevron-left', expanded);
+                icon.classList.toggle('bi-chevron-right', !expanded);
+            };
+
+            // Initialzustand: Sidebar sichtbar
+            setAria(true);
+
+            toggleBtn.addEventListener('click', () => {
+                const willCollapse = !container.classList.contains('sidebar-collapsed');
+                container.classList.toggle('sidebar-collapsed', willCollapse);
+                setAria(!willCollapse);
+            });
+
+            // Optional: Mit Taste "S" toggeln (nur wenn keine Eingabe aktiv)
+            document.addEventListener('keydown', (e) => {
+                if (e.key.toLowerCase() === 's' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+                    toggleBtn.click();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

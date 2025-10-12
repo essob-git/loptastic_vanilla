@@ -1,0 +1,81 @@
+      #splashscreen {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: linear-gradient(-60deg, #0ea5e9, #a5b4fc, #bbf7d0, #fde68a, #fca5a5);
+  background-size: 400% 400%;
+  animation: splash-bg-move 4s ease-in-out infinite alternate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  transition: opacity 0.7s cubic-bezier(.77,0,.18,1);
+  opacity: 1;
+}
+
+@keyframes splash-bg-move {
+  0% { background-position: 0% 50%;}
+  100% { background-position: 100% 50%;}
+}
+
+.splash-logo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+#splash-logo {
+  width: 230px;
+  max-width: 70vw;
+  filter: drop-shadow(0 0 18px #3b82f6cc) drop-shadow(0 2px 40px #f59e42cc);
+  opacity: 0;
+  animation: splashLogoBounce 1.1s cubic-bezier(.33,1.65,.73,1.04) 0.1s forwards;
+  background: none;
+}
+
+@keyframes splashLogoBounce {
+  0% { opacity: 0; transform: scale(0.8) translateY(60px);}
+  60% { opacity: 1; transform: scale(1.06) translateY(-10px);}
+  90% { transform: scale(0.97) translateY(0);}
+  100% { opacity: 1; transform: scale(1) translateY(0);}
+}
+
+.splash-text {
+  font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+  font-size: 2.2rem;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  color: #293973;
+  text-shadow: 0 2px 6px #fff, 0 0 16px #bae6fd;
+  opacity: 0;
+  animation: splashTextFadeIn 0.7s 0.8s forwards;
+}
+
+@keyframes splashTextFadeIn {
+  from { opacity: 0; transform: translateY(24px);}
+  to   { opacity: 1; transform: translateY(0);}
+}
+
+/* Progress-Bar Style */
+.splash-progress {
+  width: 160px;
+  height: 7px;
+  background: rgba(255,255,255,0.28);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 24px;
+  box-shadow: 0 1px 4px #60a5fa88;
+}
+
+.splash-progress-bar {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #16a34a 0%, #0ea5e9 80%, #fbbf24 100%);
+  border-radius: 5px;
+  animation: splashProgressGrow 1.9s cubic-bezier(.77,0,.18,1) forwards;
+}
+
+@keyframes splashProgressGrow {
+  from { width: 0; }
+  to   { width: 100%; }
+}

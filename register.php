@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Listify – Registrierung</title>
+  <link rel="stylesheet" href="/listify/assets/login.css">
+</head>
+<body class="splash-bg">
+  <div class="login-wrapper">
+    <div class="login-card">
+      <!-- Linke Seite: Registrierung -->
+      <div class="login-left">
+        <h2>Registrieren</h2>
+        <form id="register-form">
+          <div class="form-group">
+            <label for="first">Vorname</label>
+            <input type="text" id="first" required>
+          </div>
+          <div class="form-group">
+            <label for="last">Nachname</label>
+            <input type="text" id="last" required>
+          </div>
+          <div class="form-group">
+            <label for="userid">Benutzername (z.b. dab123)</label>
+            <input type="text" id="userid" required>
+          </div>
+          <div class="form-group">
+            <label for="email">E-Mail</label>
+            <input type="email" id="email" required>
+          </div>
+          <div class="form-group">
+            <label for="department">Abteilung</label>
+            <select id="department" required></select>
+          </div>
+          <div class="form-group">
+            <label for="pass">Passwort</label>
+            <input type="password" id="pass" required>
+          </div>
+          <div class="form-group">
+            <label for="pass2">Passwort wiederholen</label>
+            <input type="password" id="pass2" required>
+          </div>
+          <button type="submit" id="btn-register">Registrieren</button>
+          <p id="msg" class="msg"></p>
+          <p class="small" style="margin-top: 50px;">
+            Schon einen Account? <a href="/listify/login.php">besser zum Login</a>
+          </p>
+        </form>
+      </div>
+
+      <!-- Rechte Seite: Logo -->
+      <div class="login-right">
+        <div class="logo-box">
+          <img src="app/images/listify_background.png" alt="listify Logo" id="splash-logo">
+        
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/listify/assets/register.js" defer></script>
+</body>
+</html>

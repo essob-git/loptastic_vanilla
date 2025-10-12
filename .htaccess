@@ -1,0 +1,21 @@
+# /listify/.htaccess
+
+Options -Indexes
+DirectoryIndex index.php
+
+# Zugriff auf /data/ unterbinden
+<FilesMatch "(users\.json|auth\.log)$">
+  Require all denied
+</FilesMatch>
+
+# SPA-Fallback (nur wenn mod_rewrite aktiv ist!)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} !^/api/
+  RewriteCond %{REQUEST_URI} !^/assets/
+  RewriteCond %{REQUEST_URI} !^/login\.php$
+  RewriteCond %{REQUEST_URI} !^/user-admin\.php$
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^ index.php [L]
+</IfModule>
+

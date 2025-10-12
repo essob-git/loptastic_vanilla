@@ -1,0 +1,36 @@
+/* Sanfte Ein-/Ausklapp-Animation */
+.children-container {
+  overflow: hidden;
+  transition: grid-template-rows .25s ease, opacity .2s ease;
+  display: grid;
+  grid-template-rows: 1fr;
+}
+.children-container.is-collapsed {
+  grid-template-rows: 0fr;
+  opacity: .0;
+  height: 0;
+}
+
+/* Platz & Icon beim Titel */
+.item-card.item-h1 .card-title,
+.item-card.item-h2 .card-title {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+.toggle-children-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  line-height: 1;
+  cursor: pointer;
+}
+.toggle-children-btn .bi {
+  transition: transform .2s ease;
+  font-size: 1rem;
+  vertical-align: middle;
+}
+/* Icon-Drehung, wenn eingeklappt */
+.item-card.is-collapsed .toggle-children-btn .bi {
+  transform: rotate(-90deg);
+}

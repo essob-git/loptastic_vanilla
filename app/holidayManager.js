@@ -1,0 +1,82 @@
+/**
+ * Listify - Projektmanagement Tool
+ * Copyright (c) 2025 Sven Bosse
+ *
+ * Diese Datei ist Teil von Listify.
+ * 
+ * Lizenz: MIT (https://opensource.org/licenses/MIT)
+ * 
+ * Hinweis:
+ * - Nutzung, Veränderung und Weitergabe sind unter Beachtung der Lizenz erlaubt.
+ * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
+ */
+
+// holidayManager.js
+export const HolidayManager = {
+  async getNRWHolidays(year) {
+    try {
+      const res = await fetch(`https://feiertage-api.de/api/?jahr=${year}&nur_land=NW`);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return Object.values(data).map(h => ({
+        date: h.datum, // YYYY-MM-DD
+        label: h.name,
+        color: "#ffd9d9"
+      }));
+    }catch (err) {
+     console.warn("⚠️ Feiertage API nicht erreichbar:", err);
+      return [];
+    }
+  },
+
+  async getNRWVacations(year) {
+    const res = await fetch(`https://ferien-api.de/api/v1/holidays/NW/${year}`);
+    try {
+      if (!res.ok) return [];
+      const data = await res.json();
+
+      // jeden Zeitraum in einzelne Tage auflösen
+      const days = [];
+      data.forEach(f => {
+        const start = new Date(f.start);
+        const end = new Date(f.end);
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          days.push({
+            date: d.toISOString().split("T")[0],
+            label: f.name,
+            color: "#d4edda"
+          });
+        }
+      });
+      return days;
+    }catch (err) {
+        console.warn("⚠️ Ferien API nicht erreichbar:", err);
+        return [];
+    }
+  },
+
+ async getAllMarkedDays(year) {
+    try{
+      const [holidays, vacations] = await Promise.all([
+        this.getNRWHolidays(year),   // aktuell {date, label} oder {date}
+        this.getNRWVacations(year)
+      ]);
+
+      const holidayMap = {
+        "#f0f0f0": "weekend",
+
+        // Frappe will Strings → nur die date-Werte nehmen
+        "#ffd9d9": holidays.map(h => h.date),
+
+        // Ferien: dürfen Objekte mit Label sein
+        "#d4edda": vacations.map(v => v.date)
+      };
+
+      return holidayMap;
+    }catch (err) {
+            console.warn("⚠️ Fehler beim Laden der Feiertage/Ferien:", err);
+          return { "#f0f0f0": "weekend" }; // Fallback nur Wochenende
+    }
+  }
+
+};
