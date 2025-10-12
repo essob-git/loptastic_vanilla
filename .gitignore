@@ -3,17 +3,17 @@
 # ===========================================
 
 # Auth-Log (soll niemals ins Repo)
-app/data/auth.log
+data/auth.log
 
 # Settings-Datei (lokale Einstellungen)
-app/data/settings.json
+data/settings.json
 
 # User-Datei (lokale Benutzer)
-app/data/users.json
+data/users.json
 
 # ===========================================
 # Aber Templates sollen versioniert bleiben
 # ===========================================
-!app/data/settings.template.json
-!app/data/users.template.json
+!data/settings.template.json
+!data/users.template.json
 

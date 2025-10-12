@@ -14,7 +14,7 @@
 import { UIManager } from "./uiManager.js";
 
 export const Programm = {
-     version: "0.10.0",
+     version: "0.11.0",
 
     getName()      { return 'Listify'; },
     getVersion()   { return `${this.version}-alpha`; },
