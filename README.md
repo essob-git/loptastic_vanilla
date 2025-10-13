@@ -1,3 +1,7 @@
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
+
+
 # Listify
 <img width="1000" height="auto" alt="498906468-1573c1ff-537a-4c1a-b9d6-a96ea21d1a5c" src="https://github.com/user-attachments/assets/16d41f93-4af2-4810-9173-9d0bcd51ba83" />
 
