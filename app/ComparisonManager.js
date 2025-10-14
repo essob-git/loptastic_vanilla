@@ -1,13 +1,24 @@
 /**
- * Listify - Projektmanagement Tool
+ * Listify – Community Edition
+ * Projektmanagement-Tool
  * Copyright (c) 2025 Sven Bosse
  *
- * Diese Datei ist Teil von Listify.
- * 
- * Lizenz: MIT (https://opensource.org/licenses/MIT)
- * 
+ * Dieses Programm ist freie Software: Sie können es unter den Bedingungen
+ * der GNU Affero General Public License, Version 3, wie von der
+ * Free Software Foundation veröffentlicht, weitergeben und/oder ändern.
+ *
+ * Dieses Programm wird in der Hoffnung verteilt, dass es nützlich ist,
+ * jedoch OHNE JEDE GEWÄHRLEISTUNG – sogar ohne die implizite Gewährleistung
+ * der MARKTREIFE oder der VERWENDBARKEIT FÜR EINEN BESTIMMTEN ZWECK.
+ * Weitere Details finden Sie in der GNU Affero General Public License.
+ *
+ * Sie sollten eine Kopie der GNU Affero General Public License zusammen mit
+ * diesem Programm erhalten haben. Wenn nicht, siehe <https://www.gnu.org/licenses/>.
+ *
+ * Kommerzielle Lizenzen sind auf Anfrage erhältlich.
+ * Kontakt: essob-git@outlook.com
+ *
  * Hinweis:
- * - Nutzung, Veränderung und Weitergabe sind unter Beachtung der Lizenz erlaubt.
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
@@ -525,7 +536,7 @@ export async function generateComparisonPDF(comparisonData, options = {}) {
     // Logo laden
     try {
       // ErrorHandler, weil Logo ggf. fehlen könnte.
-      const logoUrl = 'app/images/logo_sebd.png';
+      const logoUrl = 'app/images/Bericht_Logo.png';
       const logoBytes = await fetch(logoUrl).then(r => r.arrayBuffer());
       const logo = await pdfDoc.embedPng(logoBytes);
       const logoHeight = 40;                        // Höhe des Logos in Pixel
