@@ -33,5 +33,43 @@ mit modernen Funktionen wie Abhängigkeiten, automatischen Fristen, Snapshots un
   Jeder Eintrag kann kommentiert und mit Änderungsverlauf angezeigt werden.
 
 
+
+
 ## Anleitung
  [Wiki](https://github.com/essob-git/listify_vanilla/wiki).
+
+
+
+ ## Wer darf diese Software nutzen?
+ Diese Software wird unter der AGPL v3 Lizenz bereitgestellt.
+
+Die AGPL ist eine freie, aber keine kostenlose Lizenz im rechtlichen Sinne.
+Sie erlaubt ausdrücklich die kommerzielle Nutzung, auch in Unternehmen, Behörden und Organisationen.
+
+
+- Ein Betrieb darf die Software intern nutzen (z. B. auf eigenen Servern oder Arbeitsplätzen).
+- Auch kommerzielle Tätigkeiten (z. B. Projektmanagement, Verwaltung, Dienstleistungserbringung) mit der Software sind vollständig zulässig.
+- Es ist keine Lizenzgebühr oder Genehmigung des Autors erforderlich, solange die Lizenzbedingungen eingehalten werden.
+
+
+
+## Haftungsausschluss / Disclaimer
+
+Dieses Programm wird in der Hoffnung bereitgestellt, dass es nützlich ist,  
+jedoch **ohne jegliche Gewährleistung oder Haftung**.  
+Es wird **keine ausdrückliche oder stillschweigende Garantie** übernommen,  
+insbesondere nicht hinsichtlich der **Marktgängigkeit**, der **Fehlerfreiheit**,  
+der **Eignung für einen bestimmten Zweck** oder des **Nichtverstoßes gegen Rechte Dritter**.
+
+Der gesamte **Nutzungs-, Funktions-, Risiko- sowie Gewährleistungsumfang** liegt  
+ausschließlich beim Anwender.  
+Eine **Haftung des Autors oder anderer Rechteinhaber** für unmittelbare, mittelbare,  
+zufällige oder Folgeschäden (einschließlich Datenverlust, Nutzungsausfall oder  
+sonstige wirtschaftliche Verluste), die aus der Nutzung oder Unmöglichkeit der Nutzung  
+dieses Programms entstehen, ist – **soweit gesetzlich zulässig – ausgeschlossen.**
+
+Weitere Einzelheiten ergeben sich aus der  
+**GNU Affero General Public License, Version 3**, unter der dieses Programm veröffentlicht wird.  
+Der **englische Originaltext dieser Lizenz ist allein rechtsverbindlich.**  
+➡️ [https://www.gnu.org/licenses/agpl-3.0.en.html](https://www.gnu.org/licenses/agpl-3.0.en.html)
+
