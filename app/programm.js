@@ -67,7 +67,7 @@ export const Programm = {
                 <div class="row mb-3">
                     <div class="col">
                         <h5>${this.getName()} ${this.getVersion()}</h5>
-  <p>${this.getCopyright()}  –  Lizenz: MIT  –  <a href="${this.getGitHubSite()}" alt="GitHub Link">${this.getGitHubSite()}</a></p>
+  <p>${this.getCopyright()}  –  Lizenz: AGPL v3  –  <a href="${this.getGitHubSite()}" alt="GitHub Link">${this.getGitHubSite()}</a></p>
                  
                     </div>
                 </div>
@@ -120,7 +120,7 @@ export const Programm = {
                <div class="container mb-3">
               
                         <h5>${this.getName()} ${this.getVersion()}</h5>
-                        <p>${this.getCopyright()}  –  Lizenz: MIT  –  <a href="${this.getGitHubSite()}" alt="GitHub Link">${this.getGitHubSite()}</a></p>
+                        <p>${this.getCopyright()}  –  Lizenz: AGPL v3  –  <a href="${this.getGitHubSite()}" alt="GitHub Link">${this.getGitHubSite()}</a></p>
                  
                 </div>
 
