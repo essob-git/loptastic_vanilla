@@ -24,7 +24,7 @@
 
 import { StateManager, generateUUID } from './app.js';
 import { ItemManager } from './itemManager.js';
-import { UIManager } from './uiManager.js';
+import { UIManager, PhaseHelper} from './uiManager.js';
 
 export const TemplateManager = {
     templates: {},
@@ -55,7 +55,7 @@ export const TemplateManager = {
 					//UIManager.showToast(`Vorlage "${template.name}" geladen`, 'success');
 					//resolve(template);
 					
-					 // 🟡 setze das Select-Feld auf die neue ID
+					//setze das Select-Feld auf die neue ID
 					const select = document.getElementById('template-select');
 					if (select) select.value = id;
 
@@ -96,7 +96,7 @@ export const TemplateManager = {
         });
     },
     
-    applySelectedTemplate() {
+    async applySelectedTemplate() {
         const select = document.getElementById('template-select');
         const templateId = select.value;
         if (!templateId) return;
@@ -105,26 +105,43 @@ export const TemplateManager = {
         if (!template) return;
         
         // Füge jedes Item der Vorlage zur aktuellen Liste hinzu
+        /** Hotfix #19 2025-10-15 ALt:
         template.items.forEach(itemData => {
             this.addTemplateItem(itemData);
         });
+        **/
+        for (const itemData of template.items) {
+            await this.addTemplateItem(itemData);
+        }
+
         UIManager.refreshListContent();
         UIManager.showToast(`Vorlage "${template.name}" angewendet`, 'success');
     },
     
-    addTemplateItem(itemData, parentId = null) {
+    async addTemplateItem(itemData, parentId = null) {
         // Ersetze Platzhalter in den Daten
-        const replacedData = this.replacePlaceholders(itemData.data);
-        
+            /* Hotfix #19 2025-10-15 
+            const replacedData = this.replacePlaceholders(itemData.data);
+            */
+            const replacedData = await this.replacePlaceholders(itemData.data);
+
         // Neues Element erstellen
         const newItem = ItemManager.addItem(itemData.type, parentId, replacedData);
-        
+
+        /* Hotfix #19 2025-10-15
         if (newItem) {
             // Kinder rekursiv hinzufügen
-            if (itemData.children && itemData.children.length > 0) {
-                itemData.children.forEach(childData => {
-                    this.addTemplateItem(childData, newItem.id);
-                });
+                
+                if (itemData.children && itemData.children.length > 0) {
+                    itemData.children.forEach(childData => {
+                        this.addTemplateItem(childData, newItem.id);
+                    });
+                }
+            } 
+        */
+        if (newItem && itemData.children?.length) {
+            for (const childData of itemData.children) {
+                await this.addTemplateItem(childData, newItem.id);
             }
         }
     },
@@ -141,7 +158,12 @@ export const TemplateManager = {
             '{PL}': project?.manifest.project.projectLeader || '',
             '{projekt}': project?.manifest.project.name || '',
             '{liste}': list?.meta.name || '',
-            '{phase}': await UIManager.getPhaseName(list?.meta.phase)
+            /* 
+              Hotfix #19 2025-10-15 Alt:
+              '{phase}': await UIManager.getPhaseName(list?.meta.phase)
+               Umstellung auf den PhaseHelper
+            */
+            '{phase}' : PhaseHelper.getPhaseName(list?.meta.phase)
         };
         
         const replaced = {};

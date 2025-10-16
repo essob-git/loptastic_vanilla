@@ -128,22 +128,69 @@ export const Programm = {
 <p><strong>Stand:</strong> 02. Oktober 2025</p>
 
 <h3>Allgemeine Hinweise</h3>
-<p>Die Software „Listify“ wird als Anwendung zur Verfügung gestellt. Die Bereitstellung, Installation, Konfiguration und der laufende Betrieb der Software erfolgen durch den jeweiligen Betreiber, der die Software einsetzt. Der Entwickler dieser Software stellt keine Hosting-Dienstleistungen bereit.</p>
+<p>
+Die Software <strong>„Listify“</strong> wird unter der
+<strong>GNU Affero General Public License Version 3 (AGPL v3)</strong> als freie Software veröffentlicht.
+Die Bereitstellung, Installation, Konfiguration und der laufende Betrieb der Software
+erfolgen durch den jeweiligen Betreiber, der die Software einsetzt.
+Der Entwickler dieser Software stellt keine Hosting- oder Betriebsdienstleistungen bereit.
+</p>
 
 <h3>Haftung für Inhalte</h3>
-<p>Der Entwickler übernimmt keine Verantwortung für die Inhalte, die mit der Software erstellt, gespeichert oder verbreitet werden. Für die Einhaltung gesetzlicher Vorgaben und für die Richtigkeit der eingegebenen Daten ist allein der jeweilige Betreiber verantwortlich.</p>
+<p>
+Der Entwickler übernimmt keine Verantwortung für die Inhalte,
+die mit der Software erstellt, gespeichert oder verbreitet werden.
+Für die Einhaltung gesetzlicher Vorgaben, Datenschutz- oder Aufbewahrungspflichten
+sowie für die Richtigkeit der eingegebenen Daten ist allein der jeweilige Betreiber verantwortlich.
+</p>
 
 <h3>Haftungsausschluss für Nutzung der Software</h3>
-<p>Die Nutzung der Software „Listify“ erfolgt auf eigene Gefahr. Der Entwickler übernimmt keine Haftung für Schäden materieller oder immaterieller Art, die durch die Nutzung oder Nichtnutzung der Software entstehen, sofern nicht ein vorsätzliches oder grob fahrlässiges Verschulden nachweisbar ist. Dies gilt insbesondere für Betriebsunterbrechungen, Datenverluste, Inkompatibilitäten oder sonstige Folgeschäden.</p>
+<p>
+Dieses Programm wird in der Hoffnung bereitgestellt, dass es nützlich ist,
+jedoch <strong>ohne jegliche Gewährleistung oder Haftung</strong>.
+Es wird <strong>keine ausdrückliche oder stillschweigende Garantie</strong> übernommen –
+insbesondere nicht hinsichtlich der Marktgängigkeit, der Fehlerfreiheit,
+der Eignung für einen bestimmten Zweck oder des Nichtverstoßes gegen Rechte Dritter.
+</p>
+<p>
+Der gesamte Nutzungs-, Funktions-, Risiko- und Gewährleistungsumfang liegt ausschließlich beim Anwender.
+Eine Haftung des Autors oder anderer Rechteinhaber für unmittelbare, mittelbare,
+zufällige oder Folgeschäden (einschließlich Datenverlust, Nutzungsausfall
+oder sonstige wirtschaftliche Verluste), die aus der Nutzung oder Unmöglichkeit
+der Nutzung dieses Programms entstehen, ist – soweit gesetzlich zulässig –
+ausgeschlossen. Eine Haftung bei nachweislich vorsätzlichem oder grob fahrlässigem
+Verschulden bleibt unberührt.
+</p>
 
 <h3>Externe Dienste</h3>
-<p>Die Software kann externe Schnittstellen oder Dienste nutzen (z. B. Feiertage-API, Ferien-API). Für deren Verfügbarkeit, Richtigkeit oder Aktualität übernimmt der Entwickler keine Verantwortung. Die Nutzung dieser Dienste erfolgt eigenverantwortlich durch den Betreiber.</p>
+<p>
+Die Software kann externe Schnittstellen oder Dienste nutzen
+(z.&nbsp;B. Feiertage-API, Ferien-API oder andere Web-Dienste).
+Für deren Verfügbarkeit, Richtigkeit oder Aktualität übernimmt der Entwickler keine Gewähr.
+Die Nutzung dieser Dienste erfolgt eigenverantwortlich durch den Betreiber;
+gegebenenfalls gelten die Nutzungs- oder Datenschutzbedingungen der jeweiligen Anbieter.
+</p>
 
-<h3>Urheberrecht</h3>
-<p>Die durch den Entwickler erstellte Software unterliegt dem deutschen Urheberrecht. Jede Vervielfältigung, Bearbeitung, Verbreitung oder sonstige Verwendung außerhalb der Lizenzbedingungen ist nicht gestattet.</p>
+<h3>Urheberrecht und Lizenz</h3>
+<p>
+Die durch den Entwickler erstellte Software unterliegt dem deutschen Urheberrecht
+und wird unter der <strong>GNU Affero General Public License v3</strong> bereitgestellt.
+Eine Vervielfältigung, Bearbeitung, Verbreitung oder sonstige Verwendung außerhalb
+der Lizenzbedingungen ist nicht gestattet.
+Weitere Einzelheiten ergeben sich aus der Lizenz selbst:
+<a href="https://www.gnu.org/licenses/agpl-3.0.en.html" target="_blank">
+https://www.gnu.org/licenses/agpl-3.0.en.html</a>.
+Der englische Originaltext dieser Lizenz ist allein rechtsverbindlich.
+</p>
 
 <h3>Schlussbestimmungen</h3>
-<p>Der Entwickler behält sich vor, Änderungen oder Weiterentwicklungen der Software vorzunehmen. Der Einsatz der Software erfolgt unter Beachtung der jeweils gültigen Lizenzbedingungen.</p>
+<p>
+Der Entwickler behält sich vor, Änderungen oder Weiterentwicklungen der Software vorzunehmen.
+Der Einsatz der Software erfolgt unter Beachtung der jeweils gültigen Lizenzbedingungen.
+Im Falle von Abweichungen oder Widersprüchen zwischen diesem Haftungsausschluss
+und den Bestimmungen der GNU Affero General Public License v3
+gelten ausschließlich die Bestimmungen der AGPL v3.
+</p>
 
             `;
 
