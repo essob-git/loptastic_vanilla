@@ -39,9 +39,9 @@
         border-left: 4px solid var(--p-color); 
     }
 
-    .child-item-h1{ margin-left: 40px; }
-    .child-item-h2{ margin-left: 60px; }
-    .child-item-h3{ margin-left: 80px; }
+    .child-item-h1{ margin-left: 20px; }
+    .child-item-h2{ margin-left: 40px; }
+    .child-item-h3{ margin-left: 60px; }
     
     .children-container {
         margin-top: 5px;
