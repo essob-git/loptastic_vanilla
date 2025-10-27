@@ -39,7 +39,7 @@
 
   const ensureToggles = () => {
     if (!ROOT) return;
-    ROOT.querySelectorAll('.item-card.item-h1, .item-card.item-h2').forEach(card => {
+    ROOT.querySelectorAll('.item-card.item-h1, .item-card.item-h2, .item-card.item-h3').forEach(card => {
       if (card.querySelector('.toggle-children-btn')) return;
       const title = card.querySelector('.card-title');
       if (!title) return;
@@ -63,7 +63,7 @@
     if (id) sessionState[id] = !!collapsed;
 
     if (recursive && box) {
-      box.querySelectorAll('.item-card.item-h1, .item-card.item-h2').forEach(childHeader => {
+      box.querySelectorAll('.item-card.item-h1, .item-card.item-h2, .item-card.item-h3').forEach(childHeader => {
         setCollapsed(childHeader, collapsed, true);
       });
     }
@@ -72,7 +72,7 @@
   // Anwenden des Session-States auf alle Header im DOM
   const applySessionState = () => {
     if (!ROOT) return;
-    ROOT.querySelectorAll('.item-card.item-h1, .item-card.item-h2').forEach(card => {
+    ROOT.querySelectorAll('.item-card.item-h1, .item-card.item-h2, .item-card.item-h3').forEach(card => {
       const id = card.getAttribute('data-item-id');
       // Default: offen (collapsed = false), falls noch nicht gesehen
       const collapsed = id ? !!sessionState[id] : false;
@@ -85,7 +85,7 @@
   const onClick = (e) => {
     const btn = e.target.closest('.toggle-children-btn');
     if (!btn) return;
-    const card = e.target.closest('.item-card.item-h1, .item-card.item-h2');
+    const card = e.target.closest('.item-card.item-h1, .item-card.item-h2, .item-card.item-h3');
     if (!card) return;
     const collapsed = !card.classList.contains('is-collapsed');
     const recursive = e.altKey || e.metaKey || e.ctrlKey;
@@ -119,13 +119,13 @@
     },
     expandAll() {
       if (!ROOT) return;
-      ROOT.querySelectorAll('.item-card.item-h1, .item-card.item-h2').forEach(card => {
+      ROOT.querySelectorAll('.item-card.item-h1, .item-card.item-h2, .item-card.item-h3').forEach(card => {
         setCollapsed(card, false, true);
       });
     },
     collapseAll() {
       if (!ROOT) return;
-      ROOT.querySelectorAll('.item-card.item-h1, .item-card.item-h2').forEach(card => {
+      ROOT.querySelectorAll('.item-card.item-h1, .item-card.item-h2, .item-card.item-h3').forEach(card => {
         setCollapsed(card, true, true);
       });
     },
