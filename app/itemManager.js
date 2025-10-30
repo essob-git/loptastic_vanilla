@@ -22,7 +22,9 @@
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
-import { StateManager, generateUUID, deepEqual } from './app.js';
+import { StateManager  } from './app.js';
+
+import { generateUUID, formatGermanDate , deepEqual} from './utils.js'
 import { HistoryManager } from './historyManager.js';
 import { UIManager } from './uiManager.js';
 import { ListManager } from './listManager.js';
@@ -835,11 +837,7 @@ console.log("Preds found:", preds);
         }
         return d;
     }
-    function formatGermanDate(dt) {
-        if (!dt) return '';
-        const pad = n => n.toString().padStart(2, '0');
-        return `${pad(dt.getDate())}.${pad(dt.getMonth() + 1)}.${dt.getFullYear()}`;
-    }
+    
 };
 
 export function calcEarliestStart(item, allItems) {
@@ -925,11 +923,6 @@ function parseAnyDate(str) {
     return null;
 }
 
- function formatGermanDate(dt) {
-        if (!dt) return '';
-        const pad = n => n.toString().padStart(2, '0');
-        return `${pad(dt.getDate())}.${pad(dt.getMonth() + 1)}.${dt.getFullYear()}`;
-    }
 
 	
     function addDuration(dt, value, unit) {

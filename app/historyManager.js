@@ -22,7 +22,8 @@
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
-import { StateManager, formatDate } from './app.js';
+import { StateManager } from './app.js';
+import { formatDate } from './utils.js'
 import { UIManager } from './uiManager.js';
 import { ItemManager } from './itemManager.js';
 import { SettingsManager } from './settingsManager.js';

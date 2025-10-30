@@ -18,7 +18,8 @@
 //
 // Abhängigkeiten: globales XLSX (SheetJS), app.js (StateManager, formatDate), uiManager.js (UIManager)
 
-import { StateManager, formatDate } from './app.js';
+import { StateManager } from './app.js';
+import { formatDate } from './utils.js'
 import { UIManager } from './uiManager.js';
 
 const TABLE_HEADER = ['ID', 'Date', 'Topic / Desc', 'Zuständigkeit', 'Frist', 'Typ', 'Status'];

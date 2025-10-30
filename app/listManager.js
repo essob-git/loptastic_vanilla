@@ -22,7 +22,9 @@
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
-import { StateManager, generateUUID, formatDate } from './app.js';
+import { StateManager } from './app.js';
+import { generateUUID, formatDate} from './utils.js'
+
 import { UIManager, showConfirmDialog, PhaseHelper } from './uiManager.js';
 import { SettingsManager } from './settingsManager.js';
 

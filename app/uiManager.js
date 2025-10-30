@@ -22,7 +22,8 @@
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
-import { StateManager, formatDate } from './app.js';
+import { StateManager } from './app.js';
+
 import { ListManager } from './listManager.js';
 import { ItemManager,resolveParentHeadlines, findSuccessors, calcAutoDeadline,calcAutoDeadlineDeep, calcAutoDeadlineDetails, calcEarliestStart, calcLatestStart} from './itemManager.js';
 import { SnapshotManager2 } from './snapshotManager2.js';
@@ -31,7 +32,7 @@ import { SettingsManager } from './settingsManager.js';
 import { renderDashboard } from './dashboard.js';
 import { HelperManager } from './helperManager.js';
 import { CommentManager } from './commentManager.js';
-import { formatGermanDate } from './utils.js';
+import { formatGermanDate, formatDate } from './utils.js';
 
 
 

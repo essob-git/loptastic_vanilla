@@ -23,7 +23,9 @@
  */
 
 // ComparisonManager.js
-import { StateManager, formatDate, deepEqual } from './app.js';
+import { StateManager } from './app.js';
+import { formatDate } from './utils.js'
+
 import { UIManager } from './uiManager.js';
 import { Programm } from './programm.js';
 
