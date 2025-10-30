@@ -23,7 +23,7 @@
  */
 
 // ComparisonManager.js
-import { StateManager } from './app.js';
+import { StateManager } from './stateManager.js';
 import { formatDate } from './utils.js'
 
 import { UIManager } from './uiManager.js';

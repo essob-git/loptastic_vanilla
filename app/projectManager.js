@@ -23,7 +23,7 @@
  */
 
 //import JSZip from 'jszip';
-import { StateManager } from './app.js';
+import { StateManager } from './stateManager.js';
 import { UIManager } from './uiManager.js';
 import { Programm, compareVersions } from './programm.js';
 import { HelperManager } from './helperManager.js';
