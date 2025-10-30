@@ -309,44 +309,7 @@ export const ItemManager = {
 	    //console.log("canDropItem:", "sourceItem:", sourceItem , "targetItem:", targetItem, "position:", position);
 		return this.isValidDrop(sourceItem, targetItem, position);
 	},
-    /** canDropItem(sourceItemId, targetItemId, position) {
-        const list = StateManager.getCurrentList();
-        if (!list) return false;
-        
-        const sourceItem = this.findItemById(list.items, sourceItemId);
-        const targetItem = targetItemId ? this.findItemById(list.items, targetItemId) : null;
-        
-        if (!sourceItem) return false;
-        
-		 // Kein Drop auf sich selbst
-		if (sourceItemId === targetItemId) return false;
-		
-		 // Kein Drop in eigene Kinder
-		if (targetItem && this.isChildOf(sourceItem, targetItem)) return false;
-		
-        // Ein p-Element kann nicht als Container dienen
-        if (position === 'into' && targetItem?.type === 'p')  return false;
-        
-        // p-Element darf nicht Wurzelelement werden
-		if (sourceItem.type === 'p' && position === 'into' && !targetItem) return false;
-		
-		 // Headlines dürfen Wurzelelement sein
-		if (['h1', 'h2', 'h3'].includes(sourceItem.type) && position === 'into' && !targetItem) return true;
-
-        // Ein Element kann nicht in sich selbst verschoben werden
-        if (sourceItemId === targetItemId) return false;
-        
-		// Headlines dürfen nicht in P-Elemente verschoben werden
-		if (targetItem?.type === 'p') return false;
-
-        // Ein Element kann nicht in seine eigenen Kinder verschoben werden
-        if (targetItem && this.isChildOf(sourceItem, targetItem)) {
-            return false;
-        }
-        
-        return true;
-    },
-	**/
+ 
 
     // NEUE METHODE: Überprüft, ob ein Element ein Kind eines anderen ist
     isChildOf(parentItem, childItem) {
@@ -476,70 +439,7 @@ export const ItemManager = {
         for (const c of node.children) sum += this.countSubtree(c);
         return sum;
     },
-	/** moveItem(itemId, targetItemId, position) {
-		const list = StateManager.getCurrentList();
-		if (!list) return;
-
-		// Entferne altes UI inkl. Kinder
-		//UIManager.removeItemAndChildrenFromUI(itemId);
-
-		const item = this.removeItemById(list.items, itemId);
-		if (!item) return;
-		
-		const targetItem = this.findItemById(list.items, targetItemId);  // new
-		let newParent = null;  // new
-		let siblings = []; // new
-		
-		// Zielgruppe und Geschwister bestimmen
-		if (position === 'into') {
-			newParent = targetItem;
-			siblings = newParent ? newParent.children : list.items;
-		} else {
-			newParent = targetItem?.parentId
-				? this.findItemById(list.items, targetItem.parentId)
-				: null;
-			siblings = newParent ? newParent.children : list.items;
-		}
-		
-		if (!siblings) return
-		// Zielindex bestimmen
-
-		let insertIndex;
-		if (position === 'above') {
-			insertIndex = siblings.findIndex(i => i.id === targetItemId);
-		} else if (position === 'below') {
-			insertIndex = siblings.findIndex(i => i.id === targetItemId) + 1;
-		} else {
-			insertIndex = siblings.length; // Am Ende einfügen
-		}
-
-		// Element einfügen
-		siblings.splice(insertIndex, 0, item);
-
-		// Sort-Werte aktualisieren
-		siblings.forEach((el, idx) => el.sort = idx);
-
-		// Parent setzen
-		item.parentId = newParent ? newParent.id : null;
-
-		// UI + Projektstatus aktualisieren
-		list.meta.lastModified = new Date().toISOString();
-		StateManager.setCurrentList(list);
-		UIManager.refreshListContent();
-	/**
-		const newParent = this.findItemById(list.items, newParentId);
-		if (newParent) {
-			newParent.children = newParent.children || [];
-			newParent.children.splice(newIndex, 0, item);
-		} else {
-			list.items.splice(newIndex, 0, item);
-		}
-
-		StateManager.setCurrentList(list);
-		//UIManagerManager.addItemToUI(item);
-		UIManager.refreshListContent();
-		**/
-	//}, 
+	
 	
 	removeItemById(items, itemId) {
 		for (let i = 0; i < items.length; i++) {
@@ -554,86 +454,7 @@ export const ItemManager = {
 		}
 		return null;
 	}
-    // ÄNDERUNG: moveItem - mit verbesserter Logik für Gruppenverschiebung
-	/**
-	moveItem(itemId, targetItemId, position) {
-		const currentList = StateManager.getCurrentList();
-		if (!currentList || ListManager.isListFinalized(currentList.meta.id)) return;
-
-
-		// Vor dem Verschieben das Element aus der UI entfenren
-		// UIManager.removeItemFromUI(itemId)
-		UIManager.removeItemAndChildrenFromUI(itemId);
-		
-		
-		
-		StateManager.updateProject(project => {
-			const list = project.lists[StateManager.getCurrentList().meta.id];
-			const item = this.findItemById(list.items, itemId);
-			
-			if (!item) return project;
-
-			// 1. Alte Position entfernen
-			const oldParent = item.parentId 
-				? this.findItemById(list.items, item.parentId)
-				: { children: list.items };
-			
-			oldParent.children = oldParent.children.filter(i => i.id !== itemId);
-
-			// 2. Neue Position bestimmen
-			let newParent, newSiblings;
-			if (position === 'into') {
-				newParent = targetItemId 
-					? this.findItemById(list.items, targetItemId)
-					: null;
-				newSiblings = newParent ? newParent.children : list.items;
-			} else {
-				const targetItem = this.findItemById(list.items, targetItemId);
-				newParent = targetItem?.parentId 
-					? this.findItemById(list.items, targetItem.parentId)
-					: null;
-				newSiblings = newParent ? newParent.children : list.items;
-			}
-
-			if (!newSiblings) return project;
-
-			// 3. Zielindex berechnen
-			let targetIndex;
-			if (position === 'above') {
-				targetIndex = newSiblings.findIndex(i => i.id === targetItemId);
-			} else if (position === 'below') {
-				targetIndex = newSiblings.findIndex(i => i.id === targetItemId) + 1;
-			} else {
-				targetIndex = newSiblings.length; // Am Ende einfügen
-			}
-
-			// 4. Item einfügen und sort-Werte aktualisieren
-			newSiblings.splice(targetIndex, 0, item);
-			
-			// 5. Parent aktualisieren
-			item.parentId = position === 'into' ? targetItemId || null : newParent?.id || null;
-
-			// 6. Sortierreihenfolge für alle Geschwister aktualisieren
-			newSiblings.forEach((sibling, index) => {
-				sibling.sort = index;
-			});
-
-			list.meta.lastModified = new Date().toISOString();
-			return project;
-		});
-
-		// 7. UI vollständig aktualisieren - aber nicht komplett neu rendern
-		const item = this.findItemById(currentList.items, itemId);
-		UIManager.addItemToUI(item, true); //true = isMoved flag
-		
-		
-		//UIManager.refreshListContent(); 
-		HistoryManager.logChange(itemId, 'MOVE', {
-			targetItemId,
-			position
-		});
-	}
-	**/
+    
 };
 
 export function resolveParentHeadlines(item, allItems) {
@@ -874,44 +695,6 @@ export function calcLatestStart(item) {
     }
     return dt ? formatGermanDate(dt) : '';
 };
-
-/*
-export function calcTransitiveDeadline(item, allItems, visited = new Set()) {
-    if (!item || visited.has(item.id)) return null; 
-    visited.add(item.id);
-
-    const preds = (item.data.dependencies || []).filter(dep => dep.kind === "predecessor");
-    let maxDate = null;
-
-    for (const dep of preds) {
-        const predItem = allItems.find(i => i.id === dep.id);
-        if (!predItem) continue;
-
-        // Rekursiv die Deadline des Vorgängers berechnen
-        let dt = calcTransitiveDeadline(predItem, allItems, visited);
-
-        // Fallback: falls Vorgänger keine transitive Berechnung liefert → seine normale Deadline nehmen
-        if (!dt) dt = parseAnyDate(predItem.data.report_deadline);
-
-        // Offset anwenden
-        if (dt && dep.lag && dep.lag.value) {
-            dt = addDuration(dt, dep.lag.value, dep.lag.unit);
-        }
-
-        if (dt && (!maxDate || dt > maxDate)) {
-            maxDate = dt;
-        }
-    }
-
-    // Eigene Dauer berücksichtigen
-    if (maxDate && item.data.estimated_duration && item.data.estimated_duration.value) {
-        maxDate = addDuration(maxDate, item.data.estimated_duration.value, item.data.estimated_duration.unit);
-    }
-
-    return maxDate;
-};
-
-*/
 
 
 // Hilfsfunktionen (wie bei calcAutoDeadline)
