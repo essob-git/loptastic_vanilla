@@ -46,26 +46,25 @@ import { ExportExcelManager } from './exportExcelManager.js';
 import { HelperManager } from './helperManager.js';
 import { GanttManager } from './ganttManager.js';
 import { AuthManager } from './AuthManager.js';
-// ----------- Applikations-Zustand -----------
 
+
+// ----------- Applikations-Zustand -----------
 /**
  * Globale Variable für den aktuellen Zustand: aktuelles Projekt und Liste.
  * @type {{currentProject: object|null, currentList: object|null}}
  */
-const state = {
-    currentProject: null,
-    currentList: null
-};
+    const state = {
+        currentProject: null,
+        currentList: null
+    };
 
 
 // ----------- Initialisierung -----------
-
 document.addEventListener('DOMContentLoaded', async () => {
     // UI und Settings initialisieren
-
     await SettingsManager.init();
     await PhaseHelper.init();
-     await   UIManager.init();
+    await   UIManager.init();
 
     // CollapseManager initialisieren, falls vorhanden
     if (window.CollapseManager) {
@@ -95,13 +94,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       <strong>Name:</strong> ${AuthManager.username()}<br>
       <strong>Abteilung:</strong> ${AuthManager.department() || '—'}
     `;
-
             if (AuthManager.isAdmin()) {
-            
                     document.getElementById('admin-menu')?.classList.remove('d-none');
                 }
-
-
         })
         .catch(err => {
             console.error("Auth Fehler:", err);
@@ -130,7 +125,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('credits').addEventListener('click', async () => {
         Programm.showLicenseModal();
     });
-document.getElementById('disclaimer').addEventListener('click', async () => {
+
+    document.getElementById('disclaimer').addEventListener('click', async () => {
         Programm.showDisclaimer();
     });
 
@@ -227,7 +223,7 @@ document.getElementById('disclaimer').addEventListener('click', async () => {
     document.getElementById('add-p').addEventListener('click', () => ItemManager.addItem('p'));
 
 
-document.getElementById('showGantt').addEventListener('click', () => GanttManager.showGantt());
+    document.getElementById('showGantt').addEventListener('click', () => GanttManager.showGantt());
 
   const switchEl = document.getElementById("helpModeSwitch");
   if (switchEl) {
@@ -265,121 +261,3 @@ document.getElementById('showGantt').addEventListener('click', () => GanttManage
         }
     });
 });
-
-
-// ----------- StateManager -----------
-
-/**
- * Globale State-Verwaltung für aktuelles Projekt und Liste.
- * Methoden zum Setzen, Abrufen und Aktualisieren von Projekten und Listen.
- */
-export const StateManager = {
-    /**
-     * Gibt das aktuell geladene Projekt zurück.
-     * @returns {object|null}
-     */
-    getCurrentProject() {
-        return state.currentProject;
-    },
-
-    /**
-     * Setzt das aktuelle Projekt und aktualisiert UI und Templates.
-     * @param {object} project - Das neue Projektobjekt.
-     */
-    setCurrentProject(project) {
-        state.currentProject = project;
-        UIManager.updateProjectInfo(project);
-        TemplateManager.loadProjectTemplates(project);
-    },
-
-    /**
-     * Gibt die aktuell geladene Liste zurück.
-     * @returns {object|null}
-     */
-    getCurrentList() {
-        return state.currentList;
-    },
-
-    /**
-     * Setzt die aktuelle Liste, aktualisiert UI und lädt Historie.
-     * @param {object|null} list - Die neue Liste oder null.
-     */
-    setCurrentList(list) {
-        if (!list) {
-            state.currentList = null;
-            UIManager.updateListContent(null);
-            UIManager.updateSnapshotsForList(null);
-            return;
-        }
-        state.currentList = list;
-        UIManager.highlightSelectedList(list.meta.id);
-        UIManager.updateListContent(list);
-        HistoryManager.loadHistoryForList(list.meta.id);
-    },
-
-    /**
-     * Gibt alle Listen des aktuellen Projekts zurück.
-     * @returns {Array<object>}
-     */
-    getAllLists() {
-        const project = StateManager.getCurrentProject();
-        if (!project || !project.lists) return [];
-        return project ? Object.values(project.lists) : [];
-    },
-
-    /**
-     * Gibt alle Listen des Projekts zurück, nur gültige Objekte.
-     * @returns {Array<object>}
-     */
-    getAllLists2() {
-        const project = StateManager.getCurrentProject();
-        if (!project || !project.lists) return [];
-        return Object.values(project.lists).filter(list => list && typeof list === 'object');
-    },
-
-    /**
-     * Gibt eine Liste anhand ihrer ID zurück.
-     * @param {string} listId - Die ID der Liste.
-     * @returns {object|undefined}
-     */
-    getListById(listId) {
-        const project = StateManager.getCurrentProject();
-        return project?.lists[listId];
-    },
-
-    /**
-     * Gibt den aktuell eingeloggten Benutzer zurück.
-     * @returns {object}
-     */
-    getCurrentUser() {
-        return SettingsManager.getCurrentUser();
-    },
-
-    /**
-     * Aktualisiert das aktuelle Projekt mit einer Updater-Funktion.
-     * @param {function} updater - Funktion, die das Projekt verändert.
-     * @returns {object} Das aktualisierte Projekt.
-     */
-    updateProject(updater) {
-        const project = { ...state.currentProject };
-        updater(project);
-        state.currentProject = project;
-        return project;
-    },
-
-    /**
-     * Stellt sicher, dass ein Projekt alle notwendigen Strukturen besitzt.
-     * @param {object} project
-     * @returns {object} Das projekt mit garantierter Struktur.
-     */
-    ensureProjectStructure(project) {
-        if (!project.lists) project.lists = {};
-        if (!project.manifest.lists) project.manifest.lists = [];
-        if (!project.finalizedLists) project.finalizedLists = [];
-        if (!project.changelog) project.changelog = {};
-        if (!project.snapshots) project.snapshots = {};
-        return project;
-    }
-};
-
-

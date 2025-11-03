@@ -22,8 +22,7 @@
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
-import { StateManager } from './app.js';
-
+import { StateManager } from './stateManager.js';
 import { ListManager } from './listManager.js';
 import { ItemManager,resolveParentHeadlines, findSuccessors, calcAutoDeadline,calcAutoDeadlineDeep, calcAutoDeadlineDetails, calcEarliestStart, calcLatestStart} from './itemManager.js';
 import { SnapshotManager2 } from './snapshotManager2.js';
