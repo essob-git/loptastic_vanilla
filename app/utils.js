@@ -24,48 +24,64 @@
 
 // utils.js
 
-/**
- * Flattened array structure.
- * @param {Array} array - The array to flatten.
- * @returns {Array} - The flattened array.
- */
-export const flatten = (array) => {
-    return array.reduce((acc, val) => acc.concat(Array.isArray(val) ? flatten(val) : val), []);
-};
+// ### Datenstruktur ###
 
-/**
- * Converts an object to a map.
- * @param {Object} obj - The object to convert.
- * @returns {Map} - The resulting map.
- */
-export const toMap = (obj) => {
-    return new Map(Object.entries(obj));
-};
+    /**
+     * Generiert eine eindeutige UUID.
+     * @returns {string} Die generierte UUID.
+     */
+    export function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
 
-/**
- * Lexicographical comparison function.
- * @param {string} a - The first string.
- * @param {string} b - The second string.
- * @returns {number} - Comparison result.
- */
-export const lexCompare = (a, b) => {
-    return a.localeCompare(b);
-};
+    /**
+     * Erstellt eine tiefe Kopie eines Objekts.
+     * @param {object} obj - Das zu klonende Objekt.
+     * @returns {object} Tief kopiertes Objekt.
+     */
+    export function deepClone(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
 
-/**
- * Builds a sort key for sorting purposes.
- * @param {Object} item - The item to build the key from.
- * @returns {string} - The sort key.
- */
-export const buildSortKey = (item) => {
-    return item.name.toLowerCase();
-};
+    /**
+     * Vergleicht zwei Objekte auf tiefgehende Gleichheit.
+     * @param {object} a - Erstes Objekt.
+     * @param {object} b - Zweites Objekt.
+     * @returns {boolean} true wenn gleich, sonst false.
+     */
+    export function deepEqual(a, b) {
+        return JSON.stringify(a) === JSON.stringify(b);
+    }
 
-export const formatGermanDate = (isoDateStr) => {
-  if (!isoDateStr) return '';
-  const d = new Date(isoDateStr);
-  const pad = n => n.toString().padStart(2, '0');
-  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
-}
 
-// Weitere Helperfunktionen hier hinzufügen ...
+
+// ### Datum und Zeit
+
+    /**
+     * Formatiert ein Datum als deutsche Datums-/Zeitzeichenkette.
+     * @param {string|Date} dateString - Ein Datum oder Datum-String.
+     * @returns {string} Datums-/Zeitformat (deutsch).
+     */
+    export function formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleString('de-DE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    export const formatGermanDate = (isoDateStr) => {
+        if (!isoDateStr) return '';
+        const d = new Date(isoDateStr);
+        const pad = n => n.toString().padStart(2, '0');
+        return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
+    }
+

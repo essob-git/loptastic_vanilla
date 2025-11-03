@@ -23,7 +23,9 @@
  */
 
 // ComparisonManager.js
-import { StateManager, formatDate, deepEqual } from './app.js';
+import { StateManager } from './app.js';
+import { formatDate } from './utils.js'
+
 import { UIManager } from './uiManager.js';
 import { Programm } from './programm.js';
 
@@ -219,107 +221,6 @@ console.log('Snapshot B:', snapB.data);
    * @param {Object} snapshotBData - Daten des neuen Snapshots ({ items: [...] })
    * @returns {Array} comparison - Liste mit Objekten { id, kind, type, status, oldItem, newItem, sort }
    */
-
-  /** 
-  prepareComparisonData(snapshotAData, snapshotBData) {
-
-    function flatten(items = [], out = []) {
-      for (const it of items) {
-        if (it.isDeleted) continue;
-        out.push(it);
-        if (it.children?.length) flatten(it.children, out);
-      }
-      return out;
-    }
-
-    // Beide Snapshots in flache Listen umwandeln
-    const oldFlat = flatten(snapshotAData?.items || []);
-    const newFlat = flatten(snapshotBData?.items || []);
-
-    // Erzeuge Maps für schnellen Zugriff per ID
-    const oldMap = new Map(oldFlat.map(it => [it.id, it]));
-    const newMap = new Map(newFlat.map(it => [it.id, it]));
-
-    // Erstelle Set mit allen vorkommenden IDs (vereint alt & neu)
-    const allIds = new Set([...oldMap.keys(), ...newMap.keys()]);
-
-    // Vergleiche alle Felder, die als "Datenänderung" gelten
-    const keys = [
-      'type',
-      'report_id','report_date','report_topic','report_desc',
-      'report_responsible','report_deadline','report_typ','report_status'
-    ];
-
-    const comparison = [];
-
-    // Schleife über alle IDs und vergleiche die Einträge
-    for (const id of allIds) {
-      const oldItem = oldMap.get(id) || null;
-      const newItem = newMap.get(id) || null;
-      const type = (newItem || oldItem)?.type;
-
-      if(['h1','h2','h3'].includes(type)) {
-         comparison.push({
-          kind: 'headline',
-          item: (newItem || oldItem)
-        });
-         continue;  // <-- HEADLINE nicht als Datenzeile aufnehmen!
-      }
-
-      let status;
-      if (oldItem && !newItem) {
-        status = 'removed';               // Im alten Snapshot, aber nicht mehr im neuen → entfernt
-
-      } else if (!oldItem && newItem) {
-        status = 'added';                 // Im neuen Snapshot, aber nicht im alten → hinzugefügt
-
-      } else if (oldItem && newItem) {
-        // Prüfe erst, ob alle Datenfelder gleich sind (ausgenommen sort/parentId)
-        let changed = false;
-        for (const k of keys) {
-          // Werte können direkt im Item oder im Datenobjekt stehen
-          let a = (k in oldItem ? oldItem[k] : oldItem.data?.[k]);
-          let b = (k in newItem ? newItem[k] : newItem.data?.[k]);
-          if ((a ?? '') !== (b ?? '')) {
-            changed = true;
-            break;
-          }
-        }
-        // Prüfe jetzt, ob sich nur sort oder parentId geändert hat
-        if (!changed) {
-          if ((oldItem.sort !== newItem.sort) || ((oldItem.parentId ?? null) !== (newItem.parentId ?? null))) {
-            status = 'moved';            // Nur sort oder parentId geändert → verschoben
-          } else {
-            status = 'unchanged';       // Keine Änderung
-          }
-        } else {
-          status = 'changed';           // Mindestens ein relevantes Datenfeld geändert
-
-        }
-      }
-
-      // Für Sortierung im Ergebnisarray (z. B. für Darstellung)
-      let sortIndex = newItem?.sort ?? oldItem?.sort ?? 0;
-      comparison.push({
-        id,
-        kind: 'row',
-        //type: (newItem || oldItem)?.type,
-        type,
-        status,
-        oldItem,
-        newItem,
-        sort: sortIndex
-      });
-    }
-
-    // Sortieren z. B. nach neuer Reihenfolge (kann angepasst werden)
-    comparison.sort((a, b) => (a.sort - b.sort) || (a.type || '').localeCompare(b.type || ''));
-
-    return comparison;
-  }
-  // -----------------------------------------------------------------------------------------------------------------
-};
-*/
 
   prepareComparisonData(snapshotAData, snapshotBData) {
     // --- Hilfsfunktionen ----------------------------------------------------------------
@@ -839,25 +740,6 @@ export async function generateComparisonPDF(comparisonData, options = {}) {
       });
 
 
-      // DEBUG Ausgabe, fügt in den margin-Bereich den Type ein
-     /* if (col === 'report_id') {
-            page.drawText(type, {
-              x: x - 35,
-              y: y -  cellPadY - lineHeight + 5,    // kleiner optischer Offset
-              size: 6,
-              font,
-              color: rgb(0,0,0)
-            });
-            page.drawText(source, {
-              x: x - 35,
-              y: y -  cellPadY - lineHeight - 5,    // kleiner optischer Offset
-              size: 6,
-              fontBold,
-              color: rgb(1,0,0)
-            });
-        }
-*/
-
       // Text mehrere Zieln pro Spalte
 
 let textY = y - cellPadY - lineHeight;
@@ -885,18 +767,7 @@ for (const ln of lines) {
     color: drawColor,
   });
 
-  // --- Optional: Durchstreichung bei entfernten Einträgen ---
-  /*
-  if (type === 'removed') {
-    const textWidth = font.widthOfTextAtSize(ln, fontSize);
-    page.drawLine({
-      start: { x: x + cellPadX, y: textY + fontSize * 0.5 },
-      end:   { x: x + cellPadX + textWidth, y: textY + fontSize * 0.5 },
-      thickness: 0.7,
-      color: rgb(1, 0, 0),
-    });
-  }
-  */
+
 
   textY -= lineHeight;
 }
@@ -904,52 +775,6 @@ for (const ln of lines) {
 
         
 
-   /*   //for (const line of wrapped[i]) {
-      for (let lineIdx = 0; lineIdx < maxLines; lineIdx++) {
-        let line = lines[lineIdx] || '';
-        let drawColor = color;
-        
-          // === DIFF-ANZEIGE FÜR ALLE SPALTEN (report_*) ===
-          if (
-              type === 'changed' &&
-              compareData && // nur sinnvoll, wenn Vergleichsdaten vorhanden
-              (data[columns[i]] !== compareData[columns[i]])
-            ) {
-                drawColor = rgb(0.13, 0.27, 0.66)
-              } 
-
-            let textY = y - cellPadY - lineHeight;
-            for (const line of lines) {
-                    page.drawText(line, {
-                      x: x + cellPadX,
-                      y: textY,
-                      size: fontSize,
-                      font,
-                      color: drawColor,
-                    });
-
-      /*
-            if (type === 'removed') {
-              // Strikethrough: Linie über den Text
-              let textWidth = font.widthOfTextAtSize(line, fontSize);
-              page.drawLine({
-                start: { x: x + cellPadX, y: textY + 4 + fontSize * 0.5 },
-                end:   { x: x + cellPadX + textWidth, y: textY + 4 + fontSize * 0.5 },
-                thickness: 0.7,
-                color: rgb(1, 0, 0) // gleiche Farbe wie Text, z. B. rot
-              });
-
-            }
-        */
-       /*
-
-                   textY -= lineHeight;
-
-
-                  }
-  
-        
-      }*/
 
       x += finalColWidths[i];
     }
