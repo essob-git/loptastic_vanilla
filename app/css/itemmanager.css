@@ -86,7 +86,7 @@
 
 
     .card-body {
-        padding: 5px 5px 0px 5px;
+        padding: 5px 5px 5px 5px;
     }
     .card-body h5 {
         font-size: 16px;
@@ -133,4 +133,5 @@
     .children-container .card-body table td p {
         font-size: 0.9rem;
     }
+
 
