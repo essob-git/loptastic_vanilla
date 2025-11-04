@@ -46,6 +46,10 @@
             position: relative;
         }
         .sidebar {
+             display: flex;
+            flex-direction: column;
+            height: 100vh;          /* Sidebar immer volle Höhe */
+            overflow: hidden;       /* Gesamt-Sidebar selbst scrollt nicht */
             position: relative;   /* WICHTIG: damit der Button korrekt positioniert */
             width: 420px;
             background: #f8f9fa;
@@ -56,6 +60,12 @@
             transition: all 0.3s ease;
             opacity: 1;
             visibility: visible;
+        }
+        .sidebar-scroll {
+            overflow-y: auto;       /* Nur der innere Bereich scrollt */
+            flex-grow: 1;           /* nutzt restliche Höhe */
+            padding-right: 10px;    /* optisch schöner, verhindert Scrollbar überlappt Inhalt */
+            scrollbar-width: thin;  /* optional Firefox */
         }
      /* Zustand: Sidebar eingeklappt (Klasse am Container) */
         .sidebar-collapsed .sidebar {

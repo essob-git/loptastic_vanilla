@@ -112,133 +112,151 @@
             </div>
 
           
-
-        <div class="accordion accordion-flush" id="accordionFlushExample">
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-                    Listen & Vorlagen
-                </button>
-                </h2>
-                <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-                    <div class="accordion-body">
-                        <!-- Listen -->
-                        <div class="mb-4 pb-3 border-bottom">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="sidebar-scroll flex-grow-1">
+            <div class="accordion accordion-flush" id="accordionFlushExample">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                        Listen & Vorlagen
+                    </button>
+                    </h2>
+                    <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                        <div class="accordion-body">
+                            <!-- Listen -->
+                            <div class="mb-4 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    
                                 
-                              
-                                <h4>Listen-Verwaltung</h4>
-                                <div class="btn-group" role="group">
-                                    <button id="overview-list" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-list-ul"></i> Überischt
+                                    <h4>Listen-Verwaltung</h4>
+                                    <div class="btn-group" role="group">
+                                        <button id="overview-list" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-list-ul"></i> Überischt
+                                        </button>
+                                        <button id="add-list" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-plus-lg"></i> Neu
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="lists-container" class="lists-overview">
+                                    <!-- Hier werden die Listen dynamisch eingefügt -->
+                                </div>
+                            </div>
+                            <!-- Vorlagen -->
+    
+                            <div class="mb-3 pb-3 border-bottom">
+                                                <h4>Vorlagen</h4>
+
+                                <div class="d-flex mb-2">
+                                    <div class="input-group input-group-sm mb-1">
+                                        <select id="template-select" class="form-select"></select>
+                                        <button id="apply-template" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </div>    
+                                </div>
+                                <div class="d-grid">
+                                    <input type="file" id="template-file-input" accept=".json" style="display: none;">
+                                    <div class="btn-group" role="group" >
+                                        <button id="import-template" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-upload"></i> Vorlage importieren
+                                        </button>
+                                        <button id="export-template" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-download"></i> Vorlage exportieren
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+    <!-- Block -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+                        Snapshot-Verwaltung
+                    </button>
+                    </h2>
+                    <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                        <div class="accordion-body">
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h4>Snapshots</h4>
+                                    <div class="btn-group" role="group">
+                                        <button id="view-all-snapshot" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-list-ul"></i> Übersicht
                                     </button>
-                                    <button id="add-list" class="btn btn-sm btn-primary">
+                                    <button id="take-snapshot" class="btn btn-sm btn-primary">
                                         <i class="bi bi-plus-lg"></i> Neu
                                     </button>
                                 </div>
                             </div>
-
-                            <div id="lists-container" class="lists-overview">
-                                <!-- Hier werden die Listen dynamisch eingefügt -->
-                            </div>
-                        </div>
-                        <!-- Vorlagen -->
- 
-                        <div class="mb-3 pb-3 border-bottom">
-                                            <h4>Vorlagen</h4>
-
-                            <div class="d-flex mb-2">
-                                <div class="input-group input-group-sm mb-1">
-                                    <select id="template-select" class="form-select"></select>
-                                    <button id="apply-template" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-check-lg"></i>
-                                    </button>
-                                </div>    
-                            </div>
-                            <div class="d-grid">
-                                <input type="file" id="template-file-input" accept=".json" style="display: none;">
-                                <div class="btn-group" role="group" >
-                                    <button id="import-template" class="btn btn-sm btn-outline-success">
-                                        <i class="bi bi-upload"></i> Vorlage importieren
-                                    </button>
-                                    <button id="export-template" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-download"></i> Vorlage exportieren
-                                    </button>
-                                </div>
-                            </div>
+                    
+                            <div id="snapshots-container" class="me-2"></div>
+                            <div id="snapshots-all" class="d-none"></div>
                         </div>
 
                     </div>
                 </div>
             </div>
-
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
-                    Snapshot-Verwaltung
-                </button>
-                </h2>
-                <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-                    <div class="accordion-body">
-                    <div class="mb-3 pb-3 border-bottom">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h4>Snapshots</h4>
-                                <div class="btn-group" role="group">
-                                    <button id="view-all-snapshot" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-list-ul"></i> Übersicht
-                                </button>
-                                <button id="take-snapshot" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-plus-lg"></i> Neu
-                                </button>
-                            </div>
-                        </div>
-                
-                        <div id="snapshots-container" class="me-2"></div>
-                        <div id="snapshots-all" class="d-none"></div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </div>
-           <div class="mb-3 pb-3 border-bottom pt-4 border-top">
-                <h4>Benutzer</h4>
-                    <div id="me-userdata"></div>
-                    <div class="input-group">
-                        <div id="admin-menu" class="d-none">
-                            <a href="user_admin.php" class="btn btn-sm btn-primary" >Admin Menu</a>
-                        </div>
-
-                        <button id="logout-link" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-check"></i> Logout
-                        </button>
-                    </div>
-            </div>
-
-            <!-- div User -->
-            <div class="mb-3 pb-3 border-bottom pt-4 border-top d-none">
-                <h4>Benutzer</h4>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-person"></i></span>
-                    <input type="text" id="user-name" class="form-control" placeholder="Ihr Name">
-                    <button id="save-user" class="btn btn-outline-secondary">
-                        <i class="bi bi-check"></i>
+    <!-- Block -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+                        Benutzer
                     </button>
-                </div>               
-            </div>
-			
- 
+                    </h2>
+                    <div id="flush-collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                        <div class="accordion-body">
+                                    <div id="me-userdata"></div>
+                                    <div class="input-group">
+                                        <div id="admin-menu" class="d-none">
+                                            <a href="user_admin.php" class="btn btn-sm btn-primary" >Admin Menu</a>
+                                        </div>
 
-            <div class="form-check form-switch mb-3  pb-3 border-bottom">
-                <input class="form-check-input" type="checkbox" id="helpModeSwitch"/>
-                <label class="form-check-label" for="helpModeSwitch">
-                    Hilfe-Modus
-                </label>
+                                        <button id="logout-link" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-check"></i> Logout
+                                        </button>
+                                    </div>
+
+
+                                    <div class="input-group d-none">
+                                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                        <input type="text" id="user-name" class="form-control" placeholder="Ihr Name">
+                                        <button id="save-user" class="btn btn-outline-secondary">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                    </div>        
+                        </div>
+                    </div>
                 </div>
-			<div id="version" class="mt-2 text-muted small text-center"></div>
-            <p class="text-muted small text-center"><a href="#" id="credits" class="">credits</a> & <a href="#" id="disclaimer">disclaimer</a></p>
-
+        <!-- Block -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFour" aria-expanded="false" aria-controls="flush-collapseFour">
+                        Hilfe
+                    </button>
+                    </h2>
+                    <div id="flush-collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                        <div class="accordion-body">
+                            <div class="form-check form-switch mb-3  pb-3 border-bottom">
+                            <input class="form-check-input" type="checkbox" id="helpModeSwitch"/>
+                            <label class="form-check-label" for="helpModeSwitch">
+                                Hilfe-Modus
+                            </label>
+                        </div>
+                        </div>
+                    </div>
+                </div>
         </div>
+    </div>   
+               
+
+    <div id="version" class="mt-2 text-muted small text-center"></div>
+    <p class="text-muted small text-center"><a href="#" id="credits" class="">credits</a> & <a href="#" id="disclaimer">disclaimer</a></p>
+
+</div>
         
         <!-- Hauptbereich -->
         <div class="main-content">
