@@ -22,6 +22,15 @@
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
+// ----------- Applikations-Zustand -----------
+/**
+ * Globale Variable für den aktuellen Zustand: aktuelles Projekt und Liste.
+ * @type {{currentProject: object|null, currentList: object|null}}
+ */
+    const state = {
+        currentProject: null,
+        currentList: null
+    };
 
 import { HistoryManager } from './historyManager.js';
 import { TemplateManager } from './templateManager.js';

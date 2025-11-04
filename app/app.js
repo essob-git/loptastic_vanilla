@@ -38,7 +38,7 @@ import { HistoryManager } from './historyManager.js';
 import { ExportManager2 } from './exportManager2.js';
 import { TemplateManager } from './templateManager.js';
 import { SnapshotManager2 } from './snapshotManager2.js';
-import { ComparisonManager } from './ComparisonManager.js';
+import { ComparisonManager } from './comparisonManager.js';
 import { UIManager, PhaseHelper } from './uiManager.js';
 import { SettingsManager } from './settingsManager.js';
 import { Programm } from './programm.js';
@@ -46,7 +46,6 @@ import { ExportExcelManager } from './exportExcelManager.js';
 import { HelperManager } from './helperManager.js';
 import { GanttManager } from './ganttManager.js';
 import { AuthManager } from './AuthManager.js';
-
 
 
 
