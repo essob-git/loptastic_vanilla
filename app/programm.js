@@ -127,7 +127,7 @@ export const Programm = {
 <h2>Haftungsausschluss (Disclaimer)</h2>
 <p><strong>Stand:</strong> 02. Oktober 2025</p>
 
-<h3>Allgemeine Hinweise</h3>
+<h3 >Allgemeine Hinweise</h3>
 <p>
 Die Software <strong>„Listify“</strong> wird unter der
 <strong>GNU Affero General Public License Version 3 (AGPL v3)</strong> als freie Software veröffentlicht.
@@ -163,19 +163,7 @@ Verschulden bleibt unberührt.
 </p>
 
 <h3>Externe Dienste</h3>
-<p>3.0.en.html</a>.
-Der englische Originaltext dieser Lizenz ist allein rechtsverbindlich.
-</p>
-
-<h3>Schlussbestimmungen</h3>
 <p>
-Der Entwickler behält sich vor, Änderungen oder Weiterentwicklungen der Software vorzunehmen.
-Der Einsatz der Software erfolgt unter Beachtung der jeweils gültigen Lizenzbedingungen.
-Im Falle von Abweichungen oder Widersprüchen zwischen diesem Haftungsausschluss
-und den Bestimmungen der GNU Affero General Public License v3
-gelten ausschließlich die Bestimmungen der AGPL v3.
-</p>
-
 Die Software kann externe Schnittstellen oder Dienste nutzen
 (z.&nbsp;B. Feiertage-API, Ferien-API oder andere Web-Dienste).
 Für deren Verfügbarkeit, Richtigkeit oder Aktualität übernimmt der Entwickler keine Gewähr.

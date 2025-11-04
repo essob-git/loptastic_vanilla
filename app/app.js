@@ -48,15 +48,7 @@ import { GanttManager } from './ganttManager.js';
 import { AuthManager } from './AuthManager.js';
 
 
-// ----------- Applikations-Zustand -----------
-/**
- * Globale Variable für den aktuellen Zustand: aktuelles Projekt und Liste.
- * @type {{currentProject: object|null, currentList: object|null}}
- */
-    const state = {
-        currentProject: null,
-        currentList: null
-    };
+
 
 
 // ----------- Initialisierung -----------
