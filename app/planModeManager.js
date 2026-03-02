@@ -86,10 +86,28 @@ console.log("🔍 Beispiel afterItem:", afterItems[0]);
       }
 
       const diff = {};
-      for (const key of Object.keys(afterItem.data || {})) {
+      const beforeData = beforeItem.data || {};
+      const afterData = afterItem.data || {};
+      const allDataKeys = new Set([
+        ...Object.keys(beforeData),
+        ...Object.keys(afterData)
+      ]);
+
+      for (const key of allDataKeys) {
         if (!deepEqual(beforeItem.data?.[key], afterItem.data?.[key])) {
           diff[key] = [beforeItem.data?.[key], afterItem.data?.[key]];
         }
+      }
+
+      // Strukturänderungen außerhalb von data erfassen
+      if (!deepEqual(beforeItem.parentId, afterItem.parentId)) {
+        diff.parentId = [beforeItem.parentId ?? null, afterItem.parentId ?? null];
+      }
+      if (!deepEqual(beforeItem.sort, afterItem.sort)) {
+        diff.sort = [beforeItem.sort ?? null, afterItem.sort ?? null];
+      }
+      if (!deepEqual(beforeItem.type, afterItem.type)) {
+        diff.type = [beforeItem.type ?? null, afterItem.type ?? null];
       }
 
       if (Object.keys(diff).length > 0) {
@@ -119,9 +137,18 @@ console.log("🔍 Beispiel afterItem:", afterItems[0]);
     }
 
     // 🔍 Grund abfragen (optional)
-    const specialChanges = changeBuffer.filter(c =>
-      Object.keys(c.changes).some(k => ["report_deadline", "estimated_duration"].includes(k))
-    );
+    const specialChanges = changeBuffer.filter(c => {
+      if (c.action === "CREATE") {
+        const createdItem = c.changes?.item;
+        return ["report_deadline", "estimated_duration"].some(key =>
+          createdItem?.data?.[key] != null
+        );
+      }
+
+      return Object.keys(c.changes || {}).some(k =>
+        ["report_deadline", "estimated_duration"].includes(k)
+      );
+    });
 
     let globalReason = null;
     if (specialChanges.length > 0) {
