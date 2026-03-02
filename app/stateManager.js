@@ -35,9 +35,16 @@ import { SettingsManager } from './settingsManager.js';
  */
     const state = {
         currentProject: null,
-        currentList: null
+        currentList: null,
+
+        // Planspiel
+        planModeActive: false,
+        planBackup: null,
+        planBackupCurrentListId: null,
     };
 
+
+    
 
 // ----------- StateManager -----------
 
@@ -127,12 +134,103 @@ export const StateManager = {
         return SettingsManager.getCurrentUser();
     },
 
+    // --- Planmodus-Handling ---
+    isPlanModeActive() {
+        return !!state.planModeActive;
+    },
+
+    setPlanModeActive(active) {
+        state.planModeActive = active;
+    },
+
+    setPlanModeBackup(backup) {
+        state.planBackup = backup;
+    },
+
+    clearPlanModeBackup() {
+        state.planBackup = null;
+    },
+    setPlanBackupCurrentListId(id) {
+  state.planBackupCurrentListId = id;
+},
+
+restorePlanModeBackup() {
+  if (!state.planBackup) {
+    console.warn("Kein PlanBackup zum Wiederherstellen vorhanden");
+    return;
+  }
+console.log("Restore backup:", {
+  hasBackup: !!state.planBackup,
+  listId: state.planBackupCurrentListId,
+  availableLists: Object.keys(state.planBackup?.lists || {})
+});
+
+  const backup = state.planBackup;
+  const restoredProject = JSON.parse(JSON.stringify(backup));
+  const oldListId = state.planBackupCurrentListId;
+
+  // Reset Planspiel-Flags
+  state.planModeActive = false;
+  state.planBackup = null;
+  state.planBackupCurrentListId = null;
+
+  // 1️⃣ Projekt neu setzen (dies ruft bereits updateProjectInfo etc.)
+  this.setCurrentProject(restoredProject);
+
+  // 2️⃣ Die passende Liste aus dem wiederhergestellten Projekt neu selektieren
+  let restoredList = null;
+  if (oldListId && restoredProject.lists && restoredProject.lists[oldListId]) {
+    restoredList = restoredProject.lists[oldListId];
+    this.setCurrentList(restoredList);
+  } else {
+    // keine passende Liste mehr vorhanden → Ansicht leeren
+    this.setCurrentList(null);
+  }
+
+  // 3️⃣ UI vollständig neu aufbauen
+  try {
+    // Liste anzeigen
+    if (restoredList) {
+      UIManager.updateListContent(restoredList);
+      UIManager.highlightSelectedList(restoredList.meta.id);
+      UIManager.updateSnapshotsForList(restoredList);
+    } else {
+      UIManager.updateListContent(null);
+    }
+
+    // Sicherheitshalber: DOM neu aufbauen
+    setTimeout(() => {
+      if (typeof UIManager.refreshListContent === "function") {
+        UIManager.refreshListContent();
+      }
+    }, 50);
+  } catch (err) {
+    console.error("Fehler beim UI-Refresh nach Restore:", err);
+  }
+
+  console.info("Planspiel: Backup erfolgreich wiederhergestellt");
+},
+
+_getInternalState() {
+  return state;
+},
+
+  getPlanModeBackup() {
+    return state.planBackup;
+    },
+
     /**
      * Aktualisiert das aktuelle Projekt mit einer Updater-Funktion.
      * @param {function} updater - Funktion, die das Projekt verändert.
      * @returns {object} Das aktualisierte Projekt.
      */
     updateProject(updater) {
+
+          // Schreibsperre im Planspielmodus
+        if (this.isPlanModeActive()) {
+            console.warn("⏸ updateProject(): Planspielmodus aktiv – Änderungen werden nur temporär gehalten.");
+        }
+
         const project = { ...state.currentProject };
         updater(project);
         state.currentProject = project;

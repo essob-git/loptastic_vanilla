@@ -28,6 +28,12 @@ import { UIManager } from './uiManager.js';
 
 export const SnapshotManager2 = {
     showSnapshotModal() {
+
+        if (StateManager.isPlanModeActive()) {
+        UIManager.showToast("Im Planspielmodus können Snapshots nicht angelegt werden.", "info");
+        return;
+        }
+
         const modalContent = `
             <form id="snapshot-form">
                 <div class="mb-3">
@@ -78,6 +84,12 @@ export const SnapshotManager2 = {
     },
 
     takeSnapshot(name, note) {
+
+        if (StateManager.isPlanModeActive()) {
+        UIManager.showToast("Im Planspielmodus können Snapshots nicht angefertigt werden.", "info");
+        return;
+        }
+
         const list = StateManager.getCurrentList();
         if (!list) return;
 
@@ -101,6 +113,12 @@ export const SnapshotManager2 = {
     },
 	
 	loadSnapshot(snapshot) {
+
+        if (StateManager.isPlanModeActive()) {
+        UIManager.showToast("Im Planspielmodus können Snapshots nicht geladen werden.", "info");
+        return;
+        }
+
 		if (!snapshot || !snapshot.data) return;
 
 		// Schreibgeschützte Kopie der Snapshot-Liste
@@ -123,6 +141,12 @@ export const SnapshotManager2 = {
     },
     
     deleteSnapshot(listId, snapshotId) {
+
+        if (StateManager.isPlanModeActive()) {
+        UIManager.showToast("Im Planspielmodus können Snapshots nicht gelöscht werden.", "info");
+        return;
+        }
+
         StateManager.updateProject(project => {
             if (project.snapshots?.[listId]) {
                 project.snapshots[listId] = project.snapshots[listId]

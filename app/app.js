@@ -46,7 +46,8 @@ import { ExportExcelManager } from './exportExcelManager.js';
 import { HelperManager } from './helperManager.js';
 import { GanttManager } from './ganttManager.js';
 import { AuthManager } from './AuthManager.js';
-
+import { PlanModeManager } from './planModeManager.js';
+import { StateManager } from './stateManager.js';
 
 
 
@@ -216,20 +217,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('showGantt').addEventListener('click', () => GanttManager.showGantt());
 
-  const switchEl = document.getElementById("helpModeSwitch");
-  if (switchEl) {
-    // Switch auf OFF zurücksetzen oder gespeicherten Zustand laden
-    switchEl.checked = false; // Immer auf AUS starten
-    HelperManager.setMode(false);
+    const switchEl = document.getElementById("helpModeSwitch");
+    if (switchEl) {
+        // Switch auf OFF zurücksetzen oder gespeicherten Zustand laden
+        switchEl.checked = false; // Immer auf AUS starten
+        HelperManager.setMode(false);
 
-    // Event-Handler
-    switchEl.addEventListener("change", (e) => {
-      HelperManager.setMode(e.target.checked);
-    });
-
-  }
+        // Event-Handler
+        switchEl.addEventListener("change", (e) => {
+        HelperManager.setMode(e.target.checked);
+        });
+    }
 
  
+const switchEl2 = document.getElementById('planModeSwitch');
+
+switchEl2.addEventListener('change', (e) => {
+  if (e.target.checked) {
+    PlanModeManager.enable();
+  } else {
+    // disable startet einen Dialog
+    PlanModeManager.disable();
+
+    // Wenn das Modal einfach geschlossen wird (X oder ESC),
+    // bleibt der Planmodus aktiv → Switch wieder aktivieren
+    const modalEl = document.getElementById('mainModal');
+    const bootstrapModal = bootstrap.Modal.getInstance(modalEl);
+
+    if (modalEl) {
+      modalEl.addEventListener('hidden.bs.modal', () => {
+        if (StateManager.isPlanModeActive()) {
+          // Nutzer hat abgebrochen
+          switchEl2.checked = true;
+        }
+      }, { once: true });
+    }
+  }
+});
+
 
 
 

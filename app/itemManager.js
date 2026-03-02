@@ -95,6 +95,9 @@ export const ItemManager = {
             return project;
         });
         
+
+
+        
         HistoryManager.logChange(newItem.id, 'CREATE', { item: newItem });
         UIManager.addItemToUI(newItem);
         return newItem;
@@ -113,23 +116,23 @@ export const ItemManager = {
 				// Feld dependencies
 
 				Object.keys(newData).forEach(key => {
-    if (key === 'dependencies') {
-        if (!dependenciesEqual(item.data[key], newData[key])) {
-            changes[key] = [item.data[key], newData[key]];
-            item.data[key] = newData[key];
-        }
-    } else if (key === 'estimated_duration') {
-        if (!deepEqual(item.data[key], newData[key])) {
-            changes[key] = [item.data[key], newData[key]];
-            item.data[key] = newData[key];
-        }
-    } else {
-        if (item.data[key] !== newData[key]) {
-            changes[key] = [item.data[key], newData[key]];
-            item.data[key] = newData[key];
-        }
-    }
-});
+                    if (key === 'dependencies') {
+                        if (!dependenciesEqual(item.data[key], newData[key])) {
+                            changes[key] = [item.data[key], newData[key]];
+                            item.data[key] = newData[key];
+                        }
+                    } else if (key === 'estimated_duration') {
+                        if (!deepEqual(item.data[key], newData[key])) {
+                            changes[key] = [item.data[key], newData[key]];
+                            item.data[key] = newData[key];
+                        }
+                    } else {
+                        if (item.data[key] !== newData[key]) {
+                            changes[key] = [item.data[key], newData[key]];
+                            item.data[key] = newData[key];
+                        }
+                    }
+                });
 
 
                /**  Object.keys(newData).forEach(key => {
@@ -138,14 +141,17 @@ export const ItemManager = {
                         item.data[key] = newData[key];
                     }
                 }); **/
-                
+               
                 if (Object.keys(changes).length > 0) {
                     list.meta.lastModified = new Date().toISOString();
+                    
                     HistoryManager.logChange(itemId, 'UPDATE', {
                         ...changes, 
                         ...(reason ? {reason} : {})
                     });
                 }
+
+    
             }
             return project;
         });

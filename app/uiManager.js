@@ -1836,7 +1836,7 @@ const commentCount = item.comments?.length || 0;
 		const snapshotEl = document.createElement('div');
 		snapshotEl.className = 'snapshot-card card';
 		snapshotEl.dataset.snapshotId = snapshot.id;
-		snapshotEl.innerHTML = `
+		/*snapshotEl.innerHTML = `
 			<div class="card-body">
 				<h6 class="card-title">${snapshot.name}</h6>
 				<small>${formatDate(snapshot.date)}</small>
@@ -1849,6 +1849,21 @@ const commentCount = item.comments?.length || 0;
 					</button>
 				</div>
 			</div>
+		`;*/
+        snapshotEl.innerHTML = `
+<div class="card-body">
+
+    <div class="d-flex justify-content-between align-items-center">
+        <h6 class="card-title mb-0">${snapshot.name}</h6>
+
+        <button class="btn btn-sm btn-outline-danger delete-snapshot p-1" title="Löschen">
+            <i class="bi bi-trash"></i>
+        </button>
+    </div>
+
+    <small class="text-muted d-block">${formatDate(snapshot.date)}</small>
+
+</div>
 		`;
 
 		// Klick auf Snapshot-Karte = Snapshot laden
@@ -1882,24 +1897,30 @@ const commentCount = item.comments?.length || 0;
      */
     removeSnapshotFromUI(snapshotId) {
 			document.querySelector(`.snapshot-card[data-snapshot-id="${snapshotId}"]`)?.remove();
-		},
+	},
 		    /**
      * Aktualisiert die Snapshot-Ansicht für eine Liste.
      * @param {string} listId - Die Listen-ID
      */
-		updateSnapshotsForList(listId) {
+	updateSnapshotsForList(listId) {
 		const container = document.getElementById('snapshots-container');
 		container.innerHTML = '';
 
 		const project = StateManager.getCurrentProject();
-		const snapshots = project?.snapshots?.[listId] || [];
+
+
+		//const snapshots = project?.snapshots?.[listId] || [];
+        const snapshots = [...(project?.snapshots?.[listId] || [])]
+        .sort((a, b) => b.date > a.date ? 1 : -1);
 
 		snapshots.forEach(snapshot => {
+
+            //Hier muss eine Sortierung nach Datum
 			UIManager.addSnapshotToUI(snapshot);
 		});
 	},
 	
-	
+
 	
 	    /**
      * Zeigt eine Toast-Nachricht an.

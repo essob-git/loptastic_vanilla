@@ -353,3 +353,12 @@
         #version h2 { font-weight: 700; font-size: 13px;}
 
 
+body.planmode::before {
+  content: "⚠️ Planspielmodus aktiv – Änderungen werden nicht gespeichert!";
+  display: block;
+  background: #ffeb3b;
+  color: #000;
+  text-align: center;
+  font-weight: bold;
+  padding: 0.3rem;
+}

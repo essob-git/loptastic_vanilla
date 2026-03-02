@@ -73,23 +73,57 @@ function prettyPrintField(field, value) {
     return value || '-';
 }
 
+    let forceLogging = false;
 
 export const HistoryManager = {
+isForceLogging() { return forceLogging; },
+
     async logChange(itemId, action, changes) {
+        // Wenn Planspiel aktiv UND kein Force-Logging → überspringen
+        if (StateManager.isPlanModeActive() && !forceLogging) return;
+
+        const project = StateManager.getCurrentProject();
+        if (!project) {
+            console.warn("HistoryManager.logChange: Kein aktuelles Projekt.");
+            return;
+        }
+
         const timestamp = new Date().toISOString();
         const user = await SettingsManager.ensureUserName();
-        //const user = StateManager.getCurrentUser();
         const logEntry = { timestamp, user, action, changes };
-        
-        StateManager.updateProject(project => {
-            if (!project.changelog[itemId]) {
-                project.changelog[itemId] = [];
-            }
-            project.changelog[itemId].push(logEntry);
-            return project;
-        });
+
+        // 🧠 Direkt ins Projekt schreiben (keine Kopie!)
+        if (!project.changelog[itemId]) {
+            project.changelog[itemId] = [];
+        }
+        project.changelog[itemId].push(logEntry);
+
+        // sicherstellen, dass StateManager davon weiß
+        //StateManager.setCurrentProject(project);
+
+        const state = StateManager._getInternalState?.() || StateManager.__stateRef;
+        if (state) {
+        state.currentProject = project;
+        }
+
+        console.log("📝 History-Eintrag hinzugefügt:", logEntry);
     },
-    
+
+
+async forceLogChange(itemId, action, changes) {
+  try {
+    console.log("⚙️ forceLogChange start", { itemId, forceLogging });
+    forceLogging = true;
+    console.log("⚙️ forceLogging gesetzt:", forceLogging);
+    await this.logChange(itemId, action, changes);
+    console.log("✅ forceLogChange done", { forceLogging });
+  } finally {
+    forceLogging = false;
+    console.log("🔁 forceLogging reset:", forceLogging);
+  }
+},
+
+
     loadHistoryForList(listId) {
         const project = StateManager.getCurrentProject();
         const historyContent = document.getElementById('history-content');
