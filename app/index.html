@@ -129,10 +129,10 @@
                                 
                                     <h4>Listen-Verwaltung</h4>
                                     <div class="btn-group" role="group">
-                                        <button id="overview-list" class="btn btn-sm btn-outline-primary">
+                                        <button id="overview-list" data-help-topic="hilfe-lists-overview" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-list-ul"></i> Überischt
                                         </button>
-                                        <button id="add-list" class="btn btn-sm btn-primary">
+                                        <button id="add-list" data-help-topic="hilfe-lists-new" class="btn btn-sm btn-primary">
                                             <i class="bi bi-plus-lg"></i> Neu
                                         </button>
                                     </div>
@@ -317,7 +317,12 @@
             
             <div class="d-flex justify-content-between mb-1">
                 <div class="justify-content-start">
-                <h4>Einträge</h4>
+                <div class="d-flex align-items-center gap-2">
+                <h4 class="mb-0">Einträge</h4>
+                <button type="button" class="btn btn-sm btn-outline-info" data-help-topic="hilfe-itemlist-editor" title="Kontext-Hilfe öffnen">
+                    <i class="bi bi-question-circle"></i> Hilfe
+                </button>
+                </div>
                 </div>
 
                 <div class=".justify-content-end">
@@ -329,7 +334,7 @@
                 </button>
 
                 <div class="btn-group btn-group-sm" role="group" aria-label="Headlines">
-                    <button id="add-h1" data-editable="true" class="btn btn-sm btn-outline-primary">
+                    <button id="add-h1" data-help-topic="hilfe-item-add" data-editable="true" class="btn btn-sm btn-outline-primary">
                         <i class="bi bi-type-h1"></i> Überschrift 1
                     </button>
                     <button id="add-h2" data-editable="true" class="btn btn-sm btn-outline-success">

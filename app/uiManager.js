@@ -820,32 +820,16 @@ const commentCount = item.comments?.length || 0;
   
         console.log("Drag?", itemEl.draggable)
         if (!isSnapshot) {
-            itemEl.addEventListener('dragstart', (e) => {
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', item.id);
-            itemEl.classList.add('dragging');
-            // optional: eigenes Drag-Bild
-            if (e.dataTransfer.setDragImage) {
-                e.dataTransfer.setDragImage(itemEl, 20, 20);
-            }
-            });
-
-            // Drag-End: Indikatoren wegräumen
-            itemEl.addEventListener('dragend', () => {
-            itemEl.classList.remove('dragging');
-            document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
-            });
-
-
-
             // Event-Listener für Drag & Drop
             itemEl.addEventListener('dragstart', (e) => {
                 e.dataTransfer.setData('text/plain', item.id);
                 itemEl.classList.add('dragging');
                 e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setDragImage(itemEl, 20, 20);
+                if (e.dataTransfer.setDragImage) {
+                    e.dataTransfer.setDragImage(itemEl, 20, 20);
+                }
             });
-            
+
             itemEl.addEventListener('dragend', () => {
                 itemEl.classList.remove('dragging');
                 document.querySelectorAll('.drop-indicator').forEach(el => el.remove());

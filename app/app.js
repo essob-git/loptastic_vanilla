@@ -148,8 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     // Listen-Events
-    document.getElementById('add-list').addEventListener('click', (e) => {
-        HelperManager.showHelpTo("hilfe-lists-new");
+    document.getElementById('add-list').addEventListener('click', () => {
         ListManager.showListModal();
     });
 
@@ -164,9 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    document.getElementById('overview-list').addEventListener('click', (e) => {
-         
-         HelperManager.showHelpTo("hilfe-lists-overview");
+    document.getElementById('overview-list').addEventListener('click', () => {
          ListManager.showListOverviewModal();
     });
 
@@ -216,6 +213,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     document.getElementById('showGantt').addEventListener('click', () => GanttManager.showGantt());
+
+
+    // Kontextbezogene Hilfe global aktivieren (Buttons, Shortcuts, data-help-topic)
+    HelperManager.initContextHelp();
 
     const switchEl = document.getElementById("helpModeSwitch");
     if (switchEl) {
