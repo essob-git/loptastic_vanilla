@@ -46,6 +46,33 @@ function dependenciesEqual(a, b) {
 }
 
 export const ItemManager = {
+    isHeadlineType(type) {
+        return ['h1', 'h2', 'h3'].includes(type);
+    },
+
+    getHeadlineTypeByDepth(depth) {
+        if (depth <= 0) return 'h1';
+        if (depth === 1) return 'h2';
+        return 'h3';
+    },
+
+    normalizeHeadlineHierarchy(items, headlineDepth = 0) {
+        if (!Array.isArray(items)) return;
+
+        items.forEach(item => {
+            const isHeadline = this.isHeadlineType(item.type);
+            const nextDepth = isHeadline ? headlineDepth + 1 : headlineDepth;
+
+            if (isHeadline) {
+                item.type = this.getHeadlineTypeByDepth(headlineDepth);
+            }
+
+            if (Array.isArray(item.children) && item.children.length > 0) {
+                this.normalizeHeadlineHierarchy(item.children, nextDepth);
+            }
+        });
+    },
+
     addItem(type, parentId = null, initialData = null) {
 
     HelperManager.showHelpTo('hilfe-item-add');
@@ -92,6 +119,7 @@ export const ItemManager = {
             }
             
             list.meta.lastModified = new Date().toISOString();
+            this.normalizeHeadlineHierarchy(list.items);
             return project;
         });
         
@@ -272,10 +300,10 @@ export const ItemManager = {
 
 		// 3) Level-Regeln (anpassbar)
 		const allowParent = {
-			h1: [null],           // h1 nur als Root
-			h2: ['h1'],           // h2 nur unter h1
-			h3: ['h2'],           // h3 nur unter h2
-			p:  ['h1','h2','h3'], // p unter jeder Headline
+			h1: [null, 'h1', 'h2', 'h3'],
+			h2: [null, 'h1', 'h2', 'h3'],
+			h3: [null, 'h1', 'h2', 'h3'],
+			p: ['h1', 'h2', 'h3'],
 		};
 
 		// Helper zum Ermitteln des Parent-Typs
@@ -302,7 +330,7 @@ export const ItemManager = {
 		if (!allowed.includes(newParentType)) return false;
 
 		// Root-Geschwister: nur h1 darf auf Root-Ebene liegen
-		if (newParentType === null && sourceItem.type !== 'h1') return false;
+		if (newParentType === null && !this.isHeadlineType(sourceItem.type)) return false;
 
 		return true;
 	},
@@ -477,6 +505,9 @@ export const ItemManager = {
 
         // 6) Sort-Indices unter neuen Geschwistern neu durchzählen
         siblings.forEach((el, idx) => { el.sort = idx; });
+
+        // 6b) Headline-Typen aus der tatsächlichen Gliederung ableiten
+        this.normalizeHeadlineHierarchy(list.items);
 
         // 7) Projekt-Metadaten + UI
         list.meta.lastModified = new Date().toISOString();
