@@ -288,15 +288,19 @@ export const ItemManager = {
     },
 
 	// Verbindliche Signatur: Objekte rein, nicht IDs
-	isValidDrop(sourceItem, targetItem, position) {
+	getDropValidationResult(sourceItem, targetItem, position) {
 		const list = StateManager.getCurrentList();
-		if (!list || !sourceItem) return false;
+		if (!list || !sourceItem) return { valid: false, reason: 'unbekannt' };
 
 		// 1) Kein Drop in eigene Nachfahren
-		if (targetItem && this.isChildOf(sourceItem, targetItem)) return false;
+		if (targetItem && this.isChildOf(sourceItem, targetItem)) {
+			return { valid: false, reason: 'cycle' };
+		}
 
 		// 2) Niemals "into" in ein p-Element
-		if (position === 'into' && targetItem && targetItem.type === 'p') return false;
+		if (position === 'into' && targetItem && targetItem.type === 'p') {
+			return { valid: false, reason: 'into-paragraph' };
+		}
 
 		// 3) Level-Regeln (anpassbar)
 		const allowParent = {
@@ -313,7 +317,13 @@ export const ItemManager = {
 			// Parent ist das Ziel (oder Root bei null)
 			const parentType = targetItem ? targetItem.type : null;
 			const allowed = allowParent[sourceItem.type] || [];
-			return allowed.includes(parentType);
+			if (!allowed.includes(parentType)) {
+				const reason = this.isHeadlineType(sourceItem.type) && parentType === 'h3'
+					? 'max-headline-depth'
+					: 'invalid-parent';
+				return { valid: false, reason };
+			}
+			return { valid: true };
 		}
 
 		// above/below: Parent wird der Parent des Ziel-Elements (oder Root)
@@ -323,16 +333,34 @@ export const ItemManager = {
 		// Same-Parent-Shortcut: reines Re-Order innerhalb derselben Gruppe IMMER erlauben
 		const currentParentId = sourceItem.parentId || null;
 		const newParentId = newParent ? newParent.id : null;
-		if (currentParentId === newParentId) return true;
+		if (currentParentId === newParentId) return { valid: true };
 
 		// Sonst Level-Regeln prüfen
 		const allowed = allowParent[sourceItem.type] || [];
-		if (!allowed.includes(newParentType)) return false;
+		if (!allowed.includes(newParentType)) {
+			const reason = this.isHeadlineType(sourceItem.type) && newParentType === 'h3'
+				? 'max-headline-depth'
+				: 'invalid-parent';
+			return { valid: false, reason };
+		}
 
-		// Root-Geschwister: nur h1 darf auf Root-Ebene liegen
-		if (newParentType === null && !this.isHeadlineType(sourceItem.type)) return false;
+		// Root-Geschwister: nur Headlines dürfen auf Root-Ebene liegen
+		if (newParentType === null && !this.isHeadlineType(sourceItem.type)) {
+			return { valid: false, reason: 'invalid-root' };
+		}
 
-		return true;
+		return { valid: true };
+	},
+
+	isValidDrop(sourceItem, targetItem, position) {
+		return this.getDropValidationResult(sourceItem, targetItem, position).valid;
+	},
+
+	getDropErrorMessage(reason) {
+		if (reason === 'max-headline-depth') {
+			return 'Maximale Gliederungstiefe erreicht: Unter H3 kann keine weitere Überschrift abgelegt werden.';
+		}
+		return 'Diese Aktion ist nicht erlaubt';
 	},
 
 
@@ -389,13 +417,13 @@ export const ItemManager = {
 	
 	canDropItem(sourceItemId, targetItemId, position) {
 		const list = StateManager.getCurrentList();
-		if (!list) return false;
+		if (!list) return { valid: false, reason: 'unbekannt' };
 
 		const sourceItem = this.findItemById(list.items, sourceItemId);
 		const targetItem = targetItemId ? this.findItemById(list.items, targetItemId) : null;
 
 	    //console.log("canDropItem:", "sourceItem:", sourceItem , "targetItem:", targetItem, "position:", position);
-		return this.isValidDrop(sourceItem, targetItem, position);
+		return this.getDropValidationResult(sourceItem, targetItem, position);
 	},
  
 
@@ -450,8 +478,9 @@ export const ItemManager = {
         }
         
         // Überprüfe, ob die Operation erlaubt ist
-        if (!this.canDropItem(itemId, targetItemId, position)) {
-            UIManager.showToast('Diese Aktion ist nicht erlaubt', 'error');
+        const dropValidation = this.canDropItem(itemId, targetItemId, position);
+        if (!dropValidation.valid) {
+            UIManager.showToast(this.getDropErrorMessage(dropValidation.reason), 'error');
             return;
         }
         
