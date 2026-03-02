@@ -300,9 +300,9 @@ export const ItemManager = {
 
 		// 3) Level-Regeln (anpassbar)
 		const allowParent = {
-			h1: [null, 'h1', 'h2', 'h3'],
-			h2: [null, 'h1', 'h2', 'h3'],
-			h3: [null, 'h1', 'h2', 'h3'],
+			h1: [null, 'h1', 'h2'],
+			h2: [null, 'h1', 'h2'],
+			h3: [null, 'h1', 'h2'],
 			p: ['h1', 'h2', 'h3'],
 		};
 
