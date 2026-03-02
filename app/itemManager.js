@@ -172,6 +172,152 @@ export const ItemManager = {
         
         UIManager.removeItemFromUI(itemId);
     },
+
+    restoreDeletedItems() {
+        const restoredIds = [];
+
+        const restoreRecursive = (items) => {
+            items.forEach(item => {
+                if (item.isDeleted) {
+                    item.isDeleted = false;
+                    restoredIds.push(item.id);
+                }
+                if (item.children?.length) restoreRecursive(item.children);
+            });
+        };
+
+        StateManager.updateProject(project => {
+            const currentList = StateManager.getCurrentList();
+            const list = currentList ? project.lists[currentList.meta.id] : null;
+            if (!list) return project;
+
+            restoreRecursive(list.items || []);
+            if (restoredIds.length > 0) {
+                list.meta.lastModified = new Date().toISOString();
+                restoredIds.forEach(id => HistoryManager.logChange(id, 'UPDATE', { reason: 'Wiederhergestellt' }));
+            }
+            return project;
+        });
+
+        if (restoredIds.length > 0) {
+            UIManager.refreshListContent();
+            UIManager.showToast(`${restoredIds.length} Einträge wiederhergestellt`, 'success');
+        }
+    },
+
+    hardDeleteItem(itemId) {
+        const removedIds = [];
+
+        const collectIds = (node) => {
+            if (!node) return;
+            removedIds.push(node.id);
+            (node.children || []).forEach(collectIds);
+        };
+
+        const removeDependencies = (items, idSet) => {
+            items.forEach(it => {
+                if (Array.isArray(it?.data?.dependencies)) {
+                    it.data.dependencies = it.data.dependencies.filter(dep => !idSet.has(dep.id));
+                }
+                if (it.children?.length) removeDependencies(it.children, idSet);
+            });
+        };
+
+        StateManager.updateProject(project => {
+            const currentList = StateManager.getCurrentList();
+            const list = currentList ? project.lists[currentList.meta.id] : null;
+            if (!list) return project;
+
+            const removedSubtree = this.removeItemById(list.items, itemId);
+            if (!removedSubtree) return project;
+
+            collectIds(removedSubtree);
+            const removedSet = new Set(removedIds);
+            removeDependencies(list.items || [], removedSet);
+
+            (removedIds || []).forEach(id => {
+                if (project.changelog?.[id]) delete project.changelog[id];
+            });
+
+            list.meta.lastModified = new Date().toISOString();
+            HistoryManager.logChange(itemId, 'DELETE', { reason: 'ENDGUELTIG_GELOESCHT', count: removedIds.length });
+            return project;
+        });
+
+        if (removedIds.length > 0) {
+            UIManager.refreshListContent();
+            UIManager.showToast(`${removedIds.length} Einträge endgültig gelöscht`, 'success');
+        }
+    },
+
+    hardDeleteAllSoftDeletedItems() {
+        const removedIds = [];
+
+        const purgeRecursive = (items) => {
+            const kept = [];
+            for (const item of items) {
+                if (item.isDeleted) {
+                    const stack = [item];
+                    while (stack.length) {
+                        const cur = stack.pop();
+                        removedIds.push(cur.id);
+                        (cur.children || []).forEach(c => stack.push(c));
+                    }
+                    continue;
+                }
+                if (item.children?.length) item.children = purgeRecursive(item.children);
+                kept.push(item);
+            }
+            return kept;
+        };
+
+        const removeDependencies = (items, idSet) => {
+            items.forEach(it => {
+                if (Array.isArray(it?.data?.dependencies)) {
+                    it.data.dependencies = it.data.dependencies.filter(dep => !idSet.has(dep.id));
+                }
+                if (it.children?.length) removeDependencies(it.children, idSet);
+            });
+        };
+
+        StateManager.updateProject(project => {
+            const currentList = StateManager.getCurrentList();
+            const list = currentList ? project.lists[currentList.meta.id] : null;
+            if (!list) return project;
+
+            list.items = purgeRecursive(list.items || []);
+
+            if (removedIds.length > 0) {
+                const removedSet = new Set(removedIds);
+                removeDependencies(list.items || [], removedSet);
+                removedIds.forEach(id => {
+                    if (project.changelog?.[id]) delete project.changelog[id];
+                });
+                list.meta.lastModified = new Date().toISOString();
+            }
+
+            return project;
+        });
+
+        if (removedIds.length > 0) {
+            UIManager.refreshListContent();
+            UIManager.showToast(`${removedIds.length} Papierkorb-Elemente endgültig gelöscht`, 'success');
+        } else {
+            UIManager.showToast('Keine gelöschten Elemente vorhanden', 'info');
+        }
+    },
+
+    countSoftDeletedItems(items = []) {
+        let count = 0;
+        const visit = (nodes) => {
+            nodes.forEach(node => {
+                if (node.isDeleted) count += 1;
+                if (node.children?.length) visit(node.children);
+            });
+        };
+        visit(items);
+        return count;
+    },
     
     findItemById(items, itemId) {
         for (const item of items) {

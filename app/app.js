@@ -82,10 +82,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (el) el.textContent = AuthManager.username() || 'Unbekannt';
 
     // Name + Department im Block
-    document.getElementById('me-userdata').innerHTML = `
-      <strong>Name:</strong> ${AuthManager.username()}<br>
-      <strong>Abteilung:</strong> ${AuthManager.department() || '—'}
-    `;
+            const userDataEl = document.getElementById('me-userdata');
+            if (userDataEl) {
+                userDataEl.replaceChildren(
+                    Object.assign(document.createElement('strong'), { textContent: 'Name:' }),
+                    document.createTextNode(` ${AuthManager.username() || 'Unbekannt'}`),
+                    document.createElement('br'),
+                    Object.assign(document.createElement('strong'), { textContent: 'Abteilung:' }),
+                    document.createTextNode(` ${AuthManager.department() || '—'}`)
+                );
+            }
             if (AuthManager.isAdmin()) {
                     document.getElementById('admin-menu')?.classList.remove('d-none');
                 }
@@ -214,6 +220,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('add-h3').addEventListener('click', () => ItemManager.addItem('h3'));
     document.getElementById('add-p').addEventListener('click', () => ItemManager.addItem('p'));
 
+    document.getElementById('restore-deleted-items')?.addEventListener('click', () => {
+        ItemManager.restoreDeletedItems();
+    });
+
+    document.getElementById('purge-deleted-items')?.addEventListener('click', () => {
+        const currentList = StateManager.getCurrentList();
+        if (!currentList) return;
+
+        const deletedCount = ItemManager.countSoftDeletedItems(currentList.items || []);
+        if (deletedCount === 0) {
+            UIManager.showToast('Keine gelöschten Elemente vorhanden', 'info');
+            return;
+        }
+
+        if (confirm(`${deletedCount} gelöschte Elemente endgültig löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.`)) {
+            ItemManager.hardDeleteAllSoftDeletedItems();
+        }
+    });
+
 
     document.getElementById('showGantt').addEventListener('click', () => GanttManager.showGantt());
 
@@ -232,28 +257,29 @@ document.addEventListener('DOMContentLoaded', async () => {
  
 const switchEl2 = document.getElementById('planModeSwitch');
 
-switchEl2.addEventListener('change', (e) => {
-  if (e.target.checked) {
-    PlanModeManager.enable();
-  } else {
-    // disable startet einen Dialog
-    PlanModeManager.disable();
+if (switchEl2) {
+    switchEl2.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        PlanModeManager.enable();
+      } else {
+        // disable startet einen Dialog
+        PlanModeManager.disable();
 
-    // Wenn das Modal einfach geschlossen wird (X oder ESC),
-    // bleibt der Planmodus aktiv → Switch wieder aktivieren
-    const modalEl = document.getElementById('mainModal');
-    const bootstrapModal = bootstrap.Modal.getInstance(modalEl);
+        // Wenn das Modal einfach geschlossen wird (X oder ESC),
+        // bleibt der Planmodus aktiv → Switch wieder aktivieren
+        const modalEl = document.getElementById('mainModal');
 
-    if (modalEl) {
-      modalEl.addEventListener('hidden.bs.modal', () => {
-        if (StateManager.isPlanModeActive()) {
-          // Nutzer hat abgebrochen
-          switchEl2.checked = true;
+        if (modalEl) {
+          modalEl.addEventListener('hidden.bs.modal', () => {
+            if (StateManager.isPlanModeActive()) {
+              // Nutzer hat abgebrochen
+              switchEl2.checked = true;
+            }
+          }, { once: true });
         }
-      }, { once: true });
+      }
+    });
     }
-  }
-});
 
 
 

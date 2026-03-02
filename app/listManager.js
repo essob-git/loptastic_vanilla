@@ -180,17 +180,43 @@ export const ListManager = {
 	
     deleteList(listId) {
         StateManager.updateProject(project => {
+            const list = project.lists?.[listId];
+
+            const collectItemIds = (items = [], out = []) => {
+                items.forEach(item => {
+                    out.push(item.id);
+                    if (item.children?.length) collectItemIds(item.children, out);
+                });
+                return out;
+            };
+
+            const listItemIds = list ? collectItemIds(list.items || []) : [];
+
             // Aus manifest entfernen
             project.manifest.lists = project.manifest.lists.filter(list => list.id !== listId);
             
             // Aus Listen entfernen
             delete project.lists[listId];
+
+            // Zugehörige Snapshots endgültig löschen
+            if (project.snapshots?.[listId]) {
+                delete project.snapshots[listId];
+            }
+
+            // Zugehörige Changelog-Einträge entfernen
+            listItemIds.forEach(itemId => {
+                if (project.changelog?.[itemId]) delete project.changelog[itemId];
+            });
             
             // Aus finalisierten entfernen
             project.finalizedLists = project.finalizedLists.filter(id => id !== listId);
             
             return project;
         });
+
+        if (StateManager.getCurrentList()?.meta?.id === listId) {
+            StateManager.setCurrentList(null);
+        }
         
         UIManager.updateLists(StateManager.getCurrentProject().lists);
         UIManager.showToast('Liste gelöscht', 'success');
