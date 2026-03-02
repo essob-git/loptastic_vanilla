@@ -36,6 +36,7 @@ import { SettingsManager } from './settingsManager.js';
     const state = {
         currentProject: null,
         currentList: null,
+        advancedModeActive: false,
 
         // Planspiel
         planModeActive: false,
@@ -132,6 +133,14 @@ export const StateManager = {
      */
     getCurrentUser() {
         return SettingsManager.getCurrentUser();
+    },
+
+    isAdvancedModeActive() {
+        return !!state.advancedModeActive;
+    },
+
+    setAdvancedModeActive(active) {
+        state.advancedModeActive = !!active;
     },
 
     // --- Planmodus-Handling ---
@@ -251,5 +260,4 @@ _getInternalState() {
         return project;
     }
 };
-
 

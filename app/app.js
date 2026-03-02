@@ -258,7 +258,23 @@ switchEl2.addEventListener('change', (e) => {
 
 
 
-    // Drag & Drop Initialisierung
+    
+const advancedSwitch = document.getElementById('advancedModeSwitch');
+if (advancedSwitch) {
+    advancedSwitch.checked = false;
+    StateManager.setAdvancedModeActive(false);
+    advancedSwitch.addEventListener('change', (e) => {
+        StateManager.setAdvancedModeActive(e.target.checked);
+        UIManager.updateLists(StateManager.getCurrentProject()?.lists || {});
+        const currentList = StateManager.getCurrentList();
+        if (currentList?.meta?.id) {
+            UIManager.updateSnapshotsForList(currentList.meta.id);
+        }
+        UIManager.refreshListContent();
+    });
+}
+
+// Drag & Drop Initialisierung
     UIManager.setupDragDropContainers();
 
     // Laden der Vorlagen

@@ -178,22 +178,65 @@ export const ListManager = {
     },
     
 	
-    deleteList(listId) {
+    softDeleteList(listId) {
         StateManager.updateProject(project => {
-            // Aus manifest entfernen
-            project.manifest.lists = project.manifest.lists.filter(list => list.id !== listId);
-            
-            // Aus Listen entfernen
-            delete project.lists[listId];
-            
-            // Aus finalisierten entfernen
-            project.finalizedLists = project.finalizedLists.filter(id => id !== listId);
-            
+            const list = project?.lists?.[listId];
+            if (!list) return project;
+
+            list.meta = list.meta || {};
+            list.meta.isDeleted = true;
+            list.meta.deletedAt = new Date().toISOString();
+            list.meta.lastModified = new Date().toISOString();
+
+            const manifestEntry = project?.manifest?.lists?.find(entry => entry.id === listId);
+            if (manifestEntry) {
+                manifestEntry.isDeleted = true;
+                manifestEntry.deletedAt = list.meta.deletedAt;
+            }
+
             return project;
         });
-        
+
         UIManager.updateLists(StateManager.getCurrentProject().lists);
-        UIManager.showToast('Liste gelöscht', 'success');
+        UIManager.showToast('Liste als gelöscht markiert', 'success');
+    },
+
+    restoreList(listId) {
+        StateManager.updateProject(project => {
+            const list = project?.lists?.[listId];
+            if (!list) return project;
+
+            list.meta = list.meta || {};
+            list.meta.isDeleted = false;
+            delete list.meta.deletedAt;
+            list.meta.lastModified = new Date().toISOString();
+
+            const manifestEntry = project?.manifest?.lists?.find(entry => entry.id === listId);
+            if (manifestEntry) {
+                manifestEntry.isDeleted = false;
+                delete manifestEntry.deletedAt;
+            }
+
+            return project;
+        });
+
+        UIManager.updateLists(StateManager.getCurrentProject().lists);
+        UIManager.showToast('Liste wiederhergestellt', 'success');
+    },
+
+    deleteListPermanently(listId) {
+        StateManager.updateProject(project => {
+            project.manifest.lists = (project.manifest.lists || []).filter(list => list.id !== listId);
+            delete project.lists[listId];
+            project.finalizedLists = (project.finalizedLists || []).filter(id => id !== listId);
+            if (project.snapshots) {
+                delete project.snapshots[listId];
+            }
+            return project;
+        });
+
+        UIManager.updateLists(StateManager.getCurrentProject().lists);
+        UIManager.showToast('Liste endgültig gelöscht', 'success');
 
     },
     
@@ -335,7 +378,7 @@ export const ListManager = {
                 const wasCurrent = current && current.meta?.id === deletedId;
 
                 // 1) löschen
-                this.deleteList(deletedId);
+                this.softDeleteList(deletedId);
 
                 // 2) neuen Zustand bestimmen (falls die aktive Liste gelöscht wurde)
                 if (wasCurrent) {

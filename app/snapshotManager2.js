@@ -148,14 +148,39 @@ export const SnapshotManager2 = {
         }
 
         StateManager.updateProject(project => {
-            if (project.snapshots?.[listId]) {
-                project.snapshots[listId] = project.snapshots[listId]
-                    .filter(s => s.id !== snapshotId);
+            const snapshot = project?.snapshots?.[listId]?.find(s => s.id === snapshotId);
+            if (snapshot) {
+                snapshot.isDeleted = true;
+                snapshot.deletedAt = new Date().toISOString();
             }
             return project;
         });
-        
+
         UIManager.removeSnapshotFromUI(snapshotId);
-        UIManager.showToast('Snapshot gelöscht', 'success');
+        UIManager.showToast('Snapshot als gelöscht markiert', 'success');
+    },
+
+    restoreSnapshot(listId, snapshotId) {
+        StateManager.updateProject(project => {
+            const snapshot = project?.snapshots?.[listId]?.find(s => s.id === snapshotId);
+            if (snapshot) {
+                snapshot.isDeleted = false;
+                delete snapshot.deletedAt;
+            }
+            return project;
+        });
+        UIManager.updateSnapshotsForList(listId);
+        UIManager.showToast('Snapshot wiederhergestellt', 'success');
+    },
+
+    deleteSnapshotPermanently(listId, snapshotId) {
+        StateManager.updateProject(project => {
+            if (project.snapshots?.[listId]) {
+                project.snapshots[listId] = project.snapshots[listId].filter(s => s.id !== snapshotId);
+            }
+            return project;
+        });
+        UIManager.updateSnapshotsForList(listId);
+        UIManager.showToast('Snapshot endgültig gelöscht', 'success');
     }
 };

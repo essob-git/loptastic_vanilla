@@ -164,6 +164,7 @@ export const ItemManager = {
             
             if (item) {
                 item.isDeleted = true;
+                item.deletedAt = new Date().toISOString();
                 list.meta.lastModified = new Date().toISOString();
                 HistoryManager.logChange(itemId, 'DELETE', {});
             }
@@ -171,6 +172,59 @@ export const ItemManager = {
         });
         
         UIManager.removeItemFromUI(itemId);
+    },
+    restoreItem(itemId) {
+        StateManager.updateProject(project => {
+            const list = project.lists[StateManager.getCurrentList().meta.id];
+            const item = this.findItemById(list.items, itemId);
+
+            if (item) {
+                item.isDeleted = false;
+                delete item.deletedAt;
+                list.meta.lastModified = new Date().toISOString();
+                HistoryManager.logChange(itemId, 'RESTORE', {});
+            }
+            return project;
+        });
+        UIManager.refreshListContent();
+    },
+
+    deleteItemPermanently(itemId) {
+        StateManager.updateProject(project => {
+            const list = project.lists[StateManager.getCurrentList().meta.id];
+            const removeRec = (items) => {
+                for (let i = items.length - 1; i >= 0; i--) {
+                    const it = items[i];
+                    if (it.id === itemId) {
+                        items.splice(i, 1);
+                        return true;
+                    }
+                    if (Array.isArray(it.children) && it.children.length > 0 && removeRec(it.children)) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+
+            const removed = removeRec(list.items);
+            if (removed) {
+                const cleanupDependencies = (items) => {
+                    items.forEach(it => {
+                        if (Array.isArray(it.data?.dependencies)) {
+                            it.data.dependencies = it.data.dependencies.filter(dep => dep.id !== itemId);
+                        }
+                        if (Array.isArray(it.children) && it.children.length > 0) {
+                            cleanupDependencies(it.children);
+                        }
+                    });
+                };
+                cleanupDependencies(list.items);
+                list.meta.lastModified = new Date().toISOString();
+                HistoryManager.logChange(itemId, 'DELETE_PERMANENT', {});
+            }
+            return project;
+        });
+        UIManager.refreshListContent();
     },
     
     findItemById(items, itemId) {
