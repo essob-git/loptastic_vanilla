@@ -1047,8 +1047,9 @@ const commentCount = item.comments?.length || 0;
 
             // Selbst-Ziel-Schutz (optional, verhindert No-Op oder inkonsistente Moves)
             if (targetItemId === itemId && position !== 'into') return;
-            if (!ItemManager.canDropItem(itemId, targetItemId, position)) {
-                UIManager.showToast('Diese Aktion ist nicht erlaubt', 'error');
+            const dropValidation = ItemManager.canDropItem(itemId, targetItemId, position);
+            if (!dropValidation.valid) {
+                UIManager.showToast(ItemManager.getDropErrorMessage(dropValidation.reason), 'error');
                 return;
             }
 
