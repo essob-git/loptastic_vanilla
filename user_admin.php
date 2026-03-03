@@ -63,6 +63,10 @@ if (!isset($_SESSION['uid'])) { header('Location: /listify/login.php'); exit; }
     <div><a class="link" href="/listify/">Zurück zur App</a></div>
   </div>
   <div class="container">
+    <nav style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" aria-label="Admin Navigation">
+      <a style="padding:8px 12px;border-radius:8px;background:#0f172a;color:#fff;text-decoration:none;font-weight:600" href="/listify/user_admin.php">Userverwaltung</a>
+      <a style="padding:8px 12px;border-radius:8px;background:#e2e8f0;color:#0f172a;text-decoration:none;font-weight:600" href="/listify/admin_settings.php">Einstellungen</a>
+    </nav>
     <div class="toolbar">
       <div class="row">
         <input id="first_name" placeholder="Vorname" aria-label="Vorname">
