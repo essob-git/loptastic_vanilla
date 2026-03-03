@@ -93,13 +93,14 @@ export const HelperManager = {
       if (!topicId) return;
 
       event.preventDefault();
+      this.setMode(true);
       this.showHelpTo(topicId, { forceOpen: true });
     });
 
     document.addEventListener('keydown', (event) => {
       if (event.key !== 'F1') return;
       event.preventDefault();
-      this.openSidebar();
+      this.setMode(true);
     });
 
     this.contextHelpBound = true;
