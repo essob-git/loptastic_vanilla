@@ -161,3 +161,101 @@ function load_app_settings(): array {
   $data = json_decode($raw ?: '{}', true);
   return is_array($data) ? $data : [];
 }
+
+function load_json_file(string $file, array $fallback = []): array {
+  if (!file_exists($file)) return $fallback;
+  $raw = file_get_contents($file);
+  $data = json_decode($raw ?: '{}', true);
+  return is_array($data) ? $data : $fallback;
+}
+
+function save_json_file(string $file, array $data): void {
+  $dir = dirname($file);
+  if (!is_dir($dir)) {
+    json_err('Zielverzeichnis für Einstellungen fehlt', 500);
+  }
+
+  $fp = fopen($file, 'c+');
+  if (!$fp) json_err('Einstellungsdatei kann nicht geöffnet werden', 500);
+  flock($fp, LOCK_EX);
+  ftruncate($fp, 0);
+  fwrite($fp, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+  fflush($fp);
+  flock($fp, LOCK_UN);
+  fclose($fp);
+}
+
+function settings_registry(): array {
+  return [
+    'registration' => [
+      'title' => 'Registrierung',
+      'description' => 'Steuert Registrierung, Freigabe-Modus und verfügbare Abteilungen.',
+      'file' => __DIR__ . '/../data/settings.json',
+      'default' => [
+        'registration_mode' => 'approval',
+        'departments' => [],
+      ],
+    ],
+    'listify_defaults' => [
+      'title' => 'Listify Standardwerte',
+      'description' => 'Globale Vorgaben für die App (default_config.json).',
+      'file' => __DIR__ . '/../app/default_config.json',
+      'default' => [],
+    ],
+  ];
+}
+
+function get_settings_section(string $key): ?array {
+  $registry = settings_registry();
+  if (!isset($registry[$key])) return null;
+
+  $section = $registry[$key];
+  return [
+    'key' => $key,
+    'title' => $section['title'],
+    'description' => $section['description'],
+    'data' => load_json_file($section['file'], $section['default']),
+  ];
+}
+
+function validate_settings_payload(string $key, array $payload): array {
+  if ($key === 'registration') {
+    $mode = (string)($payload['registration_mode'] ?? 'approval');
+    if (!in_array($mode, ['open', 'approval', 'closed'], true)) {
+      json_err('Ungültiger registration_mode. Erlaubt: open, approval, closed', 422);
+    }
+
+    $departments = $payload['departments'] ?? [];
+    if (!is_array($departments)) {
+      json_err('departments muss ein Array sein', 422);
+    }
+
+    $cleanDepartments = [];
+    foreach ($departments as $department) {
+      if (!is_string($department)) {
+        json_err('departments darf nur Strings enthalten', 422);
+      }
+      $trimmed = trim($department);
+      if ($trimmed !== '') {
+        $cleanDepartments[] = $trimmed;
+      }
+    }
+
+    return [
+      'registration_mode' => $mode,
+      'departments' => array_values(array_unique($cleanDepartments)),
+    ];
+  }
+
+  return $payload;
+}
+
+function save_settings_section(string $key, array $payload): void {
+  $registry = settings_registry();
+  if (!isset($registry[$key])) {
+    json_err('Unbekannter Settings-Bereich', 404);
+  }
+
+  $sanitized = validate_settings_payload($key, $payload);
+  save_json_file($registry[$key]['file'], $sanitized);
+}

@@ -131,9 +131,9 @@ async function delUser(id) {
 
 async function loadDepartmentsSelect(selectId, currentValue="") {
   try {
-    const res = await fetch('/listify/data/settings.json', {cache:"no-cache"});
-    const settings = await res.json();
-    const departments = settings.departments || [];
+    const res = await fetch('/listify/api/public/settings/registration.php', {cache:"no-cache"});
+    const payload = await res.json();
+    const departments = payload?.data?.departments || [];
     const sel = document.getElementById(selectId);
     if (!sel) return;
 
