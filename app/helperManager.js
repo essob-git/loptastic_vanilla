@@ -82,30 +82,30 @@ export const HelperManager = {
    * Initialisiert die globale Kontext-Hilfe.
    * Klick auf Elemente mit `data-help-topic` öffnet die passende Hilfe.
    */
-  initContextHelp() {
+ initContextHelp() {
     if (this.contextHelpBound) return;
 
     document.addEventListener('click', (event) => {
       const trigger = event.target.closest('[data-help-topic]');
       if (!trigger) return;
 
+      const helpSwitch = document.getElementById("helpModeSwitch");
+      // KORREKTUR: Wenn KEIN Switch da ist ODER er NICHT angehakt ist -> Abbruch
+      if (!helpSwitch || !helpSwitch.checked) return;
+        
       const topicId = trigger.getAttribute('data-help-topic');
       if (!topicId) return;
 
-      event.preventDefault();
-      this.setMode(true);
-      this.showHelpTo(topicId, { forceOpen: true });
-    });
+      console.log("Hilfsartikel: " + topicId); 
 
-    document.addEventListener('keydown', (event) => {
-      if (event.key !== 'F1') return;
       event.preventDefault();
-      this.setMode(true);
+      document.body.classList.add('help-mode'); // Tippfehler korrigiert (document)
+      
+      this.showHelpTo(topicId, { forceOpen: true });
     });
 
     this.contextHelpBound = true;
   },
-
   /**
    * Baut die Sidebar bei Bedarf und öffnet sie.
    * @param {string|null} topicId
