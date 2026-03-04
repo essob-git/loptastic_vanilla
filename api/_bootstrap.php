@@ -53,6 +53,8 @@ $_SESSION['LAST_ACTIVITY'] = time();
 
 const USERS_FILE = __DIR__ . '/../data/users.json';
 const AUTH_LOG   = __DIR__ . '/../data/auth.log';
+const REGISTRATION_SETTINGS_FILE = __DIR__ . '/../data/settings.json';
+const LISTIFY_DEFAULT_CONFIG_FILE = __DIR__ . '/../app/default_config.json';
 
 function json_ok($data = [], int $code = 200) {
   http_response_code($code);
@@ -155,9 +157,36 @@ function on_success_login(array &$u): void {
 }
 
 function load_app_settings(): array {
-  $file = __DIR__ . '/../data/settings.json';
+  $file = REGISTRATION_SETTINGS_FILE;
   if (!file_exists($file)) return [];
   $raw = file_get_contents($file);
   $data = json_decode($raw ?: '{}', true);
   return is_array($data) ? $data : [];
+}
+
+function load_json_file(string $file, array $fallback = []): array {
+  if (!file_exists($file)) return $fallback;
+  $raw = file_get_contents($file);
+  $data = json_decode($raw ?: '{}', true);
+  return is_array($data) ? $data : $fallback;
+}
+
+function save_json_file(string $file, array $data): void {
+  $dir = dirname($file);
+  if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+    json_err('Konfigurationsordner konnte nicht erstellt werden', 500);
+  }
+
+  $fp = fopen($file, 'c+');
+  if (!$fp) json_err('Konfigurationsdatei kann nicht geöffnet werden', 500);
+  if (!flock($fp, LOCK_EX)) {
+    fclose($fp);
+    json_err('Konfigurationsdatei kann nicht gesperrt werden', 500);
+  }
+
+  ftruncate($fp, 0);
+  fwrite($fp, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+  fflush($fp);
+  flock($fp, LOCK_UN);
+  fclose($fp);
 }
