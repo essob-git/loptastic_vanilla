@@ -32,15 +32,15 @@
   const sessionState = Object.create(null); // { [id: string]: boolean }  true = collapsed
 
   const getChildrenBox = (headerCard) => {
-    let el = headerCard.nextElementSibling;
-    while (el && !el.classList.contains('children-container')) el = el.nextElementSibling;
-    return el || null;
+    const el = headerCard.nextElementSibling;
+    return (el && el.classList.contains('children-container')) ? el : null;
   };
 
   const ensureToggles = () => {
     if (!ROOT) return;
     ROOT.querySelectorAll('.item-card.item-h1, .item-card.item-h2, .item-card.item-h3').forEach(card => {
       if (card.querySelector('.toggle-children-btn')) return;
+      if (!getChildrenBox(card)) return; // Nur Header mit eigenen Kindern einklappbar machen
       const title = card.querySelector('.card-title');
       if (!title) return;
       const btn = document.createElement('button');
