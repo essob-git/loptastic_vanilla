@@ -27,6 +27,7 @@ import { generateUUID, formatDate} from './utils.js'
 
 import { UIManager, showConfirmDialog, PhaseHelper } from './uiManager.js';
 import { SettingsManager } from './settingsManager.js';
+import { DebugLogger } from './debugLogger.js';
 
 export const ListManager = {
     async showListModal() {
@@ -334,14 +335,14 @@ export const ListManager = {
 
     _wireListOverviewHandlers() {
 
-          console.log('%c[Modal] _wireListOverviewHandlers gestartet', 'color: limegreen');
+          DebugLogger.log('%c[Modal] _wireListOverviewHandlers gestartet', 'color: limegreen');
 
         const modalBody = document.getElementById('modalBody');
-        console.log('[Modal] modalBody gefunden:', modalBody);
+        DebugLogger.log('[Modal] modalBody gefunden:', modalBody);
         if (!modalBody) return;
 
         const rows = modalBody.querySelectorAll('tbody tr[data-id]');
-        console.log('[Modal] Tabellenzeilen gefunden:', rows.length);
+        DebugLogger.log('[Modal] Tabellenzeilen gefunden:', rows.length);
 
         
        

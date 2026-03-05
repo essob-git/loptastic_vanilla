@@ -21,6 +21,7 @@
  * Hinweis:
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
+import { DebugLogger } from './debugLogger.js';
 
 // utils.js
 
@@ -58,7 +59,7 @@
         try {
         return structuredClone(obj);
         } catch (e) {
-        console.warn("structuredClone fehlgeschlagen, fallback auf JSON:", e);
+        DebugLogger.warn("structuredClone fehlgeschlagen, fallback auf JSON:", e);
         }
     }
     return JSON.parse(JSON.stringify(obj));

@@ -26,6 +26,7 @@ import { StateManager } from './stateManager.js';
 import { generateUUID } from './utils.js'
 import { ItemManager } from './itemManager.js';
 import { UIManager, PhaseHelper} from './uiManager.js';
+import { DebugLogger } from './debugLogger.js';
 
 export const TemplateManager = {
     templates: {},
@@ -255,7 +256,7 @@ export const TemplateManager = {
                             UIManager.showToast('Vorlage erfolgreich importiert', 'success');
                             resolve(template);
                         } catch (error) {
-                            console.error('Fehler beim Parsen der Vorlage:', error);
+                            DebugLogger.error('Fehler beim Parsen der Vorlage:', error);
                             UIManager.showToast('Ungültiges Vorlagenformat', 'error');
                             resolve(null);
                         }
@@ -263,7 +264,7 @@ export const TemplateManager = {
                     
                     reader.readAsText(file);
                 } catch (error) {
-                    console.error('Fehler beim Import der Vorlage:', error);
+                    DebugLogger.error('Fehler beim Import der Vorlage:', error);
                     UIManager.showToast('Fehler beim Import', 'error');
                     resolve(null);
                 }

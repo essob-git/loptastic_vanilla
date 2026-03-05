@@ -48,6 +48,7 @@ import { GanttManager } from './ganttManager.js';
 import { AuthManager } from './AuthManager.js';
 import { PlanModeManager } from './planModeManager.js';
 import { StateManager } from './stateManager.js';
+import { DebugLogger } from './debugLogger.js';
 
 
 
@@ -91,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
         })
         .catch(err => {
-            console.error("Auth Fehler:", err);
+            DebugLogger.error("Auth Fehler:", err);
         });
     
      // Logout-Handler
@@ -127,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             await ProjectManager.createNewProject();
         } catch (error) {
-            console.error('Fehler beim Erstellen des Projekts:', error);
+            DebugLogger.error('Fehler beim Erstellen des Projekts:', error);
             UIManager.showToast('Fehler beim Projekt erstellen', 'error');
         }
     });
@@ -137,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             await ProjectManager.saveProject();
         } catch (error) {
-            console.error('Fehler beim Speichern:', error);
+            DebugLogger.error('Fehler beim Speichern:', error);
             UIManager.showToast('Fehler beim Speichern: ' + error.message, 'error');
         }
     });
