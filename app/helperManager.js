@@ -82,30 +82,38 @@ export const HelperManager = {
    * Initialisiert die globale Kontext-Hilfe.
    * Klick auf Elemente mit `data-help-topic` öffnet die passende Hilfe.
    */
- initContextHelp() {
-    if (this.contextHelpBound) return;
+initContextHelp() {
+  if (this.contextHelpBound) return;
 
-    document.addEventListener('click', (event) => {
-      const trigger = event.target.closest('[data-help-topic]');
-      if (!trigger) return;
+  document.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-help-topic]');
+    if (!trigger) return;
 
-      const helpSwitch = document.getElementById("helpModeSwitch");
-      // KORREKTUR: Wenn KEIN Switch da ist ODER er NICHT angehakt ist -> Abbruch
-      if (!helpSwitch || !helpSwitch.checked) return;
-        
-      const topicId = trigger.getAttribute('data-help-topic');
-      if (!topicId) return;
+    const helpSwitch = document.getElementById("helpModeSwitch");
+    if (!helpSwitch || !helpSwitch.checked) return;
 
-      console.log("Hilfsartikel: " + topicId); 
+    const topicId = trigger.getAttribute('data-help-topic');
+    if (!topicId) return;
 
-      event.preventDefault();
-      document.body.classList.add('help-mode'); // Tippfehler korrigiert (document)
-      
-      this.showHelpTo(topicId, { forceOpen: true });
-    });
+    // --- NEU: Vorab-Check ob der Artikel existiert ---
+    const cleanId = normalizeTopicId(topicId);
+    const topicExists = findTopicById(HelperContent, cleanId);
 
-    this.contextHelpBound = true;
-  },
+    if (!topicExists) {
+      console.warn('Abbruch: Artikel existiert nicht:', cleanId);
+      return; // Hier stoppen wir, bevor das UI verändert wird
+    }
+    // ------------------------------------------------
+
+    event.preventDefault();
+    console.log("Hilfsartikel gefunden: " + topicId);
+    
+    document.body.classList.add('help-mode'); 
+    this.showHelpTo(topicId, { forceOpen: true });
+  });
+
+  this.contextHelpBound = true;
+},
   /**
    * Baut die Sidebar bei Bedarf und öffnet sie.
    * @param {string|null} topicId

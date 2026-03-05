@@ -89,13 +89,13 @@
             
             <!-- Div Button Group Project-->
             <div class="btn-group btn-group-sm mb-4" role="group" aria-label="Projekt">
-                 <button id="new-project" class="btn btn-primary">
+                 <button id="new-project" class="btn btn-primary" data-help-topic="hilfe-project-add">
                     <i class="bi bi-plus-circle"></i>  Neues Projekt
                 </button>
-                <button id="open-project" class="btn btn-outline-secondary ">
+                <button id="open-project" class="btn btn-outline-secondary" data-help-topic="hilfe-project-open">
                     <i class="bi bi-folder2-open"></i> Öffnen
                 </button>
-                <button id="save-project" class="btn btn-success ">
+                <button id="save-project" class="btn btn-success" data-help-topic="hilfe-project-save">
                     <i class="bi bi-save"></i> Speichern
                 </button>
             </div>
@@ -106,8 +106,8 @@
                 <div id="project-info"></div>
 
                 <div class="btn-group w-100" role="group">
-                    <button class="btn btn-sm btn-outline-secondary w-100" id="showDashboard">📊 Dashboard</button>
-                    <button class="btn btn-sm btn-outline-secondary w-100" id="showItems">📋 Item-Liste</button>
+                    <button class="btn btn-sm btn-outline-secondary w-100" id="showDashboard"  data-help-topic="hilfe-dashboard"> 📊 Dashboard</button>
+                    <button class="btn btn-sm btn-outline-secondary w-100" id="showItems"  data-help-topic="hilfe-ItemList">📋 Item-Liste</button>
                 </div>    
             </div>
 
@@ -241,19 +241,19 @@
                     <div id="flush-collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
                         <div class="accordion-body">
                             <div class="form-check form-switch mb-3  pb-3 border-bottom">
-                                <input class="form-check-input" type="checkbox" id="helpModeSwitch"/>
+                                <input class="form-check-input" type="checkbox" id="helpModeSwitch" data-help-topic="hilfe-mode-helpMode"/>
                                 <label class="form-check-label" for="helpModeSwitch">
                                     Hilfe-Modus
                                 </label>
                             </div>
                             <div class="form-check form-switch mb-3 pb-3 border-bottom">
-                                <input class="form-check-input" type="checkbox" id="planModeSwitch"/>
+                                <input class="form-check-input" type="checkbox" id="planModeSwitch" data-help-topic="hilfe-mode-planMode"/>
                                 <label class="form-check-label" for="planModeSwitch">
                                     Planspielmodus
                                 </label>
                             </div>
                             <div class="form-check form-switch mb-3 pb-3 border-bottom">
-                                <input class="form-check-input" type="checkbox" id="advancedModeSwitch"/>
+                                <input class="form-check-input" type="checkbox" id="advancedModeSwitch" data-help-topic="hilfe-mode-advancedMode"/>
                                 <label class="form-check-label" for="advancedModeSwitch">
                                     Erweiterter Modus
                                 </label>
@@ -319,9 +319,7 @@
                 <div class="justify-content-start">
                 <div class="d-flex align-items-center gap-2">
                 <h4 class="mb-0">Einträge</h4>
-                <button type="button" class="btn btn-sm btn-outline-info" data-help-topic="hilfe-itemlist-editor" title="Kontext-Hilfe öffnen">
-                    <i class="bi bi-question-circle"></i> Hilfe
-                </button>
+                
                 </div>
                 </div>
 
@@ -351,7 +349,7 @@
                 
                 </div>
             </div>
-            
+
             <!-- Filter ItemList -->
             <div id="item-filter-container"></div>
             <div id="readonly-notice"></div>

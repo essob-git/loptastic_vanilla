@@ -44,6 +44,7 @@ export const HelperContent = [
       </ul>
     `
   },
+  
   {
     id: 'hilfe-lists-new',
     title: 'Neue Liste',
@@ -136,5 +137,25 @@ export const HelperContent = [
     category: 'Projekte',
     title: 'Dashboard',
     text: '<p>Das Dashboard zeigt eine kompakte Übersicht über offene und ausstehende Aufgaben.</p>'
-  }
+  },
+ {
+    id: 'hilfe-ItemList',
+    category: 'Projekte',
+    title: 'ItemList',
+    text: '<p></p>'
+  },
+
+  {
+    id: 'hilfe-mode-advancedMode',
+    category: 'Allgemein',
+    title: 'advancedMode',
+    text: '<p></p>'
+  },
+    {
+    id: 'hilfe-mode-planMode',
+    category: 'Allgemein',
+    title: 'planMode',
+    text: '<p></p>'
+  },
+  
 ];
