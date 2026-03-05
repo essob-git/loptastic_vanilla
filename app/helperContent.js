@@ -22,145 +22,119 @@
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
-// helpContent.js
+/**
+ * Strukturierte Hilfetexte für die kontextbezogene Hilfe.
+ *
+ * Hinweise:
+ * - `id` muss eindeutig sein und wird von Buttons/Links verwendet.
+ * - `category` steuert die Gruppierung in der Sidebar.
+ * - `text` enthält HTML und wird direkt in der Hilfe angezeigt.
+ */
 export const HelperContent = [
   {
-    id: "hilfe-projekte",
-    title: "Projekte verwalten",
-    category: "Project",
+    id: 'hilfe-projekte',
+    title: 'Projekte verwalten',
+    category: 'Projekte',
     text: `
-      <p>Hier lernst du, wie man Projekte anlegt, speichert und lädt.</p>
+      <p>Hier lernst du, wie Projekte angelegt, geöffnet und gespeichert werden.</p>
       <ul>
-        <li>Projekt anlegen: Name, Beschreibung, Nummern, Projektleiter</li>
-        <li>Speichern: Projekt als .lop-Datei sichern</li>
-        <li>Laden: Bestehende .lop-Datei öffnen</li>
+        <li><strong>Neues Projekt:</strong> Erstellt ein leeres Projekt.</li>
+        <li><strong>Projekt öffnen:</strong> Lädt eine vorhandene <code>.lop</code>-Datei.</li>
+        <li><strong>Projekt speichern:</strong> Exportiert den aktuellen Stand als <code>.lop</code>.</li>
       </ul>
     `
   },
-  
   {
-    id: "hilfe-lists-new",
-    title: "Neue Liste",
-    category: "Listen",
+    id: 'hilfe-lists-new',
+    title: 'Neue Liste',
+    category: 'Listen',
     text: `
-      <p>Jedes Projekt kann mehrere Listen enthalten.<br>
-      Die Verwaltung der Listen erfolgt über die "Listenverwaltung."</p>
-      <p>
-        <ul>
-            <li><strong>Listenname</strong> Name der Liste</li>
-            <li><strong>Beschreibung</strong> Beschreibung zu der Liste</li>
-            <li><strong>Phase</strong> Zuordnung einer Phase</li>
-        </ul>
-      </p>
-    `
-  },
-  {
-    id: "hilfe-lists-del",
-    title: "Liste löschen",
-    category: "Listen",
-    text: `
-      <p>Listen können gelöscht werden.</p>
-    `
-  },
-{
-    id: "hilfe-lists-overview",
-    title: "Listenverwaltung",
-    category: "Listen",
-    text: `
-      <p>Jedes Projekt kann mehrere Listen enthalten.<br>
-      Die Verwaltung der Listen erfolgt über die "Listenverwaltung."</p>
-
-      <p>In der Sidebar (links am Rand) werden die letzten drei bearbeiteten Listen angezeigt. Alle anderen Listen die über die drei hinausgehen, werden in der Listenverwaltung agezeigt.</p>
-    `
-  },
-  // -- ITEM
-  {
-    id: "hilfe-item-add",
-    title: "Überschrift hinzufügen",
-    category: 'Items',
-    text: `<h5>Headline</h5>
-    <p>Es können drei HEadline Gruppen erstellt werden: 
+      <p>Jedes Projekt kann mehrere Listen enthalten.</p>
+      <p>Beim Erstellen einer Liste sind folgende Felder wichtig:</p>
       <ul>
-        <ol>1. Ebene (H1)</ol>
-        <ul>
-          <ol>1.1 Ebene (H2)</ol>
-          <ul>
-            <ol>1.1.1 Ebene (H3)<ol>
-          </ul>
-        </ul>
+        <li><strong>Listenname:</strong> Eindeutiger Name der Liste.</li>
+        <li><strong>Beschreibung:</strong> Zweck oder Umfang der Liste.</li>
+        <li><strong>Phase:</strong> Zuordnung zu einer Projektphase.</li>
       </ul>
-    </p>
-    <h5>Punkt</h5>
-    <p>Der eigentliche Aufgabenpunkt in der LoP-Liste ist der "Punkt".</p>
-    <hr>
-    <h5>farbliche Darstellung</h5>
-    <p>Elemente die orange angezeigt werden, <strong>müssen</strong> einem anderen Element per drag & drop zugeordnet werden.</p>
     `
   },
   {
-    id: "hilfe-itemslist",
-    title: "Items Überisch",
-    category: 'Items',
-    text: `Noch kein Eintrag`
+    id: 'hilfe-lists-del',
+    title: 'Liste löschen',
+    category: 'Listen',
+    text: '<p>Listen können über die Listenverwaltung gelöscht werden.</p>'
   },
   {
-    id: "hilfe-itemlist-editor",
-    title: "Items und Struktur",
+    id: 'hilfe-lists-overview',
+    title: 'Listenverwaltung',
+    category: 'Listen',
+    text: `
+      <p>In der Listenverwaltung siehst du alle Listen des aktuellen Projekts.</p>
+      <p>In der linken Sidebar werden zusätzlich die zuletzt bearbeiteten Listen hervorgehoben.</p>
+    `
+  },
+  {
+    id: 'hilfe-item-add',
+    title: 'Überschrift oder Punkt hinzufügen',
     category: 'Items',
     text: `
-      <p>Im Item-Editor werden die Einträge bearbeitet. Es können die Headlines (Überschriften) und die Listen-Elemente bearbeitet werden.
-      Der Umfang der Felder ist bei beiden Typen unterschieldich.</p>
-     <h5>Headline / Überschrift</h5>
-     <p>Hier können insgesamt drei Felder ausgefüllt werden:
+      <h5>Überschriften</h5>
+      <p>Es stehen drei Ebenen zur Verfügung:</p>
       <ul>
-        <li><strong>ID</strong> Identnummer des Eintrags. [Keine Automatik]</li>
-        <li><strong>Thema</strong> Eindeutige Überschrift für die Kategorie</li>
-        <li><strong>Beschreibung</strong> Ggf. kann eine Beschreibung eingegeben werden</li>
+        <li>Überschrift 1 (H1)</li>
+        <li>Überschrift 2 (H2)</li>
+        <li>Überschrift 3 (H3)</li>
       </ul>
-     </p>
-     <h5>Listen-Element</h5>
-     <p></p>
+      <h5>Punkt</h5>
+      <p>Ein Punkt ist der eigentliche Aufgaben-Eintrag in der Liste.</p>
+      <hr>
+      <p><strong>Hinweis:</strong> Orange markierte Elemente müssen per Drag &amp; Drop einer übergeordneten Struktur zugeordnet werden.</p>
     `
   },
-
-
-
-
-  // -- PROJEKTE 
-{
-    id: "hilfe-project-add",
-    category: "Projekte",
-    title: "Neues Projekt",
+  {
+    id: 'hilfe-itemslist',
+    title: 'Items – Übersicht',
+    category: 'Items',
+    text: '<p>Hier findest du die Übersicht aller Einträge der aktuellen Liste.</p>'
+  },
+  {
+    id: 'hilfe-itemlist-editor',
+    title: 'Items und Struktur',
+    category: 'Items',
     text: `
-      <p>Das Projekt ASS bietet eine einfache Übersicht über bestimmte Aufgaben im Projekt.<br>
-      Dazu zählen insbeosondere eine Auflistung der "offnen" und der "ausstehenden" Aufgaben.</p>
-    `
-},
-{
-    id: "hilfe-project-open",
-    category: "Projekte",
-    title: "Projekt öffnen",
-    text: `
-      <p>Zum öffnen muss die Projektdatei *.lop aus dem lokalen Dateiverzeichnis geöffnet werden.</p>
-    `
-},
-{
-    id: "hilfe-project-save",
-    category: "Projekte",
-    title: "Projekt speichern",
-    text: `
-      <p>Beim Speichern wird eine *.lop Datei über den Browser heruntergeladen. Diese Datei muss dann ins loakle Dateiverzeichnis verschoben werden.</p>
-    `
-},
-{
-    id: "hilfe-dashboard",
-    category: "Projekte",
-    title: "Dashboard",
-    text: `
-      <p>Das Dashboard bietet eine einfache Übersicht über bestimmte Aufgaben im Projekt.<br>
-      Dazu zählen insbeosondere eine Auflistung der "offnen" und der "ausstehenden" Aufgaben.</p>
+      <p>Im Item-Editor werden Überschriften und Aufgabenpunkte bearbeitet.</p>
+      <h5>Typ: Überschrift</h5>
+      <ul>
+        <li><strong>ID:</strong> Optionale Kennung (keine Automatik).</li>
+        <li><strong>Thema:</strong> Eindeutige Überschrift für den Abschnitt.</li>
+        <li><strong>Beschreibung:</strong> Optionaler Zusatztext.</li>
+      </ul>
+      <h5>Typ: Listen-Element</h5>
+      <p>Für Punkte stehen zusätzliche Felder wie Status, Verantwortliche und Fristen zur Verfügung.</p>
     `
   },
-
-  // … usw. für alle Kapitel
+  {
+    id: 'hilfe-project-add',
+    category: 'Projekte',
+    title: 'Neues Projekt',
+    text: '<p>Erstellt eine neue Projektstruktur als Basis für Listen, Items und Auswertungen.</p>'
+  },
+  {
+    id: 'hilfe-project-open',
+    category: 'Projekte',
+    title: 'Projekt öffnen',
+    text: '<p>Öffnet eine vorhandene Projektdatei im Format <code>*.lop</code> aus dem lokalen Dateisystem.</p>'
+  },
+  {
+    id: 'hilfe-project-save',
+    category: 'Projekte',
+    title: 'Projekt speichern',
+    text: '<p>Speichert den aktuellen Projektstand als <code>*.lop</code>-Datei über den Browser-Download.</p>'
+  },
+  {
+    id: 'hilfe-dashboard',
+    category: 'Projekte',
+    title: 'Dashboard',
+    text: '<p>Das Dashboard zeigt eine kompakte Übersicht über offene und ausstehende Aufgaben.</p>'
+  }
 ];

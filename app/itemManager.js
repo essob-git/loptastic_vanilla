@@ -46,6 +46,33 @@ function dependenciesEqual(a, b) {
 }
 
 export const ItemManager = {
+    isHeadlineType(type) {
+        return ['h1', 'h2', 'h3'].includes(type);
+    },
+
+    getHeadlineTypeByDepth(depth) {
+        if (depth <= 0) return 'h1';
+        if (depth === 1) return 'h2';
+        return 'h3';
+    },
+
+    normalizeHeadlineHierarchy(items, headlineDepth = 0) {
+        if (!Array.isArray(items)) return;
+
+        items.forEach(item => {
+            const isHeadline = this.isHeadlineType(item.type);
+            const nextDepth = isHeadline ? headlineDepth + 1 : headlineDepth;
+
+            if (isHeadline) {
+                item.type = this.getHeadlineTypeByDepth(headlineDepth);
+            }
+
+            if (Array.isArray(item.children) && item.children.length > 0) {
+                this.normalizeHeadlineHierarchy(item.children, nextDepth);
+            }
+        });
+    },
+
     addItem(type, parentId = null, initialData = null) {
 
     HelperManager.showHelpTo('hilfe-item-add');
@@ -92,8 +119,12 @@ export const ItemManager = {
             }
             
             list.meta.lastModified = new Date().toISOString();
+            this.normalizeHeadlineHierarchy(list.items);
             return project;
         });
+        
+
+
         
         HistoryManager.logChange(newItem.id, 'CREATE', { item: newItem });
         UIManager.addItemToUI(newItem);
@@ -113,23 +144,23 @@ export const ItemManager = {
 				// Feld dependencies
 
 				Object.keys(newData).forEach(key => {
-    if (key === 'dependencies') {
-        if (!dependenciesEqual(item.data[key], newData[key])) {
-            changes[key] = [item.data[key], newData[key]];
-            item.data[key] = newData[key];
-        }
-    } else if (key === 'estimated_duration') {
-        if (!deepEqual(item.data[key], newData[key])) {
-            changes[key] = [item.data[key], newData[key]];
-            item.data[key] = newData[key];
-        }
-    } else {
-        if (item.data[key] !== newData[key]) {
-            changes[key] = [item.data[key], newData[key]];
-            item.data[key] = newData[key];
-        }
-    }
-});
+                    if (key === 'dependencies') {
+                        if (!dependenciesEqual(item.data[key], newData[key])) {
+                            changes[key] = [item.data[key], newData[key]];
+                            item.data[key] = newData[key];
+                        }
+                    } else if (key === 'estimated_duration') {
+                        if (!deepEqual(item.data[key], newData[key])) {
+                            changes[key] = [item.data[key], newData[key]];
+                            item.data[key] = newData[key];
+                        }
+                    } else {
+                        if (item.data[key] !== newData[key]) {
+                            changes[key] = [item.data[key], newData[key]];
+                            item.data[key] = newData[key];
+                        }
+                    }
+                });
 
 
                /**  Object.keys(newData).forEach(key => {
@@ -138,14 +169,17 @@ export const ItemManager = {
                         item.data[key] = newData[key];
                     }
                 }); **/
-                
+               
                 if (Object.keys(changes).length > 0) {
                     list.meta.lastModified = new Date().toISOString();
+                    
                     HistoryManager.logChange(itemId, 'UPDATE', {
                         ...changes, 
                         ...(reason ? {reason} : {})
                     });
                 }
+
+    
             }
             return project;
         });
@@ -158,6 +192,7 @@ export const ItemManager = {
             
             if (item) {
                 item.isDeleted = true;
+                item.deletedAt = new Date().toISOString();
                 list.meta.lastModified = new Date().toISOString();
                 HistoryManager.logChange(itemId, 'DELETE', {});
             }
@@ -165,6 +200,59 @@ export const ItemManager = {
         });
         
         UIManager.removeItemFromUI(itemId);
+    },
+    restoreItem(itemId) {
+        StateManager.updateProject(project => {
+            const list = project.lists[StateManager.getCurrentList().meta.id];
+            const item = this.findItemById(list.items, itemId);
+
+            if (item) {
+                item.isDeleted = false;
+                delete item.deletedAt;
+                list.meta.lastModified = new Date().toISOString();
+                HistoryManager.logChange(itemId, 'RESTORE', {});
+            }
+            return project;
+        });
+        UIManager.refreshListContent();
+    },
+
+    deleteItemPermanently(itemId) {
+        StateManager.updateProject(project => {
+            const list = project.lists[StateManager.getCurrentList().meta.id];
+            const removeRec = (items) => {
+                for (let i = items.length - 1; i >= 0; i--) {
+                    const it = items[i];
+                    if (it.id === itemId) {
+                        items.splice(i, 1);
+                        return true;
+                    }
+                    if (Array.isArray(it.children) && it.children.length > 0 && removeRec(it.children)) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+
+            const removed = removeRec(list.items);
+            if (removed) {
+                const cleanupDependencies = (items) => {
+                    items.forEach(it => {
+                        if (Array.isArray(it.data?.dependencies)) {
+                            it.data.dependencies = it.data.dependencies.filter(dep => dep.id !== itemId);
+                        }
+                        if (Array.isArray(it.children) && it.children.length > 0) {
+                            cleanupDependencies(it.children);
+                        }
+                    });
+                };
+                cleanupDependencies(list.items);
+                list.meta.lastModified = new Date().toISOString();
+                HistoryManager.logChange(itemId, 'DELETE_PERMANENT', {});
+            }
+            return project;
+        });
+        UIManager.refreshListContent();
     },
     
     findItemById(items, itemId) {
@@ -200,22 +288,26 @@ export const ItemManager = {
     },
 
 	// Verbindliche Signatur: Objekte rein, nicht IDs
-	isValidDrop(sourceItem, targetItem, position) {
+	getDropValidationResult(sourceItem, targetItem, position) {
 		const list = StateManager.getCurrentList();
-		if (!list || !sourceItem) return false;
+		if (!list || !sourceItem) return { valid: false, reason: 'unbekannt' };
 
 		// 1) Kein Drop in eigene Nachfahren
-		if (targetItem && this.isChildOf(sourceItem, targetItem)) return false;
+		if (targetItem && this.isChildOf(sourceItem, targetItem)) {
+			return { valid: false, reason: 'cycle' };
+		}
 
 		// 2) Niemals "into" in ein p-Element
-		if (position === 'into' && targetItem && targetItem.type === 'p') return false;
+		if (position === 'into' && targetItem && targetItem.type === 'p') {
+			return { valid: false, reason: 'into-paragraph' };
+		}
 
 		// 3) Level-Regeln (anpassbar)
 		const allowParent = {
-			h1: [null],           // h1 nur als Root
-			h2: ['h1'],           // h2 nur unter h1
-			h3: ['h2'],           // h3 nur unter h2
-			p:  ['h1','h2','h3'], // p unter jeder Headline
+			h1: [null, 'h1', 'h2'],
+			h2: [null, 'h1', 'h2'],
+			h3: [null, 'h1', 'h2'],
+			p: ['h1', 'h2', 'h3'],
 		};
 
 		// Helper zum Ermitteln des Parent-Typs
@@ -225,7 +317,13 @@ export const ItemManager = {
 			// Parent ist das Ziel (oder Root bei null)
 			const parentType = targetItem ? targetItem.type : null;
 			const allowed = allowParent[sourceItem.type] || [];
-			return allowed.includes(parentType);
+			if (!allowed.includes(parentType)) {
+				const reason = this.isHeadlineType(sourceItem.type) && parentType === 'h3'
+					? 'max-headline-depth'
+					: 'invalid-parent';
+				return { valid: false, reason };
+			}
+			return { valid: true };
 		}
 
 		// above/below: Parent wird der Parent des Ziel-Elements (oder Root)
@@ -235,16 +333,34 @@ export const ItemManager = {
 		// Same-Parent-Shortcut: reines Re-Order innerhalb derselben Gruppe IMMER erlauben
 		const currentParentId = sourceItem.parentId || null;
 		const newParentId = newParent ? newParent.id : null;
-		if (currentParentId === newParentId) return true;
+		if (currentParentId === newParentId) return { valid: true };
 
 		// Sonst Level-Regeln prüfen
 		const allowed = allowParent[sourceItem.type] || [];
-		if (!allowed.includes(newParentType)) return false;
+		if (!allowed.includes(newParentType)) {
+			const reason = this.isHeadlineType(sourceItem.type) && newParentType === 'h3'
+				? 'max-headline-depth'
+				: 'invalid-parent';
+			return { valid: false, reason };
+		}
 
-		// Root-Geschwister: nur h1 darf auf Root-Ebene liegen
-		if (newParentType === null && sourceItem.type !== 'h1') return false;
+		// Root-Geschwister: nur Headlines dürfen auf Root-Ebene liegen
+		if (newParentType === null && !this.isHeadlineType(sourceItem.type)) {
+			return { valid: false, reason: 'invalid-root' };
+		}
 
-		return true;
+		return { valid: true };
+	},
+
+	isValidDrop(sourceItem, targetItem, position) {
+		return this.getDropValidationResult(sourceItem, targetItem, position).valid;
+	},
+
+	getDropErrorMessage(reason) {
+		if (reason === 'max-headline-depth') {
+			return 'Maximale Gliederungstiefe erreicht: Unter H3 kann keine weitere Überschrift abgelegt werden.';
+		}
+		return 'Diese Aktion ist nicht erlaubt';
 	},
 
 
@@ -301,13 +417,13 @@ export const ItemManager = {
 	
 	canDropItem(sourceItemId, targetItemId, position) {
 		const list = StateManager.getCurrentList();
-		if (!list) return false;
+		if (!list) return { valid: false, reason: 'unbekannt' };
 
 		const sourceItem = this.findItemById(list.items, sourceItemId);
 		const targetItem = targetItemId ? this.findItemById(list.items, targetItemId) : null;
 
 	    //console.log("canDropItem:", "sourceItem:", sourceItem , "targetItem:", targetItem, "position:", position);
-		return this.isValidDrop(sourceItem, targetItem, position);
+		return this.getDropValidationResult(sourceItem, targetItem, position);
 	},
  
 
@@ -362,8 +478,9 @@ export const ItemManager = {
         }
         
         // Überprüfe, ob die Operation erlaubt ist
-        if (!this.canDropItem(itemId, targetItemId, position)) {
-            UIManager.showToast('Diese Aktion ist nicht erlaubt', 'error');
+        const dropValidation = this.canDropItem(itemId, targetItemId, position);
+        if (!dropValidation.valid) {
+            UIManager.showToast(this.getDropErrorMessage(dropValidation.reason), 'error');
             return;
         }
         
@@ -417,6 +534,9 @@ export const ItemManager = {
 
         // 6) Sort-Indices unter neuen Geschwistern neu durchzählen
         siblings.forEach((el, idx) => { el.sort = idx; });
+
+        // 6b) Headline-Typen aus der tatsächlichen Gliederung ableiten
+        this.normalizeHeadlineHierarchy(list.items);
 
         // 7) Projekt-Metadaten + UI
         list.meta.lastModified = new Date().toISOString();

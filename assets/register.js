@@ -1,8 +1,8 @@
 async function loadDepartments() {
   try {
-    const res = await fetch('/listify/data/settings.json'); // öffentlich lesbar?
-    const settings = await res.json();
-    const departments = settings.departments || [];
+    const res = await fetch('/listify/api/public/settings/registration.php'); // öffentlich lesbar?
+    const payload = await res.json();
+    const departments = payload?.data?.departments || [];
     const sel = document.getElementById('department');
     departments.forEach(d => {
       const opt = document.createElement('option');

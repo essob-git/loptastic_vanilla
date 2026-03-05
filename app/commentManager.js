@@ -43,10 +43,19 @@ async showCommentModal(itemId) {
     const limit = await SettingsManager.getSetting("commentLimit") ?? 0;
     const categories = await SettingsManager.getSetting("commentCategories") ?? ["Allgemein"];
 
-    const commentsHtml = item.comments.map(c => `
-      <div class="border rounded p-2 mb-2">
-        <div><strong>${c.author}</strong> (${c.category})</div>
-        <div class="text-muted small">${new Date(c.date).toLocaleString()}</div>
+    const advancedMode = StateManager.isAdvancedModeActive();
+    const commentsHtml = item.comments
+      .filter(c => advancedMode || !c.isDeleted)
+      .map(c => `
+      <div class="border rounded p-2 mb-2 ${c.isDeleted ? 'bg-light text-muted border-danger-subtle' : ''}">
+        <div class="d-flex justify-content-between">
+          <div><strong>${c.author}</strong> (${c.category})</div>
+          <div class="btn-group btn-group-sm">
+            ${!c.isDeleted ? `<button class="btn btn-outline-danger comment-delete" data-comment-id="${c.id}">Löschen</button>` : ''}
+            ${advancedMode && c.isDeleted ? `<button class="btn btn-outline-success comment-restore" data-comment-id="${c.id}">Wiederherstellen</button><button class="btn btn-outline-danger comment-delete-permanent" data-comment-id="${c.id}">Endgültig löschen</button>` : ''}
+          </div>
+        </div>
+        <div class="text-muted small">${new Date(c.date).toLocaleString()}${c.isDeleted ? ' · gelöscht' : ''}</div>
         <div>${c.text}</div>
       </div>
     `).join('') || "<p class='text-muted'>Keine Kommentare vorhanden</p>";
@@ -84,6 +93,33 @@ async showCommentModal(itemId) {
       }
     );
 
+    document.querySelectorAll('.comment-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const commentId = btn.dataset.commentId;
+        this.softDeleteComment(itemId, commentId);
+        this.showCommentModal(itemId);
+      });
+    });
+
+    document.querySelectorAll('.comment-restore').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const commentId = btn.dataset.commentId;
+        this.restoreComment(itemId, commentId);
+        this.showCommentModal(itemId);
+      });
+    });
+
+    document.querySelectorAll('.comment-delete-permanent').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const commentId = btn.dataset.commentId;
+        this.deleteCommentPermanently(itemId, commentId);
+        this.showCommentModal(itemId);
+      });
+    });
+
     if (limit > 0) {
       const textarea = document.getElementById("comment-text");
       const counter = document.getElementById("comment-counter");
@@ -115,6 +151,42 @@ async showCommentModal(itemId) {
     list.meta.lastModified = new Date().toISOString();
     UIManager.showToast("Kommentar hinzugefügt", "success");
     return comment;
+  },
+
+  softDeleteComment(itemId, commentId) {
+    const list = StateManager.getCurrentList();
+    if (!list) return;
+    const item = ItemManager.findItemById(list.items, itemId);
+    if (!item || !Array.isArray(item.comments)) return;
+
+    const comment = item.comments.find(c => c.id === commentId);
+    if (!comment) return;
+    comment.isDeleted = true;
+    comment.deletedAt = new Date().toISOString();
+    list.meta.lastModified = new Date().toISOString();
+  },
+
+  restoreComment(itemId, commentId) {
+    const list = StateManager.getCurrentList();
+    if (!list) return;
+    const item = ItemManager.findItemById(list.items, itemId);
+    if (!item || !Array.isArray(item.comments)) return;
+
+    const comment = item.comments.find(c => c.id === commentId);
+    if (!comment) return;
+    comment.isDeleted = false;
+    delete comment.deletedAt;
+    list.meta.lastModified = new Date().toISOString();
+  },
+
+  deleteCommentPermanently(itemId, commentId) {
+    const list = StateManager.getCurrentList();
+    if (!list) return;
+    const item = ItemManager.findItemById(list.items, itemId);
+    if (!item || !Array.isArray(item.comments)) return;
+
+    item.comments = item.comments.filter(c => c.id !== commentId);
+    list.meta.lastModified = new Date().toISOString();
   },
 
   limitText(text) {

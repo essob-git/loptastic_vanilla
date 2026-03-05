@@ -104,8 +104,6 @@ export const ExportManager2 = {
           </div>        
                         
         </div>
-
-
       </form>
     `;
 

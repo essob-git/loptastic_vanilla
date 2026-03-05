@@ -362,6 +362,15 @@ export const ProjectManager = {
 
     
     async saveProject() {
+
+
+        // Im Planspiel ist das speichern deaktiviert
+        if (StateManager.isPlanModeActive()) {
+        UIManager.showToast("Im Planspielmodus können Projekte nicht gespeichert werden.", "info");
+        return;
+        }
+
+
         const project = StateManager.getCurrentProject();
         //if (!project) return;
         if (!project) {

@@ -275,7 +275,8 @@ export const UIManager = {
 
         try {
             // Ungültige Einträge herausfiltern
-            const validLists = Object.values(lists).filter(list => list?.meta?.created);
+            const showDeleted = StateManager.isAdvancedModeActive();
+            const validLists = Object.values(lists).filter(list => list?.meta?.created && (showDeleted || !list?.meta?.isDeleted));
             
 
             // Sortieren nach Erstellungsdatum (neueste zuerst)
@@ -316,7 +317,7 @@ export const UIManager = {
 
         const listEl = document.createElement('div');
 		
-        listEl.className = `list-item ${isCurrent ? 'active' : ''} ${isFinalized ? 'finalized' : ''}`;
+        listEl.className = `list-item ${isCurrent ? 'active' : ''} ${isFinalized ? 'finalized' : ''} ${list.meta?.isDeleted ? 'deleted-entry' : ''}`;
 		listEl.dataset.listId = list.meta.id;
 		
         console.log ("Phase:",list.meta.phase)
@@ -326,7 +327,7 @@ export const UIManager = {
 		
 		listEl.innerHTML = `
             <div class="list-item-header">
-                <h5 class="list-title">${list.meta.name}</h5>
+                <h5 class="list-title">${list.meta.name}${list.meta?.isDeleted ? ' <span class="badge text-bg-danger ms-2">gelöscht</span>' : ''}</h5>
                 
             </div>
             <div class="list-item-meta">
@@ -349,6 +350,7 @@ export const UIManager = {
                 <button class="btn btn-sm btn-outline-danger delete-list">
                     <i class="bi bi-trash"></i>
                 </button>
+                ${StateManager.isAdvancedModeActive() && list.meta?.isDeleted ? `<button class="btn btn-sm btn-outline-success restore-list"><i class="bi bi-arrow-counterclockwise"></i></button><button class="btn btn-sm btn-danger delete-list-permanent"><i class="bi bi-trash3"></i></button>` : ""}
             </div>
         `;
 
@@ -365,7 +367,7 @@ export const UIManager = {
 		listEl.querySelector('.delete-list').addEventListener('click', (e) => {
 			e.stopPropagation();
 			if (confirm(`Liste "${list.meta.name}" wirklich löschen?`)) {
-				ListManager.deleteList(list.meta.id);
+				ListManager.softDeleteList(list.meta.id);
 			}
 		});
 
@@ -469,7 +471,7 @@ export const UIManager = {
         const sortedItems = [...items].sort((a, b) => a.sort - b.sort);
         
         sortedItems.forEach(item => {
-            if (item.isDeleted) return;
+            if (item.isDeleted && !StateManager.isAdvancedModeActive()) return;
             
             const itemEl = this.createItemElement(item, level);
 			
@@ -501,7 +503,7 @@ export const UIManager = {
      */
     createItemElement(item, level) {
         const itemEl = document.createElement('div');
-        itemEl.className = `item-card item-${item.type} card`;
+        itemEl.className = `item-card item-${item.type} card ${item.isDeleted ? 'deleted-entry' : ''}`;
         //Filter
         if (item.type === 'p') {
             const status = (item.data.report_status || '').toLowerCase().replace(/\s+/g, '-');
@@ -785,9 +787,10 @@ const commentCount = item.comments?.length || 0;
 						<button class="btn btn-sm btn-outline-primary edit-item">
 							<i class="bi bi-pencil"></i>
 						</button>
-						<button class="btn btn-sm btn-outline-danger delete-item">
-							<i class="bi bi-trash"></i>
-						</button>
+                        ${item.isDeleted && StateManager.isAdvancedModeActive()
+                            ? `<button class="btn btn-sm btn-outline-success restore-item"><i class="bi bi-arrow-counterclockwise"></i></button>
+                               <button class="btn btn-sm btn-danger delete-item-permanent"><i class="bi bi-trash3"></i></button>`
+                            : `<button class="btn btn-sm btn-outline-danger delete-item"><i class="bi bi-trash"></i></button>`}
 						<button class="btn btn-sm btn-outline-secondary history-item" title="Verlauf">
 							<i class="bi bi-clock-history"></i>
 						</button>
@@ -817,32 +820,16 @@ const commentCount = item.comments?.length || 0;
   
         console.log("Drag?", itemEl.draggable)
         if (!isSnapshot) {
-            itemEl.addEventListener('dragstart', (e) => {
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', item.id);
-            itemEl.classList.add('dragging');
-            // optional: eigenes Drag-Bild
-            if (e.dataTransfer.setDragImage) {
-                e.dataTransfer.setDragImage(itemEl, 20, 20);
-            }
-            });
-
-            // Drag-End: Indikatoren wegräumen
-            itemEl.addEventListener('dragend', () => {
-            itemEl.classList.remove('dragging');
-            document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
-            });
-
-
-
             // Event-Listener für Drag & Drop
             itemEl.addEventListener('dragstart', (e) => {
                 e.dataTransfer.setData('text/plain', item.id);
                 itemEl.classList.add('dragging');
                 e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setDragImage(itemEl, 20, 20);
+                if (e.dataTransfer.setDragImage) {
+                    e.dataTransfer.setDragImage(itemEl, 20, 20);
+                }
             });
-            
+
             itemEl.addEventListener('dragend', () => {
                 itemEl.classList.remove('dragging');
                 document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
@@ -854,10 +841,20 @@ const commentCount = item.comments?.length || 0;
                 HelperManager.showHelpTo("hilfe-itemlist-editor")
             });
             
-            itemEl.querySelector('.delete-item').addEventListener('click', (e) => {
+            itemEl.querySelector('.delete-item')?.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (confirm(`Item wirklich löschen?`)) {
                 ItemManager.softDeleteItem(item.id);
+                }
+            });
+            itemEl.querySelector('.restore-item')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                ItemManager.restoreItem(item.id);
+            });
+            itemEl.querySelector('.delete-item-permanent')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm('Item endgültig löschen?')) {
+                    ItemManager.deleteItemPermanently(item.id);
                 }
             });
             itemEl.querySelector('.comment-item').addEventListener('click', (e) => {
@@ -1050,8 +1047,9 @@ const commentCount = item.comments?.length || 0;
 
             // Selbst-Ziel-Schutz (optional, verhindert No-Op oder inkonsistente Moves)
             if (targetItemId === itemId && position !== 'into') return;
-            if (!ItemManager.canDropItem(itemId, targetItemId, position)) {
-                UIManager.showToast('Diese Aktion ist nicht erlaubt', 'error');
+            const dropValidation = ItemManager.canDropItem(itemId, targetItemId, position);
+            if (!dropValidation.valid) {
+                UIManager.showToast(ItemManager.getDropErrorMessage(dropValidation.reason), 'error');
                 return;
             }
 
@@ -1834,9 +1832,9 @@ const commentCount = item.comments?.length || 0;
     addSnapshotToUI(snapshot) {
 		const container = document.getElementById('snapshots-container');
 		const snapshotEl = document.createElement('div');
-		snapshotEl.className = 'snapshot-card card';
+		snapshotEl.className = `snapshot-card card ${snapshot.isDeleted ? 'deleted-entry' : ''}`;
 		snapshotEl.dataset.snapshotId = snapshot.id;
-		snapshotEl.innerHTML = `
+		/*snapshotEl.innerHTML = `
 			<div class="card-body">
 				<h6 class="card-title">${snapshot.name}</h6>
 				<small>${formatDate(snapshot.date)}</small>
@@ -1849,6 +1847,22 @@ const commentCount = item.comments?.length || 0;
 					</button>
 				</div>
 			</div>
+		`;*/
+        snapshotEl.innerHTML = `
+<div class="card-body">
+
+    <div class="d-flex justify-content-between align-items-center">
+        <h6 class="card-title mb-0">${snapshot.name}${snapshot.isDeleted ? " <span class='badge text-bg-danger ms-1'>gelöscht</span>" : ""}</h6>
+
+        <button class="btn btn-sm btn-outline-danger delete-snapshot p-1" title="Löschen">
+            <i class="bi bi-trash"></i>
+        </button>
+        ${StateManager.isAdvancedModeActive() && snapshot.isDeleted ? `<button class="btn btn-sm btn-outline-success restore-snapshot p-1" title="Wiederherstellen"><i class="bi bi-arrow-counterclockwise"></i></button><button class="btn btn-sm btn-danger delete-snapshot-permanent p-1" title="Endgültig löschen"><i class="bi bi-trash3"></i></button>` : ""}
+    </div>
+
+    <small class="text-muted d-block">${formatDate(snapshot.date)}</small>
+
+</div>
 		`;
 
 		// Klick auf Snapshot-Karte = Snapshot laden
@@ -1861,6 +1875,7 @@ const commentCount = item.comments?.length || 0;
 			const listId = StateManager.getCurrentList()?.meta?.id;
 			const allSnapshots = StateManager.getCurrentProject()?.snapshots?.[listId] || [];
 			const snapshotData = allSnapshots.find(s => s.id === snapshot.id);
+			if (snapshotData?.isDeleted) return;
 			if (!snapshotData) return;
 
 			SnapshotManager2.loadSnapshot(snapshotData);
@@ -1874,6 +1889,20 @@ const commentCount = item.comments?.length || 0;
 			}
 		});
 
+        snapshotEl.querySelector('.restore-snapshot')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const listId = StateManager.getCurrentList()?.meta?.id;
+            if (listId) SnapshotManager2.restoreSnapshot(listId, snapshot.id);
+        });
+
+        snapshotEl.querySelector('.delete-snapshot-permanent')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const listId = StateManager.getCurrentList()?.meta?.id;
+            if (listId && confirm('Snapshot endgültig löschen?')) {
+                SnapshotManager2.deleteSnapshotPermanently(listId, snapshot.id);
+            }
+        });
+
 		container.appendChild(snapshotEl);
 	},
 		    /**
@@ -1882,24 +1911,32 @@ const commentCount = item.comments?.length || 0;
      */
     removeSnapshotFromUI(snapshotId) {
 			document.querySelector(`.snapshot-card[data-snapshot-id="${snapshotId}"]`)?.remove();
-		},
+	},
 		    /**
      * Aktualisiert die Snapshot-Ansicht für eine Liste.
      * @param {string} listId - Die Listen-ID
      */
-		updateSnapshotsForList(listId) {
+	updateSnapshotsForList(listId) {
 		const container = document.getElementById('snapshots-container');
 		container.innerHTML = '';
 
 		const project = StateManager.getCurrentProject();
-		const snapshots = project?.snapshots?.[listId] || [];
+
+
+		//const snapshots = project?.snapshots?.[listId] || [];
+        const showDeleted = StateManager.isAdvancedModeActive();
+        const snapshots = [...(project?.snapshots?.[listId] || [])]
+        .filter(s => showDeleted || !s.isDeleted)
+        .sort((a, b) => b.date > a.date ? 1 : -1);
 
 		snapshots.forEach(snapshot => {
+
+            //Hier muss eine Sortierung nach Datum
 			UIManager.addSnapshotToUI(snapshot);
 		});
 	},
 	
-	
+
 	
 	    /**
      * Zeigt eine Toast-Nachricht an.

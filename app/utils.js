@@ -48,6 +48,23 @@
     }
 
     /**
+     * Erstellt eine wirklich tiefe Kopie eines Objekts.
+     * Nutzt structuredClone, falls verfügbar, sonst Fallback auf JSON.
+     * @param {object} obj - Zu klonendes Objekt.
+     * @returns {object} Tief kopiertes Objekt.
+     */
+    export function deepCloneSafe(obj) {
+    if (typeof structuredClone === "function") {
+        try {
+        return structuredClone(obj);
+        } catch (e) {
+        console.warn("structuredClone fehlgeschlagen, fallback auf JSON:", e);
+        }
+    }
+    return JSON.parse(JSON.stringify(obj));
+    }
+
+    /**
      * Vergleicht zwei Objekte auf tiefgehende Gleichheit.
      * @param {object} a - Erstes Objekt.
      * @param {object} b - Zweites Objekt.

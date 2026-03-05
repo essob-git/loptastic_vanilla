@@ -46,7 +46,8 @@ import { ExportExcelManager } from './exportExcelManager.js';
 import { HelperManager } from './helperManager.js';
 import { GanttManager } from './ganttManager.js';
 import { AuthManager } from './AuthManager.js';
-
+import { PlanModeManager } from './planModeManager.js';
+import { StateManager } from './stateManager.js';
 
 
 
@@ -147,8 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     // Listen-Events
-    document.getElementById('add-list').addEventListener('click', (e) => {
-        HelperManager.showHelpTo("hilfe-lists-new");
+    document.getElementById('add-list').addEventListener('click', () => {
         ListManager.showListModal();
     });
 
@@ -163,9 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    document.getElementById('overview-list').addEventListener('click', (e) => {
-         
-         HelperManager.showHelpTo("hilfe-lists-overview");
+    document.getElementById('overview-list').addEventListener('click', () => {
          ListManager.showListOverviewModal();
     });
 
@@ -216,24 +214,93 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('showGantt').addEventListener('click', () => GanttManager.showGantt());
 
-  const switchEl = document.getElementById("helpModeSwitch");
-  if (switchEl) {
-    // Switch auf OFF zurücksetzen oder gespeicherten Zustand laden
-    switchEl.checked = false; // Immer auf AUS starten
-    HelperManager.setMode(false);
 
-    // Event-Handler
-    switchEl.addEventListener("change", (e) => {
-      HelperManager.setMode(e.target.checked);
-    });
+    // Kontextbezogene Hilfe global aktivieren (Buttons, Shortcuts, data-help-topic)
+    HelperManager.initContextHelp();
 
-  }
+    const switchEl = document.getElementById("helpModeSwitch");
+    if (switchEl) {
+        // Switch auf OFF zurücksetzen oder gespeicherten Zustand laden
+        switchEl.checked = false; // Immer auf AUS starten
+        HelperManager.setMode(false);
+
+        // Event-Handler
+        switchEl.addEventListener("change", (e) => {
+        HelperManager.setMode(e.target.checked);
+        });
+    }
 
  
+    const switchEl2 = document.getElementById('planModeSwitch');
+if (switchEl2) {
+    switchEl2.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        PlanModeManager.enable();
+      } else {
+        // disable startet einen Dialog
+        PlanModeManager.disable();
+
+        // Wenn das Modal einfach geschlossen wird (X oder ESC),
+        // bleibt der Planmodus aktiv → Switch wieder aktivieren
+        const modalEl = document.getElementById('mainModal');
+
+        if (modalEl) {
+          modalEl.addEventListener('hidden.bs.modal', () => {
+            if (StateManager.isPlanModeActive()) {
+              // Nutzer hat abgebrochen
+              switchEl2.checked = true;
+            }
+          }, { once: true });
+      }
+    }
+    });
+}
+
+/*    switchEl2.addEventListener('change', (e) => {
+    if (e.target.checked) {
+        PlanModeManager.enable();
+    } else {
+        // disable startet einen Dialog
+        PlanModeManager.disable();
+
+        // Wenn das Modal einfach geschlossen wird (X oder ESC),
+        // bleibt der Planmodus aktiv → Switch wieder aktivieren
+        const modalEl = document.getElementById('mainModal');
+        const bootstrapModal = bootstrap.Modal.getInstance(modalEl);
+
+        if (modalEl) {
+        modalEl.addEventListener('hidden.bs.modal', () => {
+            if (StateManager.isPlanModeActive()) {
+            // Nutzer hat abgebrochen
+            switchEl2.checked = true;
+            }
+        }, { once: true });
+        }
+    }
+    });
+
+*/
 
 
+    
+const advancedSwitch = document.getElementById('advancedModeSwitch');
+if (advancedSwitch) {
+    advancedSwitch.checked = false;
+    StateManager.setAdvancedModeActive(false);
+    document.body.classList.remove('advancedmode');
+    advancedSwitch.addEventListener('change', (e) => {
+        StateManager.setAdvancedModeActive(e.target.checked);
+        document.body.classList.toggle('advancedmode', e.target.checked);
+        UIManager.updateLists(StateManager.getCurrentProject()?.lists || {});
+        const currentList = StateManager.getCurrentList();
+        if (currentList?.meta?.id) {
+            UIManager.updateSnapshotsForList(currentList.meta.id);
+        }
+        UIManager.refreshListContent();
+    });
+}
 
-    // Drag & Drop Initialisierung
+// Drag & Drop Initialisierung
     UIManager.setupDragDropContainers();
 
     // Laden der Vorlagen
