@@ -264,8 +264,10 @@ const advancedSwitch = document.getElementById('advancedModeSwitch');
 if (advancedSwitch) {
     advancedSwitch.checked = false;
     StateManager.setAdvancedModeActive(false);
+    document.body.classList.remove('advancedmode');
     advancedSwitch.addEventListener('change', (e) => {
         StateManager.setAdvancedModeActive(e.target.checked);
+        document.body.classList.toggle('advancedmode', e.target.checked);
         UIManager.updateLists(StateManager.getCurrentProject()?.lists || {});
         const currentList = StateManager.getCurrentList();
         if (currentList?.meta?.id) {
