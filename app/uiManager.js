@@ -32,7 +32,6 @@ import { renderDashboard } from './dashboard.js';
 import { HelperManager } from './helperManager.js';
 import { CommentManager } from './commentManager.js';
 import { formatGermanDate, formatDate } from './utils.js';
-import { DebugLogger } from './debugLogger.js';
 
 
 
@@ -43,7 +42,7 @@ export const PhaseHelper = {
     async init() {
         if (!_phasesCache) {
             _phasesCache = await SettingsManager.getConfigObject("lists_phase");
-            DebugLogger.log("Geladene Phasen:", _phasesCache);
+            console.log("Geladene Phasen:", _phasesCache);
         }
     },
 
@@ -263,7 +262,7 @@ export const UIManager = {
     updateLists(lists) {
         const container = document.getElementById('lists-container');
         if (!container) {
-            DebugLogger.error("Listen-Container nicht gefunden");
+            console.error("Listen-Container nicht gefunden");
             return;
         }
 
@@ -302,7 +301,7 @@ export const UIManager = {
                 this.updateSnapshotsForList(limitedLists[0].meta.id);
             }
         } catch (error) {
-            DebugLogger.error("Fehler beim Aktualisieren der Listen:", error);
+            console.error("Fehler beim Aktualisieren der Listen:", error);
             container.innerHTML = '<div class="alert alert-danger">Fehler beim Laden</div>';
         }
     },
@@ -321,7 +320,7 @@ export const UIManager = {
         listEl.className = `list-item ${isCurrent ? 'active' : ''} ${isFinalized ? 'finalized' : ''} ${list.meta?.isDeleted ? 'deleted-entry' : ''}`;
 		listEl.dataset.listId = list.meta.id;
 		
-        DebugLogger.log ("Phase:",list.meta.phase)
+        console.log ("Phase:",list.meta.phase)
         const phaseLabel = PhaseHelper.getPhaseName(list.meta.phase);
 
    
@@ -411,7 +410,7 @@ export const UIManager = {
             // Zugriff: Keys sind Strings → darum String(phaseCode)
             return phases[String(phaseCode)] || "Unbekannte Phase";
         } catch (err) {
-            DebugLogger.error("Fehler beim Laden der Phasen:", err);
+            console.error("Fehler beim Laden der Phasen:", err);
             return "Unbekannte Phase";
         }
     },*/
@@ -480,7 +479,7 @@ export const UIManager = {
 			if (existingEl) return;
 			
             container.appendChild(itemEl);
-            DebugLogger.log("Rendering:", item.id, "at level", level);
+            console.log("Rendering:", item.id, "at level", level);
 			const isHeadline = ['h1', 'h2', 'h3'].includes(item.type);
             // Kinder rendern, falls vorhanden
             if (item.children && item.children.length > 0) {
@@ -575,7 +574,7 @@ const commentCount = item.comments?.length || 0;
 
 
 
-            DebugLogger.log("Details:", details)
+            console.log("Details:", details)
 
             const dateRe = /^\d{2}\.\d{2}\.\d{4}$/;
             if (dateRe.test(userDeadline) && dateRe.test(autoDeadline)) {
@@ -588,7 +587,7 @@ const commentCount = item.comments?.length || 0;
                 }else{
                     deadlineClass = 'deadline-warning text-danger fw-bold';
                      this.criticalDeadlineCounter++; 
-                     DebugLogger.log("criticalDeadlineCounter", this.criticalDeadlineCounter);
+                     console.log("criticalDeadlineCounter", this.criticalDeadlineCounter);
                 }*/
 
                 // --- Neue Deep-Deadline prüfen ---
@@ -603,7 +602,7 @@ const commentCount = item.comments?.length || 0;
                         deadlineClass = 'deadline-warning text-danger fw-bold';
                         deadlineClassLight ='text-danger-emphasis';
                         this.criticalDeadlineCounter++;
-                        DebugLogger.log("criticalDeadlineCounter (deep)", this.criticalDeadlineCounter);
+                        console.log("criticalDeadlineCounter (deep)", this.criticalDeadlineCounter);
                     }
                 }
             }
@@ -819,7 +818,7 @@ const commentCount = item.comments?.length || 0;
         //itemEl.draggable = true;
         // Drag-Start: ID in den DataTransfer legen + visuelles Feedback
   
-        DebugLogger.log("Drag?", itemEl.draggable)
+        console.log("Drag?", itemEl.draggable)
         if (!isSnapshot) {
             // Event-Listener für Drag & Drop
             itemEl.addEventListener('dragstart', (e) => {
@@ -860,14 +859,14 @@ const commentCount = item.comments?.length || 0;
             });
             itemEl.querySelector('.comment-item').addEventListener('click', (e) => {
                 e.stopPropagation();
-                DebugLogger.log("🕒 comment für:", item.id);
+                console.log("🕒 comment für:", item.id);
                 CommentManager.showCommentModal(item.id);
             });
         }
 
 		itemEl.querySelector('.history-item').addEventListener('click', (e) => {
 			e.stopPropagation();
-			DebugLogger.log("🕒 Verlauf für:", item.id);
+			console.log("🕒 Verlauf für:", item.id);
 			HistoryManager.showItemHistory(item.id);
 		});
 
@@ -1389,7 +1388,7 @@ const commentCount = item.comments?.length || 0;
             const deadlineInput = document.getElementById('item-deadline');
             const deadlineRaw = deadlineInput.value.trim();
             
-            DebugLogger.log('Editor DateMode:', CONFIG_dateOnly)
+            console.log('Editor DateMode:', CONFIG_dateOnly)
 
              if (CONFIG_dateOnly === "true") {
             const dateRegex = /^\d{2}\.\d{2}\.\d{4}$/;
@@ -1713,7 +1712,7 @@ const commentCount = item.comments?.length || 0;
                         ${allP
                             .filter(p => !p.isDeleted)  
                             .map(p => {
-                            DebugLogger.log('Item:', p);
+                            console.log('Item:', p);
                             const parents = resolveParentHeadlines(p, allItemsFlat);
   
                             //const parentPath = parents.map(par => `${par.type.toUpperCase()}: ${par.data.report_topic || ''}`).join(' > ');

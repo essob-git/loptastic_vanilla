@@ -24,7 +24,6 @@
 
 import { HelperContent } from './helperContent.js';
 import {
-import { DebugLogger } from './debugLogger.js';
   findTopicById,
   getCategoryEntries,
   groupEntriesByCategory,
@@ -101,13 +100,13 @@ initContextHelp() {
     const topicExists = findTopicById(HelperContent, cleanId);
 
     if (!topicExists) {
-      DebugLogger.warn('Abbruch: Artikel existiert nicht:', cleanId);
+      console.warn('Abbruch: Artikel existiert nicht:', cleanId);
       return; // Hier stoppen wir, bevor das UI verändert wird
     }
     // ------------------------------------------------
 
     event.preventDefault();
-    DebugLogger.log("Hilfsartikel gefunden: " + topicId);
+    console.log("Hilfsartikel gefunden: " + topicId);
     
     document.body.classList.add('help-mode'); 
     this.showHelpTo(topicId, { forceOpen: true });
@@ -265,7 +264,7 @@ initContextHelp() {
 
     const topic = findTopicById(HelperContent, cleanId);
     if (!topic) {
-      DebugLogger.warn('Keine Hilfe gefunden für:', cleanId);
+      console.warn('Keine Hilfe gefunden für:', cleanId);
       return;
     }
 

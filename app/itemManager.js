@@ -29,7 +29,6 @@ import { HistoryManager } from './historyManager.js';
 import { UIManager } from './uiManager.js';
 import { ListManager } from './listManager.js';
 import { HelperManager } from './helperManager.js';
-import { DebugLogger } from './debugLogger.js';
 
 function dependenciesEqual(a, b) {
     if (!Array.isArray(a) || !Array.isArray(b)) return false;
@@ -423,7 +422,7 @@ export const ItemManager = {
 		const sourceItem = this.findItemById(list.items, sourceItemId);
 		const targetItem = targetItemId ? this.findItemById(list.items, targetItemId) : null;
 
-	    //DebugLogger.log("canDropItem:", "sourceItem:", sourceItem , "targetItem:", targetItem, "position:", position);
+	    //console.log("canDropItem:", "sourceItem:", sourceItem , "targetItem:", targetItem, "position:", position);
 		return this.getDropValidationResult(sourceItem, targetItem, position);
 	},
  
@@ -652,7 +651,7 @@ export function calcAutoDeadline(item, allItems) {
  */
 export function calcAutoDeadlineDeep(item, allItems, visited = new Set()) {
     if (visited.has(item.id)) {
-        DebugLogger.warn("Zyklische Abhängigkeit entdeckt:", item.id);
+        console.warn("Zyklische Abhängigkeit entdeckt:", item.id);
         return null;
     }
     visited.add(item.id);
@@ -744,8 +743,8 @@ export function calcAutoDeadlineDetails(item, allItems) {
     if (ownDuration && deadline) {
         deadline = addDuration(deadline, ownDuration.value, ownDuration.unit);
     }
-DebugLogger.log("Item dependencies:", item.data.dependencies);
-DebugLogger.log("Preds found:", preds);
+console.log("Item dependencies:", item.data.dependencies);
+console.log("Preds found:", preds);
     return {
 
 		
