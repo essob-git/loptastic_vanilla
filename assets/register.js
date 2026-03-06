@@ -1,6 +1,6 @@
 async function loadDepartments() {
   try {
-    const res = await fetch('/listify/api/public/settings/registration.php'); // öffentlich lesbar?
+    const res = await fetch('/loptastic/api/public/settings/registration.php'); // öffentlich lesbar?
     const payload = await res.json();
     const departments = payload?.data?.departments || [];
     const sel = document.getElementById('department');
@@ -37,7 +37,7 @@ document.getElementById('register-form')?.addEventListener('submit', async (e) =
   }
 
  try {
-    const res = await fetch('/listify/api/auth/register.php', {
+    const res = await fetch('/loptastic/api/auth/register.php', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify(body)

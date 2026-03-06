@@ -1,5 +1,5 @@
 /**
- * Listify – Community Edition
+ * LopTastic – Community Edition
  * Projektmanagement-Tool
  * Copyright (c) 2025 Sven Bosse
  *

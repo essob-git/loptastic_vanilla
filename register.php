@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Listify – Registrierung</title>
-  <link rel="stylesheet" href="/listify/assets/login.css">
+  <title>LopTastic – Registrierung</title>
+  <link rel="stylesheet" href="/loptastic/assets/login.css">
 </head>
 <body class="splash-bg">
   <div class="login-wrapper">
@@ -44,7 +44,7 @@
           <button type="submit" id="btn-register">Registrieren</button>
           <p id="msg" class="msg"></p>
           <p class="small" style="margin-top: 50px;">
-            Schon einen Account? <a href="/listify/login.php">besser zum Login</a>
+            Schon einen Account? <a href="/loptastic/login.php">besser zum Login</a>
           </p>
         </form>
       </div>
@@ -52,12 +52,12 @@
       <!-- Rechte Seite: Logo -->
       <div class="login-right">
         <div class="logo-box">
-          <img src="app/images/listify_background.png" alt="listify Logo" id="splash-logo">
+          <img src="app/images/loptastic_background.png" alt="loptastic Logo" id="splash-logo">
         
         </div>
       </div>
     </div>
   </div>
-  <script src="/listify/assets/register.js" defer></script>
+  <script src="/loptastic/assets/register.js" defer></script>
 </body>
 </html>

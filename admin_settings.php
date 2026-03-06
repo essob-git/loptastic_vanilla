@@ -7,13 +7,13 @@ session_start([
   'cookie_samesite' => 'Lax',
   'use_strict_mode' => true,
 ]);
-if (!isset($_SESSION['uid'])) { header('Location: /listify/login.php'); exit; }
+if (!isset($_SESSION['uid'])) { header('Location: /loptastic/login.php'); exit; }
 ?><!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <title>Listify – Systemeinstellungen</title>
-  <link rel="stylesheet" href="/listify/assets/admin.css">
+  <title>LopTastic – Systemeinstellungen</title>
+  <link rel="stylesheet" href="/loptastic/assets/admin.css">
   <style>
     .container{max-width:95%;margin:40px auto;background:#fff;border-radius:16px;padding:24px;color:#0f172a}
     .topbar{display:flex;justify-content:space-between;align-items:center;color:#fff;padding:16px}
@@ -36,14 +36,14 @@ if (!isset($_SESSION['uid'])) { header('Location: /listify/login.php'); exit; }
 </head>
 <body class="splash-bg">
   <div class="topbar">
-    <div><strong>listify</strong> – Adminbereich</div>
-    <div><a class="link" href="/listify/">Zurück zur App</a></div>
+    <div><strong>loptastic</strong> – Adminbereich</div>
+    <div><a class="link" href="/loptastic/">Zurück zur App</a></div>
   </div>
 
   <div class="container">
     <nav class="admin-nav" aria-label="Admin Navigation">
-      <a href="/listify/user_admin.php">Userverwaltung</a>
-      <a href="/listify/admin_settings.php" class="active">Einstellungen</a>
+      <a href="/loptastic/user_admin.php">Userverwaltung</a>
+      <a href="/loptastic/admin_settings.php" class="active">Einstellungen</a>
     </nav>
 
     <h1 style="margin-top:0">Systemeinstellungen</h1>
@@ -62,6 +62,6 @@ if (!isset($_SESSION['uid'])) { header('Location: /listify/login.php'); exit; }
     </div>
   </div>
 
-  <script src="/listify/assets/admin-settings.js" defer></script>
+  <script src="/loptastic/assets/admin-settings.js" defer></script>
 </body>
 </html>

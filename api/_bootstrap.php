@@ -1,6 +1,6 @@
 <?php
 /**
- * Listify – Community Edition
+ * LopTastic – Community Edition
  * Projektmanagement-Tool
  * Copyright (c) 2025 Sven Bosse
  *
@@ -23,7 +23,7 @@
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
-// /listify/api/_bootstrap.php
+// /loptastic/api/_bootstrap.php
 declare(strict_types=1);
 
 ini_set('session.use_strict_mode', '1');
@@ -196,8 +196,8 @@ function settings_registry(): array {
         'departments' => [],
       ],
     ],
-    'listify_defaults' => [
-      'title' => 'Listify Standardwerte',
+    'loptastic_defaults' => [
+      'title' => 'LopTastic Standardwerte',
       'description' => 'Globale Vorgaben für die App (default_config.json).',
       'file' => __DIR__ . '/../app/default_config.json',
       'default' => [],

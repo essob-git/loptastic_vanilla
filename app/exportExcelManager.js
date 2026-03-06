@@ -1,8 +1,8 @@
 /**
- * Listify - Projektmanagement Tool
+ * LopTastic - Projektmanagement Tool
  * Copyright (c) 2025 Sven Bosse
  *
- * Diese Datei ist Teil von Listify.
+ * Diese Datei ist Teil von LopTastic.
  * 
  * Lizenz: MIT (https://opensource.org/licenses/MIT)
  * 

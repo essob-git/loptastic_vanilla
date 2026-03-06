@@ -1,5 +1,5 @@
 /**
- * Listify – Community Edition
+ * LopTastic – Community Edition
  * Projektmanagement-Tool
  * Copyright (c) 2025 Sven Bosse
  *
@@ -1479,7 +1479,7 @@ const commentCount = item.comments?.length || 0;
                         <div class="alert alert-warning" role="alert">
                             Damit auch alles für dich nachvollziehbar bleibt, ist eine Begründung für die Änderung sinnvoll.<br>
                             Eine Begründung wird immer dann abgefragt, wenn die Felder "Frist" oder "Dauer" geändert werden.<br>
-                            Die Dokumentaion erfolgt nur innerhalb von Listify und wird nicht weitergegeben.
+                            Die Dokumentaion erfolgt nur innerhalb von LopTastic und wird nicht weitergegeben.
                             <br><br>
                             <strong>Abbrechen</strong> führt zum verwerfen der Änderung.
                         </div>

@@ -1,6 +1,6 @@
 <?php
 /**
- * Listify – Community Edition
+ * LopTastic – Community Edition
  * Projektmanagement-Tool
  * Copyright (c) 2025 Sven Bosse
  *
@@ -23,7 +23,7 @@
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
-// /listify/index.php
+// /loptastic/index.php
 declare(strict_types=1);
 ini_set('session.use_strict_mode', '1');
 session_start([
@@ -33,7 +33,7 @@ session_start([
   'use_strict_mode' => true,
 ]);
 if (!isset($_SESSION['uid'])) {
-  header('Location: /listify/login.php');
+  header('Location: /loptastic/login.php');
   exit;
 }
 readfile(__DIR__ . '/app/index.html');

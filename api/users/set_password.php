@@ -1,5 +1,5 @@
 <?php
-// /listify/api/users/set_password.php
+// /loptastic/api/users/set_password.php
 require __DIR__ . '/../_bootstrap.php';
 require_admin();
 verify_csrf();

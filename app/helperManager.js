@@ -1,5 +1,5 @@
 /**
- * Listify – Community Edition
+ * LopTastic – Community Edition
  * Projektmanagement-Tool
  * Copyright (c) 2025 Sven Bosse
  *
@@ -141,7 +141,7 @@ initContextHelp() {
     sidebarEl.style.width = '399px';
     sidebarEl.innerHTML = `
       <div class="offcanvas-header">
-        <h5 class="offcanvas-title">Listify Hilfe</h5>
+        <h5 class="offcanvas-title">LopTastic Hilfe</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Schließen"></button>
       </div>
       <div class="offcanvas-body overflow-auto">

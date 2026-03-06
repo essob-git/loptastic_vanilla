@@ -1,6 +1,6 @@
 <?php
 /**
- * Listify – Community Edition
+ * LopTastic – Community Edition
  * Projektmanagement-Tool
  * Copyright (c) 2025 Sven Bosse
  *
@@ -23,7 +23,7 @@
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
-// /listify/login.php
+// /loptastic/login.php
 declare(strict_types=1);
 ini_set('session.use_strict_mode', '1');
 session_start([
@@ -33,7 +33,7 @@ session_start([
   'use_strict_mode' => true,
 ]);
 if (isset($_SESSION['uid'])) {
-  header('Location: /listify/');
+  header('Location: /loptastic/');
   exit;
 }
 ?><!doctype html>
@@ -41,8 +41,8 @@ if (isset($_SESSION['uid'])) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Listify – Login</title>
-  <link rel="stylesheet" href="/listify/assets/login.css">
+  <title>LopTastic – Login</title>
+  <link rel="stylesheet" href="/loptastic/assets/login.css">
 </head>
 <body class="splash-bg">
   <div class="login-wrapper">
@@ -60,7 +60,7 @@ if (isset($_SESSION['uid'])) {
             <input type="password" id="password" autocomplete="current-password" required>
           </div>
           <button type="submit" id="btn-login">Login</button>
-          <p style="margin-top: 50px;">Noch keinen Account? <a href="/listify/register.php">Jetzt Registrieren</a></p>
+          <p style="margin-top: 50px;">Noch keinen Account? <a href="/loptastic/register.php">Jetzt Registrieren</a></p>
           <p id="msg" class="msg"></p>
         </form>
         
@@ -69,7 +69,7 @@ if (isset($_SESSION['uid'])) {
       <!-- Rechte Seite: Logo -->
       <div class="login-right">
         <div class="logo-box">
-          <img src="app/images/listify_background_white.png" alt="listify Logo" id="splash-logo">
+          <img src="app/images/loptastic_background_white.png" alt="loptastic Logo" id="splash-logo">
 
         </div>
       </div>
@@ -77,7 +77,7 @@ if (isset($_SESSION['uid'])) {
   </div>
 
 
-  <script src="/listify/assets/login.js" defer></script>
+  <script src="/loptastic/assets/login.js" defer></script>
 </body>
 </html>
 

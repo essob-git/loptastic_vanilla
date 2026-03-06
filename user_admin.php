@@ -1,6 +1,6 @@
 <?php
 /**
- * Listify – Community Edition
+ * LopTastic – Community Edition
  * Projektmanagement-Tool
  * Copyright (c) 2025 Sven Bosse
  *
@@ -23,7 +23,7 @@
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
-// /listify/user-admin.php
+// /loptastic/user-admin.php
 declare(strict_types=1);
 ini_set('session.use_strict_mode', '1');
 session_start([
@@ -32,13 +32,13 @@ session_start([
   'cookie_samesite' => 'Lax',
   'use_strict_mode' => true,
 ]);
-if (!isset($_SESSION['uid'])) { header('Location: /listify/login.php'); exit; }
+if (!isset($_SESSION['uid'])) { header('Location: /loptastic/login.php'); exit; }
 ?><!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <title>Listify – Userverwaltung</title>
-  <link rel="stylesheet" href="/listify/assets/admin.css">
+  <title>LopTastic – Userverwaltung</title>
+  <link rel="stylesheet" href="/loptastic/assets/admin.css">
   <style>
     .container{max-width:95%;margin:40px auto;background:#fff;border-radius:16px;padding:24px}
     table{width:100%;border-collapse:collapse;margin-top:16px; color: black}
@@ -59,13 +59,13 @@ if (!isset($_SESSION['uid'])) { header('Location: /listify/login.php'); exit; }
 </head>
 <body class="splash-bg">
   <div class="topbar">
-    <div><strong>listify</strong> – Userverwaltung</div>
-    <div><a class="link" href="/listify/">Zurück zur App</a></div>
+    <div><strong>loptastic</strong> – Userverwaltung</div>
+    <div><a class="link" href="/loptastic/">Zurück zur App</a></div>
   </div>
   <div class="container">
     <nav style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" aria-label="Admin Navigation">
-      <a style="padding:8px 12px;border-radius:8px;background:#0f172a;color:#fff;text-decoration:none;font-weight:600" href="/listify/user_admin.php">Userverwaltung</a>
-      <a style="padding:8px 12px;border-radius:8px;background:#e2e8f0;color:#0f172a;text-decoration:none;font-weight:600" href="/listify/admin_settings.php">Einstellungen</a>
+      <a style="padding:8px 12px;border-radius:8px;background:#0f172a;color:#fff;text-decoration:none;font-weight:600" href="/loptastic/user_admin.php">Userverwaltung</a>
+      <a style="padding:8px 12px;border-radius:8px;background:#e2e8f0;color:#0f172a;text-decoration:none;font-weight:600" href="/loptastic/admin_settings.php">Einstellungen</a>
     </nav>
     <div class="toolbar">
       <div class="row">
@@ -102,6 +102,6 @@ if (!isset($_SESSION['uid'])) { header('Location: /listify/login.php'); exit; }
       <tbody></tbody>
     </table>
   </div>
-  <script src="/listify/assets/user-admin.js" defer></script>
+  <script src="/loptastic/assets/user-admin.js" defer></script>
 </body>
 </html>

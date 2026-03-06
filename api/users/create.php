@@ -1,5 +1,5 @@
 <?php
-// /listify/api/users/create.php
+// /loptastic/api/users/create.php
 require __DIR__ . '/../_bootstrap.php';
 require_admin();
 verify_csrf();

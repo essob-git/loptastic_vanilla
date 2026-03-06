@@ -1,4 +1,4 @@
-// /listify/assets/login.js
+// /loptastic/assets/login.js
 (() => {
   const form = document.getElementById('login-form');
   const msg  = document.getElementById('msg');
@@ -13,7 +13,7 @@
     try {
       const login = document.getElementById('login').value.trim();
       const password = document.getElementById('password').value;
-      const res = await fetch('/listify/api/auth/login.php', {
+      const res = await fetch('/loptastic/api/auth/login.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ login, password }),
@@ -21,7 +21,7 @@
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'Login fehlgeschlagen');
-      location.href = '/listify/';
+      location.href = '/loptastic/';
     } catch (err) {
       setMsg(err.message);
     } finally {

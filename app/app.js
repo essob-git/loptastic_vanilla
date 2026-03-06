@@ -1,5 +1,5 @@
 /**
- * Listify – Community Edition
+ * LopTastic – Community Edition
  * Projektmanagement-Tool
  * Copyright (c) 2025 Sven Bosse
  *
@@ -100,9 +100,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         logoutEl.addEventListener('click', async (e) => {
             e.preventDefault();
             try {
-                await fetch('/listify/api/auth/logout.php', { credentials: 'include' });
+                await fetch('/loptastic/api/auth/logout.php', { credentials: 'include' });
             } finally {
-                location.href = '/listify/login.php';
+                location.href = '/loptastic/login.php';
             }
         });
     }

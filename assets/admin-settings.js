@@ -8,11 +8,11 @@ const sectionDescriptionEl = document.getElementById('section-description');
 const editorEl = document.getElementById('settings-json');
 
 async function loadMe() {
-  const r = await fetch('/listify/api/auth/me.php', { credentials: 'include' });
+  const r = await fetch('/loptastic/api/auth/me.php', { credentials: 'include' });
   const j = await r.json();
   if (!j.ok || !j.data?.authenticated || j.data?.user?.role !== 'admin') {
     alert('Adminrechte erforderlich');
-    location.href = '/listify/login.php';
+    location.href = '/loptastic/login.php';
     return false;
   }
   csrfToken = j.data.csrf;
@@ -20,7 +20,7 @@ async function loadMe() {
 }
 
 async function loadSections() {
-  const r = await fetch('/listify/api/admin/settings/get.php', { credentials: 'include' });
+  const r = await fetch('/loptastic/api/admin/settings/get.php', { credentials: 'include' });
   const j = await r.json();
   if (!j.ok) {
     alert(j.error || 'Settings konnten nicht geladen werden');
@@ -57,7 +57,7 @@ function selectSection(key) {
 
 async function reloadActiveSection() {
   if (!activeSection) return;
-  const r = await fetch(`/listify/api/admin/settings/get.php?section=${encodeURIComponent(activeSection)}`, { credentials: 'include' });
+  const r = await fetch(`/loptastic/api/admin/settings/get.php?section=${encodeURIComponent(activeSection)}`, { credentials: 'include' });
   const j = await r.json();
   if (!j.ok) {
     alert(j.error || 'Bereich konnte nicht neu geladen werden');
@@ -82,7 +82,7 @@ async function saveActiveSection() {
     return;
   }
 
-  const r = await fetch('/listify/api/admin/settings/save.php', {
+  const r = await fetch('/loptastic/api/admin/settings/save.php', {
     method: 'POST',
     credentials: 'include',
     headers: {

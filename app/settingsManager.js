@@ -1,5 +1,5 @@
 /**
- * Listify – Community Edition
+ * LopTastic – Community Edition
  * Projektmanagement-Tool
  * Copyright (c) 2025 Sven Bosse
  *
@@ -122,7 +122,7 @@ async getConfigObject(key) {
                 UIManager.showModal("Wer sind Sie?", `
                     <div class="mb-3">
                         <div class="alert alert-warning" role="alert">
-                        <p>Derzeit wurde in Listify kein Anwender / Rolle benannt, daher muss für die gewünschte Aktion ein Namen eingeben werden.
+                        <p>Derzeit wurde in LopTastic kein Anwender / Rolle benannt, daher muss für die gewünschte Aktion ein Namen eingeben werden.
                         <ul>
                             <li>Wenn Sie die Aktion z.B. im Namen des SGL / AL etc. druchführen, könnte jetzt der Name der Person eingeben werden.</li>
                             <li>Wenn Sie die Aktion als Projektleitung / -ingenieur durchführen, sollte dieser Name eigeben werden.

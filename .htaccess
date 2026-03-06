@@ -1,4 +1,4 @@
-# /listify/.htaccess
+# /loptastic/.htaccess
 
 Options -Indexes
 DirectoryIndex index.php

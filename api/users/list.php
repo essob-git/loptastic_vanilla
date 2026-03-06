@@ -1,5 +1,5 @@
 <?php
-// /listify/api/users/list.php
+// /loptastic/api/users/list.php
 require __DIR__ . '/../_bootstrap.php';
 require_admin();
 

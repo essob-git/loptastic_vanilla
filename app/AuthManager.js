@@ -1,5 +1,5 @@
 /**
- * Listify – Community Edition
+ * LopTastic – Community Edition
  * Projektmanagement-Tool
  * Copyright (c) 2025 Sven Bosse
  *
@@ -23,12 +23,12 @@
  */
 
 
-// /listify/app/AuthManager.js
+// /loptastic/app/AuthManager.js
 export const AuthManager = (function(){
   let _me = null;
 
   async function me() {
-    const res = await fetch('/listify/api/auth/me.php', { credentials: 'include' });
+    const res = await fetch('/loptastic/api/auth/me.php', { credentials: 'include' });
     const j = await res.json();
     if (!j.ok) throw new Error(j.error || 'Auth Fehler');
     _me = j.data;
@@ -38,7 +38,7 @@ export const AuthManager = (function(){
   async function ensureLoggedIn() {
     const info = await me();
     if (!info.authenticated) {
-      window.location.href = '/listify/login.php';
+      window.location.href = '/loptastic/login.php';
       return;
     }
 

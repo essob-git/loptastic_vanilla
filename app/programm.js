@@ -1,5 +1,5 @@
 /**
- * Listify – Community Edition
+ * LopTastic – Community Edition
  * Projektmanagement-Tool
  * Copyright (c) 2025 Sven Bosse
  *
@@ -27,10 +27,10 @@ import { UIManager } from "./uiManager.js";
 export const Programm = {
      version: "dev-branch2026 0.X.0",
 
-    getName()      { return 'Listify'; },
+    getName()      { return 'LopTastic'; },
     getVersion()   { return `${this.version}-alpha`; },
     getVersionNumber() {return this.version},
-    getGitHubSite() { return 'https://github.com/essob-git/listify_vanilla'},
+    getGitHubSite() { return 'https://github.com/essob-git/loptastic_vanilla'},
     getCopyright() {
         const author = "Sven Bosse"
         const year = new Date().getFullYear();
@@ -73,7 +73,7 @@ export const Programm = {
                 </div>
                 <div class="row">
                     <div class="col">
-                          <p>Listify verwendet folgende externe Open-Source-Bibliotheken. <br>
+                          <p>LopTastic verwendet folgende externe Open-Source-Bibliotheken. <br>
                         Jede Bibliothek behält ihre eigene Lizenz:</p>
                     </div>
                 </div>
@@ -109,7 +109,7 @@ export const Programm = {
             </div>
             `;
     
-            UIManager.showModal("Über Listify & Lizenzen", body, null, "lg");
+            UIManager.showModal("Über LopTastic & Lizenzen", body, null, "lg");
         },
 
 
@@ -129,7 +129,7 @@ export const Programm = {
 
 <h3 >Allgemeine Hinweise</h3>
 <p>
-Die Software <strong>„Listify“</strong> wird unter der
+Die Software <strong>„LopTastic“</strong> wird unter der
 <strong>GNU Affero General Public License Version 3 (AGPL v3)</strong> als freie Software veröffentlicht.
 Die Bereitstellung, Installation, Konfiguration und der laufende Betrieb der Software
 erfolgen durch den jeweiligen Betreiber, der die Software einsetzt.

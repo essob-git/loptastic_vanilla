@@ -1,5 +1,5 @@
 <?php
-// /listify/api/users/delete.php
+// /loptastic/api/users/delete.php
 require __DIR__ . '/../_bootstrap.php';
 require_admin();
 verify_csrf();
