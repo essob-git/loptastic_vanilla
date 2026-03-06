@@ -21,7 +21,6 @@
  * Hinweis:
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
-import { DebugLogger } from './debugLogger.js';
 
 // holidayManager.js
 export const HolidayManager = {
@@ -36,7 +35,7 @@ export const HolidayManager = {
         color: "#ffd9d9"
       }));
     }catch (err) {
-     DebugLogger.warn("⚠️ Feiertage API nicht erreichbar:", err);
+     console.warn("⚠️ Feiertage API nicht erreichbar:", err);
       return [];
     }
   },
@@ -62,7 +61,7 @@ export const HolidayManager = {
       });
       return days;
     }catch (err) {
-        DebugLogger.warn("⚠️ Ferien API nicht erreichbar:", err);
+        console.warn("⚠️ Ferien API nicht erreichbar:", err);
         return [];
     }
   },
@@ -86,7 +85,7 @@ export const HolidayManager = {
 
       return holidayMap;
     }catch (err) {
-            DebugLogger.warn("⚠️ Fehler beim Laden der Feiertage/Ferien:", err);
+            console.warn("⚠️ Fehler beim Laden der Feiertage/Ferien:", err);
           return { "#f0f0f0": "weekend" }; // Fallback nur Wochenende
     }
   }

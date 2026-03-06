@@ -26,7 +26,6 @@ import { StateManager } from './stateManager.js';
 import { UIManager } from './uiManager.js';
 import { deepClone, deepEqual, deepCloneSafe} from './utils.js';
 import { HistoryManager } from './historyManager.js';
-import { DebugLogger } from './debugLogger.js';
 
 async function commitPlanDifferences() {
 
@@ -41,7 +40,7 @@ function flattenItems(items) {
   return result;
 }
 
-  DebugLogger.log("🔍 commitPlanDifferences gestartet");
+  console.log("🔍 commitPlanDifferences gestartet");
 
   try {
     const beforeProject = StateManager.getPlanModeBackup();
@@ -60,16 +59,16 @@ function flattenItems(items) {
       return;
     }
 
-    DebugLogger.log("📋 Vergleiche Liste:", listId, beforeList?.items?.length, "→", afterList?.items?.length);
+    console.log("📋 Vergleiche Liste:", listId, beforeList?.items?.length, "→", afterList?.items?.length);
 
     let totalChanges = 0;
     const changeBuffer = [];
 
 const beforeItems = flattenItems(beforeList.items || []);
 const afterItems  = flattenItems(afterList.items || []);
-DebugLogger.log("📋 beforeItems:", beforeItems.length, "afterItems:", afterItems.length);
-DebugLogger.log("🔍 Beispiel beforeItem:", beforeItems[0]);
-DebugLogger.log("🔍 Beispiel afterItem:", afterItems[0]);
+console.log("📋 beforeItems:", beforeItems.length, "afterItems:", afterItems.length);
+console.log("🔍 Beispiel beforeItem:", beforeItems[0]);
+console.log("🔍 Beispiel afterItem:", afterItems[0]);
 
     const beforeById = Object.fromEntries(beforeItems.map(i => [i.id, i]));
     const afterById  = Object.fromEntries(afterItems.map(i => [i.id, i]));
@@ -131,7 +130,7 @@ DebugLogger.log("🔍 Beispiel afterItem:", afterItems[0]);
       }
     }
 
-    DebugLogger.log("🧩 erkannte Änderungen:", changeBuffer.length);
+    console.log("🧩 erkannte Änderungen:", changeBuffer.length);
     if (changeBuffer.length === 0) {
       UIManager.showToast("Keine Änderungen erkannt.", "info");
       return;
@@ -169,7 +168,7 @@ DebugLogger.log("🔍 Beispiel afterItem:", afterItems[0]);
 
     UIManager.showToast(`${totalChanges} Änderungen übernommen.`, "success");
   } catch (err) {
-    DebugLogger.error("❌ Fehler in commitPlanDifferences:", err);
+    console.error("❌ Fehler in commitPlanDifferences:", err);
   } finally {
     StateManager.setPlanModeActive(false);
     const currentList = StateManager.getCurrentList();
@@ -251,7 +250,7 @@ modus.</p>
       StateManager.clearPlanModeBackup();
 
     } catch (err) {
-      DebugLogger.error("Fehler beim Beenden des Planspiels:", err);
+      console.error("Fehler beim Beenden des Planspiels:", err);
       UIManager.showToast("Fehler beim Beenden des Planspiels", "error");
     } finally {
       // 🧩 Planspiel sauber beenden
@@ -264,7 +263,7 @@ modus.</p>
       const sw = document.getElementById("planModeSwitch");
       if (sw) sw.checked = false;
 
-      DebugLogger.info("Planspielmodus vollständig beendet.");
+      console.info("Planspielmodus vollständig beendet.");
     }
   });
 }

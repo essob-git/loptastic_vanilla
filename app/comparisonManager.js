@@ -28,7 +28,6 @@ import { formatDate } from './utils.js'
 
 import { UIManager } from './uiManager.js';
 import { Programm } from './programm.js';
-import { DebugLogger } from './debugLogger.js';
 
 
 
@@ -182,8 +181,8 @@ async startComparison({ mode, snapshotA, snapshotB, template, showReasons }) {
     UIManager.showToast('Snapshot(s) nicht gefunden', 'error');
     return;
   }
-DebugLogger.log('Snapshot A:', snapA.data);
-DebugLogger.log('Snapshot B:', snapB.data);
+console.log('Snapshot A:', snapA.data);
+console.log('Snapshot B:', snapB.data);
 
   // Vergleich vorbereiten
   const comparisonData = this.prepareComparisonData(
@@ -192,7 +191,7 @@ DebugLogger.log('Snapshot B:', snapB.data);
     mode === 'snapshot-vs-snapshot' ? 'snapshot-vs-snapshot' : 'list-vs-snapshot'
   );
 
-  DebugLogger.log('Vergleichsdaten:', comparisonData); // ← Hinzufügen
+  console.log('Vergleichsdaten:', comparisonData); // ← Hinzufügen
   // PDF erzeugen
   try {
     await generateComparisonPDF(comparisonData, {
@@ -207,7 +206,7 @@ DebugLogger.log('Snapshot B:', snapB.data);
 
 
   } catch (err) {
-    DebugLogger.error('Fehler beim Vergleichs-PDF:', err);
+    console.error('Fehler beim Vergleichs-PDF:', err);
     UIManager.showToast('Fehler beim PDF-Vergleich', 'error');
   }
 },
@@ -450,7 +449,7 @@ export async function generateComparisonPDF(comparisonData, options = {}) {
         height: logoHeight,
       });
     } catch (e) {
-      DebugLogger.warn('Logo konnte nicht geladen werden:', e);
+      console.warn('Logo konnte nicht geladen werden:', e);
     }
 
 
@@ -881,7 +880,7 @@ for (const entry of headlines) {
             }
 
 if (options.showReasons && row.reason) {
-            DebugLogger.log("reason: ", row.reason);
+            console.log("reason: ", row.reason);
             // Änderungsgrund ausgeben
          
             drawReasonBox(row.reason);

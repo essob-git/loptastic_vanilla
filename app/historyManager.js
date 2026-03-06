@@ -27,7 +27,6 @@ import { formatDate } from './utils.js'
 import { UIManager } from './uiManager.js';
 import { ItemManager } from './itemManager.js';
 import { SettingsManager } from './settingsManager.js';
-import { DebugLogger } from './debugLogger.js';
 
 function prettyPrintField(field, value) {
     if (field === 'dependencies') {
@@ -85,7 +84,7 @@ isForceLogging() { return forceLogging; },
 
         const project = StateManager.getCurrentProject();
         if (!project) {
-            DebugLogger.warn("HistoryManager.logChange: Kein aktuelles Projekt.");
+            console.warn("HistoryManager.logChange: Kein aktuelles Projekt.");
             return;
         }
 
@@ -107,20 +106,20 @@ isForceLogging() { return forceLogging; },
         state.currentProject = project;
         }
 
-        DebugLogger.log("📝 History-Eintrag hinzugefügt:", logEntry);
+        console.log("📝 History-Eintrag hinzugefügt:", logEntry);
     },
 
 
 async forceLogChange(itemId, action, changes) {
   try {
-    DebugLogger.log("⚙️ forceLogChange start", { itemId, forceLogging });
+    console.log("⚙️ forceLogChange start", { itemId, forceLogging });
     forceLogging = true;
-    DebugLogger.log("⚙️ forceLogging gesetzt:", forceLogging);
+    console.log("⚙️ forceLogging gesetzt:", forceLogging);
     await this.logChange(itemId, action, changes);
-    DebugLogger.log("✅ forceLogChange done", { forceLogging });
+    console.log("✅ forceLogChange done", { forceLogging });
   } finally {
     forceLogging = false;
-    DebugLogger.log("🔁 forceLogging reset:", forceLogging);
+    console.log("🔁 forceLogging reset:", forceLogging);
   }
 },
 

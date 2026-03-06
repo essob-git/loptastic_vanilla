@@ -1,23 +1,24 @@
 {
-  "itemEditor_createdate_DateOnly": "true",
-  "itemEditor_deadline_DateOnly": "true",
-  "commentCategories": [
-    "Telefonat",
-    "Anweisung / Entscheidung",
-    "Besprechung / Meeting",
-    "E-Mail / Schriftverkehr",
-    "Rückfrage / Klärung",
-    "Änderungsgrund",
-    "Hinweis / Sonstiges"
-  ],
-  "commentLimit": 150,
-  "lists_phase": {
-    "1": "Projektvorbereitung",
-    "2": "Planung",
-    "3": "Ausführungsvorbereitung",
-    "4": "Ausführung",
-    "5": "Projektabschluss",
-    "10": "Sonstiges"
-  },
-  "debuggingMode": false
+"itemEditor_createdate_DateOnly": "true",
+"itemEditor_deadline_DateOnly": "true", 
+"commentCategories": [
+  "Telefonat",
+  "Anweisung / Entscheidung",
+  "Besprechung / Meeting",
+  "E-Mail / Schriftverkehr",
+  "Rückfrage / Klärung",
+  "Änderungsgrund",
+  "Hinweis / Sonstiges"
+],
+"commentLimit": 150,
+"lists_phase": {
+  "1": "Projektvorbereitung",
+  "2": "Planung",
+  "3": "Ausführungsvorbereitung",
+  "4": "Ausführung",
+  "5": "Projektabschluss",
+  
+  "10": "Sonstiges"
+}
+
 }
