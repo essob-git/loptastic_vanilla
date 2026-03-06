@@ -25,6 +25,7 @@
 import { StateManager } from './stateManager.js';
 import { UIManager } from './uiManager.js';
 import { AuthManager } from './AuthManager.js';
+import { DebugLogger, setDebuggingMode } from './debugLogger.js';
 
 
 async function loadDefaultConfig() {
@@ -32,7 +33,7 @@ async function loadDefaultConfig() {
         const response = await fetch('app/default_config.json');
         return await response.json();
     } catch (e) {
-        console.error('Konnte default_config.json nicht laden:', e);
+DebugLogger.error('Konnte default_config.json nicht laden:', e);
         return {};
     }
 }
@@ -45,8 +46,19 @@ export const SettingsManager = {
     defaultConfig: {},
     async init() {
         this.defaultConfig = await loadDefaultConfig();
-        console.log("DefaultConfig geladen:", this.defaultConfig); // 🔍 Debug
+        this.refreshDebuggingMode();
+        DebugLogger.log("DefaultConfig geladen:", this.defaultConfig); // 🔍 Debug
         this.loadUserSettings();
+    },
+
+    isDebuggingEnabled() {
+        const project = StateManager.getCurrentProject();
+        const value = project?.settings?.debuggingMode ?? this.defaultConfig?.debuggingMode ?? false;
+        return value === true || value === 'true';
+    },
+
+    refreshDebuggingMode() {
+        setDebuggingMode(this.isDebuggingEnabled());
     },
     async getSetting(key) {
         const project = StateManager.getCurrentProject();
@@ -81,6 +93,9 @@ async getConfigObject(key) {
             project.settings[key] = value;
             return project;
         });
+        if (key === 'debuggingMode') {
+            this.refreshDebuggingMode();
+        }
         UIManager.showToast(`Einstellung "${key}" gespeichert`, 'success');
     },
 

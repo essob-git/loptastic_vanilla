@@ -27,6 +27,7 @@ import { StateManager } from './stateManager.js';
 import { UIManager } from './uiManager.js';
 import { Programm, compareVersions } from './programm.js';
 import { HelperManager } from './helperManager.js';
+import { DebugLogger } from './debugLogger.js';
 
 export const ProjectManager = {
 
@@ -136,7 +137,7 @@ export const ProjectManager = {
 					const zip = new JSZip();
 					content = await zip.loadAsync(file);
 				} catch (loadError) {
-					console.error('ZIP konnte nicht geladen werden:', loadError);
+					DebugLogger.error('ZIP konnte nicht geladen werden:', loadError);
 					UIManager.showToast('Datei ist beschädigt oder kein gültiges Projekt.', 'error');
 					resolve(null);
 					return;
@@ -182,7 +183,7 @@ export const ProjectManager = {
 
                 
 				// Listen
-				console.log('Lade Listen aus ZIP');
+				DebugLogger.log('Lade Listen aus ZIP');
 
 				const lists = {};
 				const listFolder = content.folder('lists');
@@ -197,7 +198,7 @@ export const ProjectManager = {
 						}
 					});
 
-					console.log('Gefundene Listendateien:', listFiles);
+					DebugLogger.log('Gefundene Listendateien:', listFiles);
 
 					for (const filePath of listFiles) {
 						const fileEntry = listFolder.file(filePath); // Korrekt: Zugriff relativ zum Ordner
@@ -208,16 +209,16 @@ export const ProjectManager = {
 								lists[listName] = JSON.parse(listData);
 
                                 
-								console.log(`Liste geladen: ${listName}`, lists[listName]);
+								DebugLogger.log(`Liste geladen: ${listName}`, lists[listName]);
 							} catch (err) {
-								console.warn(`Fehler beim Lesen der Datei ${filePath}:`, err);
+								DebugLogger.warn(`Fehler beim Lesen der Datei ${filePath}:`, err);
 							}
 						} else {
-							console.warn('Listendatei fehlt im listFolder:', filePath);
+							DebugLogger.warn('Listendatei fehlt im listFolder:', filePath);
 						}
 					}
 				} else {
-					console.warn('Ordner "lists" nicht gefunden');
+					DebugLogger.warn('Ordner "lists" nicht gefunden');
 				}
 
 				UIManager.showToast('Listen geladen', 'success');
@@ -252,7 +253,7 @@ export const ProjectManager = {
 							const itemId = filePath.split('/').pop().replace('.json', '');
 							changelog[itemId] = JSON.parse(logData);
 						} catch (e) {
-							console.warn(`Fehler beim Lesen der Änderungsdatei ${filePath}`, e);
+							DebugLogger.warn(`Fehler beim Lesen der Änderungsdatei ${filePath}`, e);
 						}
 					}
 				}
@@ -289,7 +290,7 @@ export const ProjectManager = {
 								const snapshot = JSON.parse(raw);
 								snapshots[listId].push(snapshot);
 							} catch (e) {
-								console.warn(`Fehler beim Lesen von Snapshot ${fileName}`, e);
+								DebugLogger.warn(`Fehler beim Lesen von Snapshot ${fileName}`, e);
 							}
 						}
 					}
@@ -337,7 +338,7 @@ export const ProjectManager = {
                 };
                 StateManager.setCurrentList(null); //Reset des StateManagers. Wichtig beim laden, wenn bereits vorher ein Projekt gealden wurde
 
-				console.log('Projekt gesetzt:', project);
+				DebugLogger.log('Projekt gesetzt:', project);
                 StateManager.setCurrentProject(project);
 				UIManager.updateLists(lists);
 
@@ -345,12 +346,12 @@ export const ProjectManager = {
 
                 
                 UIManager.showToast('Projekt erfolgreich geladen', 'success');
-				console.log('StateManager.currentProject:', StateManager.getCurrentProject());
+				DebugLogger.log('StateManager.currentProject:', StateManager.getCurrentProject());
 
                 resolve(project);
 			
             } catch (error) {
-                console.error('Fehler beim Laden des Projekts:', error);
+                DebugLogger.error('Fehler beim Laden des Projekts:', error);
                 UIManager.showToast('Fehler beim Verarbeiten des Projekts', 'error');
                 resolve(null);
             }
@@ -448,7 +449,7 @@ export const ProjectManager = {
             
             UIManager.showToast('Projekt erfolgreich gespeichert', 'success');
         } catch (error) {
-            console.error('Fehler beim Speichern des Projekts:', error);
+            DebugLogger.error('Fehler beim Speichern des Projekts:', error);
             UIManager.showToast('Fehler beim Speichern', 'error');
         }
     }

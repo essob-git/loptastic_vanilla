@@ -26,6 +26,7 @@ import { HistoryManager } from './historyManager.js';
 import { TemplateManager } from './templateManager.js';
 import { UIManager } from './uiManager.js';
 import { SettingsManager } from './settingsManager.js';
+import { DebugLogger } from './debugLogger.js';
 
 
 // ----------- Applikations-Zustand -----------
@@ -70,6 +71,7 @@ export const StateManager = {
         state.currentProject = project;
         UIManager.updateProjectInfo(project);
         TemplateManager.loadProjectTemplates(project);
+        SettingsManager.refreshDebuggingMode();
     },
 
     /**
@@ -165,10 +167,10 @@ export const StateManager = {
 
 restorePlanModeBackup() {
   if (!state.planBackup) {
-    console.warn("Kein PlanBackup zum Wiederherstellen vorhanden");
+    DebugLogger.warn("Kein PlanBackup zum Wiederherstellen vorhanden");
     return;
   }
-console.log("Restore backup:", {
+DebugLogger.log("Restore backup:", {
   hasBackup: !!state.planBackup,
   listId: state.planBackupCurrentListId,
   availableLists: Object.keys(state.planBackup?.lists || {})
@@ -214,10 +216,10 @@ console.log("Restore backup:", {
       }
     }, 50);
   } catch (err) {
-    console.error("Fehler beim UI-Refresh nach Restore:", err);
+    DebugLogger.error("Fehler beim UI-Refresh nach Restore:", err);
   }
 
-  console.info("Planspiel: Backup erfolgreich wiederhergestellt");
+  DebugLogger.info("Planspiel: Backup erfolgreich wiederhergestellt");
 },
 
 _getInternalState() {
@@ -237,7 +239,7 @@ _getInternalState() {
 
           // Schreibsperre im Planspielmodus
         if (this.isPlanModeActive()) {
-            console.warn("⏸ updateProject(): Planspielmodus aktiv – Änderungen werden nur temporär gehalten.");
+            DebugLogger.warn("⏸ updateProject(): Planspielmodus aktiv – Änderungen werden nur temporär gehalten.");
         }
 
         const project = { ...state.currentProject };

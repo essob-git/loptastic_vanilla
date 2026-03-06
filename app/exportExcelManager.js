@@ -21,6 +21,7 @@
 import { StateManager } from './stateManager.js';
 import { formatDate } from './utils.js'
 import { UIManager } from './uiManager.js';
+import { DebugLogger } from './debugLogger.js';
 
 const TABLE_HEADER = ['ID', 'Date', 'Topic / Desc', 'Zuständigkeit', 'Frist', 'Typ', 'Status'];
 const COLS = 7; // A..G
@@ -318,7 +319,7 @@ async function exportCurrentListToExcel() {
     XLSX.writeFile(wb, filename);
     UIManager?.showToast?.('Excel-Datei erstellt', 'success');
   } catch (err) {
-    console.error('Excel-Export Fehler:', err);
+    DebugLogger.error('Excel-Export Fehler:', err);
     UIManager?.showToast?.('Excel-Export fehlgeschlagen', 'danger');
   }
 }

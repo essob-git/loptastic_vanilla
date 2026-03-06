@@ -27,6 +27,7 @@ import { StateManager } from './stateManager.js';
 import { formatDate } from './utils.js'
 import { UIManager } from './uiManager.js';
 import { Programm } from './programm.js';
+import { DebugLogger } from './debugLogger.js';
 
 export const ExportManager2 = {
   showExportModal() {
@@ -130,7 +131,7 @@ export const ExportManager2 = {
   },
 
   exportList({ template, columns, filters }) {
-    console.log("template: ", template);
+    DebugLogger.log("template: ", template);
     switch (template) {
       case 'simple':
         //this.exportSimpleLayout(columns, filters);
@@ -149,7 +150,7 @@ export const ExportManager2 = {
     const project = StateManager.getCurrentProject();
     const changelog = project?.changelog || {};
    
-    console.log('Array:', list.items);
+    DebugLogger.log('Array:', list.items);
 
     if (!list || !project) return;
 
@@ -683,7 +684,7 @@ function drawMarkdownText(page, text, x, y, opts) {
             A: { Type: 'Action', S: 'URI', URI: uri },
           });
         } catch (e) {
-          console.warn('PDF-Link konnte nicht gesetzt werden:', e);
+          DebugLogger.warn('PDF-Link konnte nicht gesetzt werden:', e);
         }
       }
 
@@ -914,7 +915,7 @@ if (selectedStatus.length && !selectedStatus.includes(status)) continue;
         
 
         if ((showPredecessors || showSuccessors) && item.type === 'p') {
-            console.log('Item', item.data?.report_id, item.id, item.data?.dependencies);
+            DebugLogger.log('Item', item.data?.report_id, item.id, item.data?.dependencies);
           drawSuccessorPredexessorRow(item, flatItems);
         }
 
@@ -927,14 +928,14 @@ if (selectedStatus.length && !selectedStatus.includes(status)) continue;
               /*const changelogEntries = (changelog[item.id] || [])
                 .slice()
                 .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                  console.log('Changelog-Einträge für', item.data.report_id, changelogEntries.length, changelogEntries);*/
+                  DebugLogger.log('Changelog-Einträge für', item.data.report_id, changelogEntries.length, changelogEntries);*/
  const entriesAsc = (changelog[item.id] || [])
    .filter(e => e.action === 'UPDATE')              // nur UPDATE betrachten
    .slice()
    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));  // aufsteigend
  // „Erstellung“ = ältester UPDATE → überspringen
  const changelogEntries = entriesAsc.slice(1).reverse();            // wieder absteigend für Ausgabe
- console.log('Changelog-Einträge (ohne Erstellung) für', item.data.report_id, changelogEntries.length, changelogEntries);
+ DebugLogger.log('Changelog-Einträge (ohne Erstellung) für', item.data.report_id, changelogEntries.length, changelogEntries);
               for (const entry of changelogEntries) {
                 //if (entry.action !== 'UPDATE') continue;
 

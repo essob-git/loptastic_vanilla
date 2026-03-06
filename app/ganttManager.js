@@ -26,6 +26,7 @@ import { StateManager } from './stateManager.js';
 import { calcAutoDeadline, calcEarliestStart } from './itemManager.js';
 import { UIManager } from './uiManager.js';
 import { HolidayManager } from './holidayManager.js';
+import { DebugLogger } from './debugLogger.js';
 
 export const GanttManager = {
   showGantt() {
@@ -104,7 +105,7 @@ export const GanttManager = {
 
          const year = new Date().getFullYear();
   const holidays = await HolidayManager.getAllMarkedDays(year);
-console.log("Holidays an Frappe Gantt:", holidays);
+DebugLogger.log("Holidays an Frappe Gantt:", holidays);
 
         const container = document.getElementById("gantt-container");
         container.innerHTML = "";
