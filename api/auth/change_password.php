@@ -32,6 +32,7 @@ $old = (string)($in['old_password'] ?? '');
 $new = (string)($in['new_password'] ?? '');
 
 if ($old==='' || $new==='') json_err('Felder fehlen', 422);
+validate_password_or_fail($new, 'Neues Passwort erfüllt die Vorgaben nicht');
 
 $users = load_users();
 foreach ($users as &$u) {

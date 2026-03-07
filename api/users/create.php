@@ -5,11 +5,11 @@ require_admin();
 verify_csrf();
 
 $in = json_decode(file_get_contents('php://input'), true) ?? [];
-$first = trim((string)($in['first_name'] ?? ''));
-$last  = trim((string)($in['last_name'] ?? ''));
-$userid= trim((string)($in['userid'] ?? ''));
-$email = trim((string)($in['email'] ?? ''));
-$pass  = (string)($in['password'] ?? '');
+$first = validate_name_or_fail((string)($in['first_name'] ?? ''), 'Vorname');
+$last  = validate_name_or_fail((string)($in['last_name'] ?? ''), 'Nachname');
+$userid= validate_userid_or_fail((string)($in['userid'] ?? ''));
+$email = validate_email_or_fail((string)($in['email'] ?? ''));
+$pass  = validate_password_or_fail((string)($in['password'] ?? ''), 'Passwort erfüllt die Vorgaben nicht');
 $dept = trim((string)($in['department'] ?? ''));
 $role  = ((string)($in['role'] ?? 'user')) === 'admin' ? 'admin' : 'user';
 $settings = load_app_settings();
@@ -17,8 +17,6 @@ $departments = $settings['departments'] ?? [];
 if ($dept !== '' && !in_array($dept, $departments, true)) {
     json_err('Ungültige Abteilung', 422);
 }
-
-if ($first===''||$last===''||$userid===''||$email===''||$pass==='') json_err('Felder unvollständig', 422);
 
 $users = load_users();
 if (user_by_login($userid, $users) || user_by_login($email, $users)) json_err('UserID oder E-Mail bereits vergeben', 409);
@@ -44,5 +42,5 @@ $users[] = [
 ];
 
 save_users($users);
-auth_log("USER CREATE id=$id userid=$userid role=$role");
+auth_log('USER CREATE id=' . clean_log_fragment($id) . ' userid=' . clean_log_fragment($userid) . ' role=' . clean_log_fragment($role));
 json_ok(['id' => $id], 201);

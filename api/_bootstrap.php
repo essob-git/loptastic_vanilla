@@ -54,6 +54,175 @@ $_SESSION['LAST_ACTIVITY'] = time();
 const USERS_FILE = __DIR__ . '/../data/users.json';
 const AUTH_LOG   = __DIR__ . '/../data/auth.log';
 
+
+const MAX_LOGIN_LENGTH = 190;
+const MAX_NAME_LENGTH = 100;
+
+function clean_log_fragment(string $value): string {
+  $value = str_replace(["\r", "\n", "\t"], ' ', $value);
+  return trim($value);
+}
+
+function normalize_userid(string $userid): string {
+  return trim($userid);
+}
+
+function validate_userid_or_fail(string $userid): string {
+  $userid = normalize_userid($userid);
+  if ($userid === '' || strlen($userid) > 64) {
+    json_err('Ungültige UserID', 422);
+  }
+  if (!preg_match('/^[A-Za-z0-9._-]+$/', $userid)) {
+    json_err('Ungültige UserID', 422);
+  }
+  return $userid;
+}
+
+function validate_email_or_fail(string $email): string {
+  $email = trim($email);
+  if ($email === '' || strlen($email) > 190 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    json_err('Ungültige E-Mail', 422);
+  }
+  return $email;
+}
+
+function validate_name_or_fail(string $name, string $label): string {
+  $name = trim($name);
+  if ($name === '' || strlen($name) > MAX_NAME_LENGTH) {
+    json_err("Ungültiger {$label}", 422);
+  }
+  return $name;
+}
+
+function default_password_policy(): array {
+  return [
+    'min_length' => 10,
+    'max_length' => 128,
+    'require_uppercase' => false,
+    'require_lowercase' => false,
+    'require_number' => false,
+    'require_special' => false,
+  ];
+}
+
+function default_bot_protection(): array {
+  return [
+    'enabled' => false,
+    'min_form_fill_seconds' => 3,
+    'honeypot_field' => 'company_website',
+  ];
+}
+
+function sanitize_bot_protection(array $bot): array {
+  $defaults = default_bot_protection();
+
+  $enabled = (bool)($bot['enabled'] ?? $defaults['enabled']);
+  $minSeconds = (int)($bot['min_form_fill_seconds'] ?? $defaults['min_form_fill_seconds']);
+  if ($minSeconds < 0 || $minSeconds > 120) {
+    json_err('bot_protection.min_form_fill_seconds muss zwischen 0 und 120 liegen', 422);
+  }
+
+  $honeypot = trim((string)($bot['honeypot_field'] ?? $defaults['honeypot_field']));
+  if ($honeypot === '' || strlen($honeypot) > 64 || !preg_match('/^[A-Za-z][A-Za-z0-9_-]*$/', $honeypot)) {
+    json_err('bot_protection.honeypot_field ist ungültig', 422);
+  }
+
+  return [
+    'enabled' => $enabled,
+    'min_form_fill_seconds' => $minSeconds,
+    'honeypot_field' => $honeypot,
+  ];
+}
+
+function get_bot_protection_settings(): array {
+  $settings = load_app_settings();
+  $bot = $settings['bot_protection'] ?? [];
+  if (!is_array($bot)) return default_bot_protection();
+
+  $defaults = default_bot_protection();
+  $enabled = (bool)($bot['enabled'] ?? $defaults['enabled']);
+  $minSeconds = (int)($bot['min_form_fill_seconds'] ?? $defaults['min_form_fill_seconds']);
+  $honeypot = trim((string)($bot['honeypot_field'] ?? $defaults['honeypot_field']));
+
+  if ($minSeconds < 0 || $minSeconds > 120) $minSeconds = $defaults['min_form_fill_seconds'];
+  if ($honeypot === '' || strlen($honeypot) > 64 || !preg_match('/^[A-Za-z][A-Za-z0-9_-]*$/', $honeypot)) {
+    $honeypot = $defaults['honeypot_field'];
+  }
+
+  return [
+    'enabled' => $enabled,
+    'min_form_fill_seconds' => $minSeconds,
+    'honeypot_field' => $honeypot,
+  ];
+}
+
+function sanitize_password_policy(array $policy): array {
+  $defaults = default_password_policy();
+
+  $min = (int)($policy['min_length'] ?? $defaults['min_length']);
+  $max = (int)($policy['max_length'] ?? $defaults['max_length']);
+  if ($min < 6 || $min > 256) json_err('password_policy.min_length muss zwischen 6 und 256 liegen', 422);
+  if ($max < $min || $max > 512) json_err('password_policy.max_length ist ungültig', 422);
+
+  return [
+    'min_length' => $min,
+    'max_length' => $max,
+    'require_uppercase' => (bool)($policy['require_uppercase'] ?? $defaults['require_uppercase']),
+    'require_lowercase' => (bool)($policy['require_lowercase'] ?? $defaults['require_lowercase']),
+    'require_number' => (bool)($policy['require_number'] ?? $defaults['require_number']),
+    'require_special' => (bool)($policy['require_special'] ?? $defaults['require_special']),
+  ];
+}
+
+function get_password_policy(): array {
+  $settings = load_app_settings();
+  $policyRaw = $settings['password_policy'] ?? [];
+  if (!is_array($policyRaw)) {
+    return default_password_policy();
+  }
+
+  $defaults = default_password_policy();
+
+  $min = (int)($policyRaw['min_length'] ?? $defaults['min_length']);
+  $max = (int)($policyRaw['max_length'] ?? $defaults['max_length']);
+
+  if ($min < 6 || $min > 256) $min = $defaults['min_length'];
+  if ($max < $min || $max > 512) $max = max($min, $defaults['max_length']);
+
+  return [
+    'min_length' => $min,
+    'max_length' => $max,
+    'require_uppercase' => (bool)($policyRaw['require_uppercase'] ?? $defaults['require_uppercase']),
+    'require_lowercase' => (bool)($policyRaw['require_lowercase'] ?? $defaults['require_lowercase']),
+    'require_number' => (bool)($policyRaw['require_number'] ?? $defaults['require_number']),
+    'require_special' => (bool)($policyRaw['require_special'] ?? $defaults['require_special']),
+  ];
+}
+
+function validate_password_or_fail(string $password, string $message = 'Passwort zu schwach'): string {
+  $policy = get_password_policy();
+  $length = strlen($password);
+
+  if ($length < $policy['min_length'] || $length > $policy['max_length']) {
+    json_err($message, 422);
+  }
+
+  if ($policy['require_uppercase'] && !preg_match('/[A-Z]/', $password)) {
+    json_err($message, 422);
+  }
+  if ($policy['require_lowercase'] && !preg_match('/[a-z]/', $password)) {
+    json_err($message, 422);
+  }
+  if ($policy['require_number'] && !preg_match('/[0-9]/', $password)) {
+    json_err($message, 422);
+  }
+  if ($policy['require_special'] && !preg_match('/[^A-Za-z0-9]/', $password)) {
+    json_err($message, 422);
+  }
+
+  return $password;
+}
+
 function json_ok($data = [], int $code = 200) {
   http_response_code($code);
   echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE);
@@ -127,7 +296,8 @@ function client_ip(): string {
   return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 }
 function auth_log(string $line): void {
-  @file_put_contents(AUTH_LOG, sprintf("[%s] %s %s\n", now_iso(), client_ip(), $line), FILE_APPEND|LOCK_EX);
+  $safeLine = clean_log_fragment($line);
+  @file_put_contents(AUTH_LOG, sprintf("[%s] %s %s\n", now_iso(), client_ip(), $safeLine), FILE_APPEND|LOCK_EX);
   @chmod(AUTH_LOG, 0600);
 }
 
@@ -194,6 +364,8 @@ function settings_registry(): array {
       'default' => [
         'registration_mode' => 'approval',
         'departments' => [],
+        'password_policy' => default_password_policy(),
+        'bot_protection' => default_bot_protection(),
       ],
     ],
     'loptastic_defaults' => [
@@ -241,9 +413,21 @@ function validate_settings_payload(string $key, array $payload): array {
       }
     }
 
+    $passwordPolicyRaw = $payload['password_policy'] ?? [];
+    if (!is_array($passwordPolicyRaw)) {
+      json_err('password_policy muss ein Objekt sein', 422);
+    }
+
+    $botProtectionRaw = $payload['bot_protection'] ?? [];
+    if (!is_array($botProtectionRaw)) {
+      json_err('bot_protection muss ein Objekt sein', 422);
+    }
+
     return [
       'registration_mode' => $mode,
       'departments' => array_values(array_unique($cleanDepartments)),
+      'password_policy' => sanitize_password_policy($passwordPolicyRaw),
+      'bot_protection' => sanitize_bot_protection($botProtectionRaw),
     ];
   }
 

@@ -39,26 +39,51 @@ async function loadUsers() {
 
   j.data.users.forEach(u=>{
     const tr = document.createElement('tr');
-const status = u.pending 
-  ? '<span class="badge locked">wartet auf Freigabe</span>' 
-  : (u.locked ? '<span class="badge locked">gesperrt</span>' : 'aktiv');
 
-tr.innerHTML = `
-  <td>${u.first_name} ${u.last_name}</td>
-  <td>${u.userid}<br><small>${u.email}</small></td>
-  <td><span class="badge ${u.role}">${u.role}</span></td>
-  <td>${status}</td>
-  <td>${u.department ?? '—'}</td>
-  <td>${u.last_login_at ?? '—'}</td>
-  <td>${u.created_at ?? '—'}</td>
-  <td>
-    ${u.pending 
-      ? `<button onclick="approveUser('${u.id}')">Freigeben</button>`
-      : `<button onclick="toggleLock('${u.id}', ${!u.locked})">Sperren/Entsperren</button>`
+    const fullName = `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim();
+    tr.appendChild(el('td', {}, [fullName || '—']));
+
+    const userCell = document.createElement('td');
+    userCell.appendChild(txt(u.userid ?? '—'));
+    userCell.appendChild(document.createElement('br'));
+    userCell.appendChild(el('small', {}, [u.email ?? '—']));
+    tr.appendChild(userCell);
+
+    const roleBadge = el('span', { class: `badge ${u.role === 'admin' ? 'admin' : 'user'}` }, [u.role ?? 'user']);
+    tr.appendChild(el('td', {}, [roleBadge]));
+
+    const statusCell = document.createElement('td');
+    if (u.pending) {
+      statusCell.appendChild(el('span', { class: 'badge locked' }, ['wartet auf Freigabe']));
+    } else {
+      statusCell.appendChild(txt(u.locked ? 'gesperrt' : 'aktiv'));
     }
-    <button onclick="resetPass('${u.id}')">Passwort setzen</button>
-    <button onclick="delUser('${u.id}')">Löschen</button>
-  </td>`;
+    tr.appendChild(statusCell);
+
+    tr.appendChild(el('td', {}, [u.department || '—']));
+    tr.appendChild(el('td', {}, [u.last_login_at ?? '—']));
+    tr.appendChild(el('td', {}, [u.created_at ?? '—']));
+
+    const actionsCell = document.createElement('td');
+    if (u.pending) {
+      const approveBtn = el('button', {}, ['Freigeben']);
+      approveBtn.addEventListener('click', () => approveUser(u.id));
+      actionsCell.appendChild(approveBtn);
+    } else {
+      const toggleBtn = el('button', {}, ['Sperren/Entsperren']);
+      toggleBtn.addEventListener('click', () => toggleLock(u.id, !u.locked));
+      actionsCell.appendChild(toggleBtn);
+    }
+
+    const resetBtn = el('button', {}, ['Passwort setzen']);
+    resetBtn.addEventListener('click', () => resetPass(u.id));
+    actionsCell.appendChild(resetBtn);
+
+    const deleteBtn = el('button', {}, ['Löschen']);
+    deleteBtn.addEventListener('click', () => delUser(u.id));
+    actionsCell.appendChild(deleteBtn);
+
+    tr.appendChild(actionsCell);
     tb.appendChild(tr);
   });
 }

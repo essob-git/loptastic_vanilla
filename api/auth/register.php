@@ -35,16 +35,40 @@ $departments = $settings['departments'] ?? [];
 
 
 $in = json_decode(file_get_contents('php://input'), true) ?? [];
-$first = trim((string)($in['first_name'] ?? ''));
-$last  = trim((string)($in['last_name'] ?? ''));
-$email = trim((string)($in['email'] ?? ''));
-$userid= trim((string)($in['userid'] ?? ''));
-$pass  = (string)($in['password'] ?? '');
+$first = validate_name_or_fail((string)($in['first_name'] ?? ''), 'Vorname');
+$last  = validate_name_or_fail((string)($in['last_name'] ?? ''), 'Nachname');
+$email = validate_email_or_fail((string)($in['email'] ?? ''));
+$userid= validate_userid_or_fail((string)($in['userid'] ?? ''));
+$pass  = validate_password_or_fail((string)($in['password'] ?? ''), 'Passwort erfüllt die Vorgaben nicht');
 $dept = trim((string)($in['department'] ?? ''));
 
-if ($first===''||$last===''||$userid===''||$email===''||$pass==='') {
-    json_err('Alle Felder erforderlich', 422);
+$botProtection = get_bot_protection_settings();
+if (!empty($botProtection['enabled'])) {
+    $bot = $in['bot_protection'] ?? null;
+    if (!is_array($bot)) {
+        json_err('Registrierung konnte nicht verifiziert werden', 422);
+    }
+
+    $token = (string)($bot['token'] ?? '');
+    $honeypot = trim((string)($bot['honeypot'] ?? ''));
+    $expectedToken = (string)($_SESSION['register_bot_token'] ?? '');
+    $issuedAt = (int)($_SESSION['register_bot_issued_at'] ?? 0);
+
+    if ($expectedToken === '' || $token === '' || !hash_equals($expectedToken, $token)) {
+        json_err('Registrierung konnte nicht verifiziert werden', 422);
+    }
+
+    if ($honeypot !== '') {
+        json_err('Registrierung konnte nicht verifiziert werden', 422);
+    }
+
+    if ($issuedAt <= 0 || (time() - $issuedAt) < (int)$botProtection['min_form_fill_seconds']) {
+        json_err('Registrierung konnte nicht verifiziert werden', 422);
+    }
+
+    unset($_SESSION['register_bot_token'], $_SESSION['register_bot_issued_at']);
 }
+
 if ($dept !== '' && !in_array($dept, $departments, true)) {
     json_err('Ungültige Abteilung', 422);
 }

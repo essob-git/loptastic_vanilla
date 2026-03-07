@@ -1,1 +1,17 @@
-
+{
+  "registration_mode": "approval",
+  "departments": [],
+  "password_policy": {
+    "min_length": 10,
+    "max_length": 128,
+    "require_uppercase": false,
+    "require_lowercase": false,
+    "require_number": false,
+    "require_special": false
+  },
+  "bot_protection": {
+    "enabled": false,
+    "min_form_fill_seconds": 3,
+    "honeypot_field": "company_website"
+  }
+}
