@@ -52,7 +52,7 @@
       <!-- Rechte Seite: Logo -->
       <div class="login-right">
         <div class="logo-box">
-          <img src="app/images/loptastic_background.png" alt="loptastic Logo" id="splash-logo">
+          <img src="app/images/loptastic_background_white.png" alt="loptastic Logo" id="splash-logo">
         
         </div>
       </div>
