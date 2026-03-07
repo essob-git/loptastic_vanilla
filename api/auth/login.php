@@ -32,6 +32,34 @@ $pass  = (string)($body['password'] ?? '');
 if ($login === '' || $pass === '') json_err('Login und Passwort erforderlich', 422);
 if (strlen($login) > MAX_LOGIN_LENGTH || strlen($pass) > 1024) json_err('Ungültige Zugangsdaten', 401);
 
+
+$botProtection = get_bot_protection_settings();
+if (!empty($botProtection['enabled'])) {
+  $bot = $body['bot_protection'] ?? null;
+  if (!is_array($bot)) {
+    json_err('Login konnte nicht verifiziert werden', 422);
+  }
+
+  $token = (string)($bot['token'] ?? '');
+  $honeypot = trim((string)($bot['honeypot'] ?? ''));
+  $expectedToken = (string)($_SESSION['login_bot_token'] ?? '');
+  $issuedAt = (int)($_SESSION['login_bot_issued_at'] ?? 0);
+
+  if ($expectedToken === '' || $token === '' || !hash_equals($expectedToken, $token)) {
+    json_err('Login konnte nicht verifiziert werden', 422);
+  }
+
+  if ($honeypot !== '') {
+    json_err('Login konnte nicht verifiziert werden', 422);
+  }
+
+  if ($issuedAt <= 0 || (time() - $issuedAt) < (int)$botProtection['min_form_fill_seconds']) {
+    json_err('Login konnte nicht verifiziert werden', 422);
+  }
+
+  unset($_SESSION['login_bot_token'], $_SESSION['login_bot_issued_at']);
+}
+
 $users = load_users();
 $u = user_by_login($login, $users);
 
