@@ -57,22 +57,27 @@ function selectSection(key) {
 
 async function reloadActiveSection() {
   if (!activeSection) return;
-  const r = await fetch(`/loptastic/api/admin/settings/get.php?section=${encodeURIComponent(activeSection)}`, { credentials: 'include' });
+  const sectionKey = activeSection;
+  const r = await fetch(`/loptastic/api/admin/settings/get.php?section=${encodeURIComponent(sectionKey)}`, { credentials: 'include' });
   const j = await r.json();
   if (!j.ok) {
     alert(j.error || 'Bereich konnte nicht neu geladen werden');
     return;
   }
 
-  const idx = sections.findIndex((s) => s.key === activeSection);
+  const idx = sections.findIndex((s) => s.key === sectionKey);
   if (idx >= 0) {
     sections[idx] = j.data.section;
   }
-  selectSection(activeSection);
+
+  if (activeSection === sectionKey) {
+    selectSection(sectionKey);
+  }
 }
 
 async function saveActiveSection() {
   if (!activeSection) return;
+  const sectionKey = activeSection;
 
   let parsed;
   try {
@@ -89,7 +94,7 @@ async function saveActiveSection() {
       'Content-Type': 'application/json',
       'X-CSRF-Token': csrfToken,
     },
-    body: JSON.stringify({ section: activeSection, data: parsed }),
+    body: JSON.stringify({ section: sectionKey, data: parsed }),
   });
 
   const j = await r.json();
@@ -98,12 +103,14 @@ async function saveActiveSection() {
     return;
   }
 
-  const idx = sections.findIndex((s) => s.key === activeSection);
+  const idx = sections.findIndex((s) => s.key === sectionKey);
   if (idx >= 0) {
     sections[idx] = j.data.section;
   }
 
-  selectSection(activeSection);
+  if (activeSection === sectionKey) {
+    selectSection(sectionKey);
+  }
   alert('Settings gespeichert');
 }
 

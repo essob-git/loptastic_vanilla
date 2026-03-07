@@ -29,11 +29,21 @@ import { AuthManager } from './AuthManager.js';
 
 async function loadDefaultConfig() {
     try {
-        const response = await fetch('app/default_config.json');
-        return await response.json();
+        const response = await fetch('/loptastic/api/public/settings/defaults.php', { credentials: 'include' });
+        const result = await response.json();
+        if (result?.ok && typeof result.data === 'object' && result.data !== null) {
+            return result.data;
+        }
+        throw new Error(result?.error || 'Antwort enthält keine gültigen Defaults');
     } catch (e) {
-        console.error('Konnte default_config.json nicht laden:', e);
-        return {};
+        console.error('Konnte Defaults über API nicht laden, verwende Fallback default_config.json:', e);
+        try {
+            const fallbackResponse = await fetch('app/default_config.json');
+            return await fallbackResponse.json();
+        } catch (fallbackError) {
+            console.error('Konnte default_config.json nicht laden:', fallbackError);
+            return {};
+        }
     }
 }
 

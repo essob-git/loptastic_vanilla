@@ -199,8 +199,9 @@ function settings_registry(): array {
     'loptastic_defaults' => [
       'title' => 'LopTastic Standardwerte',
       'description' => 'Globale Vorgaben für die App (default_config.json).',
-      'file' => __DIR__ . '/../app/default_config.json',
+      'file' => __DIR__ . '/../data/default_config.json',
       'default' => [],
+      'fallback_file' => __DIR__ . '/../app/default_config.json',
     ],
   ];
 }
@@ -210,11 +211,16 @@ function get_settings_section(string $key): ?array {
   if (!isset($registry[$key])) return null;
 
   $section = $registry[$key];
+  $data = load_json_file($section['file'], $section['default']);
+  if ($data === $section['default'] && isset($section['fallback_file'])) {
+    $data = load_json_file($section['fallback_file'], $section['default']);
+  }
+
   return [
     'key' => $key,
     'title' => $section['title'],
     'description' => $section['description'],
-    'data' => load_json_file($section['file'], $section['default']),
+    'data' => $data,
   ];
 }
 
