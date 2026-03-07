@@ -1,0 +1,4 @@
+# Direkten Browserzugriff auf Settings-/User-JSON im data-Verzeichnis unterbinden
+<FilesMatch "\.(json|log)$">
+  Require all denied
+</FilesMatch>

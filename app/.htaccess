@@ -1,0 +1,5 @@
+# Direkten Browserzugriff auf App-Default-Settings unterbinden
+<Files "default_config.json">
+  Require all denied
+</Files>
+

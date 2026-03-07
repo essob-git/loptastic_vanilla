@@ -175,14 +175,47 @@ function save_json_file(string $file, array $data): void {
     json_err('Zielverzeichnis für Einstellungen fehlt', 500);
   }
 
-  $fp = fopen($file, 'c+');
-  if (!$fp) json_err('Einstellungsdatei kann nicht geöffnet werden', 500);
-  flock($fp, LOCK_EX);
-  ftruncate($fp, 0);
-  fwrite($fp, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-  fflush($fp);
-  flock($fp, LOCK_UN);
-  fclose($fp);
+   $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+  if ($json === false) {
+    json_err('Einstellungen konnten nicht serialisiert werden', 500);
+  }
+  $json .= PHP_EOL;
+
+  // Bevorzugt: atomarer Write über temp-Datei + rename (setzt Schreibrechte auf Verzeichnis voraus).
+  if (is_writable($dir)) {
+    $tmpFile = tempnam($dir, 'settings_');
+    if ($tmpFile !== false) {
+      $written = @file_put_contents($tmpFile, $json, LOCK_EX);
+      if ($written !== false && @rename($tmpFile, $file)) {
+        return;
+      }
+      @unlink($tmpFile);
+    }
+  }
+
+  // Fallback: direkt in vorhandene Datei schreiben (funktioniert auch wenn Verzeichnis nicht beschreibbar ist,
+  // solange die Datei selbst beschreibbar bleibt).
+  if (file_exists($file) && is_writable($file)) {
+    $fp = @fopen($file, 'c+');
+    if ($fp !== false) {
+      if (@flock($fp, LOCK_EX)) {
+        @ftruncate($fp, 0);
+        @rewind($fp);
+        $ok = @fwrite($fp, $json);
+        @fflush($fp);
+        @flock($fp, LOCK_UN);
+        @fclose($fp);
+        if ($ok !== false) {
+          return;
+        }
+      } else {
+        @fclose($fp);
+      }
+    }
+  }
+
+  json_err('Einstellungsdatei kann nicht geschrieben werden (Datei/Verzeichnis-Berechtigungen prüfen)', 500);
+
 }
 
 function settings_registry(): array {

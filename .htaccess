@@ -4,8 +4,8 @@ Options -Indexes
 DirectoryIndex index.php
 
 # Zugriff auf /data/ unterbinden
-<FilesMatch "(users\.json|auth\.log)$">
-  Require all denied
+<FilesMatch "(users\.json|auth\.log|settings\.json)$">
+    Require all denied
 </FilesMatch>
 
 # SPA-Fallback (nur wenn mod_rewrite aktiv ist!)
