@@ -39,6 +39,7 @@ if (!isset($_SESSION['uid'])) { header('Location: /loptastic/login.php'); exit; 
   <meta charset="utf-8">
   <title>LopTastic – Userverwaltung</title>
   <link rel="stylesheet" href="/loptastic/assets/admin.css">
+  <link rel="icon" type="image/x-icon" href="/loptastic/app/images/favicon.ico">
   <style>
     .container{max-width:95%;margin:40px auto;background:#fff;border-radius:16px;padding:24px}
     table{width:100%;border-collapse:collapse;margin-top:16px; color: black}
