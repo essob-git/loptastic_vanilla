@@ -42,6 +42,11 @@ export const AuthManager = (function(){
       return;
     }
 
+    if (info?.user?.force_password_change) {
+      window.location.href = '/loptastic/pw.php';
+      return;
+    }
+
     /*// User ins Projektsettings spiegeln
     const project = StateManager.getCurrentProject();
     if (project) {

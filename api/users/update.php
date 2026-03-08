@@ -13,9 +13,13 @@ $found = false;
 foreach ($users as &$u) {
   if ($u['id'] === $id) {
     $found = true;
-    foreach (['first_name','last_name','userid','email','role','locked', 'department'] as $k) {
+    foreach (['first_name','last_name','userid','email','role','locked', 'department', 'force_password_change'] as $k) {
       if (array_key_exists($k, $in)) {
         if ($k==='role' && !in_array($in[$k], ['user','admin'], true)) continue;
+        if ($k==='force_password_change') {
+          $u[$k] = (bool)$in[$k];
+          continue;
+        }
         $u[$k] = $in[$k];
       }
     }

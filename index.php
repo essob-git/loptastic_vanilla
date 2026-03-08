@@ -36,4 +36,17 @@ if (!isset($_SESSION['uid'])) {
   header('Location: /loptastic/login.php');
   exit;
 }
+
+$usersFile = __DIR__ . '/data/users.json';
+if (file_exists($usersFile)) {
+  $users = json_decode(file_get_contents($usersFile) ?: '[]', true);
+  if (is_array($users)) {
+    foreach ($users as $u) {
+      if (($u['id'] ?? null) === $_SESSION['uid'] && !empty($u['force_password_change'])) {
+        header('Location: /loptastic/pw.php');
+        exit;
+      }
+    }
+  }
+}
 readfile(__DIR__ . '/app/index.html');
