@@ -38,6 +38,7 @@ $users[] = [
   'created_at' => $now,
   'updated_at' => $now,
   'last_login_at' => null,
+  'force_password_change' => true,
   'password_hash' => password_hash($pass, PASSWORD_DEFAULT),
   'failed_login_attempts' => 0,
   'locked_until' => null

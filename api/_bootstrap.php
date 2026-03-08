@@ -98,6 +98,16 @@ function require_auth(): array {
   foreach ($users as $u) {
     if (($u['id'] ?? null) === $_SESSION['uid']) {
       if (!empty($u['locked'])) json_err('Account gesperrt', 403);
+
+      $forcePasswordChange = !empty($u['force_password_change']);
+      if ($forcePasswordChange) {
+        $script = basename($_SERVER['SCRIPT_NAME'] ?? '');
+        $allowed = ['me.php', 'change_password.php', 'logout.php'];
+        if (!in_array($script, $allowed, true)) {
+          json_err('Passwortänderung erforderlich', 428);
+        }
+      }
+
       return $u;
     }
   }

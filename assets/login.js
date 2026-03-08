@@ -21,6 +21,10 @@
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'Login fehlgeschlagen');
+      if (data?.data?.user?.force_password_change) {
+        location.href = '/loptastic/pw.php';
+        return;
+      }
       location.href = '/loptastic/';
     } catch (err) {
       setMsg(err.message);

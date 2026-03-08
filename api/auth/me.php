@@ -43,6 +43,7 @@ foreach ($users as $u) {
         'last_name' => $u['last_name'],
         'department' => $u['department'] ?? null,
         'role' => $u['role'] ?? 'user',
+        'force_password_change' => $u['force_password_change'] ?? false,
         'last_login_at' => $u['last_login_at'] ?? null,
         'created_at' => $u['created_at'] ?? null
       ]

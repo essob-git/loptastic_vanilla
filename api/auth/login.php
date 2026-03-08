@@ -69,6 +69,7 @@ json_ok([
     'first_name' => $u['first_name'],
     'last_name'  => $u['last_name'],
     'role'       => $u['role'] ?? 'user',
+    'force_password_change' => $u['force_password_change'] ?? false,
     'last_login_at' => $u['last_login_at'] ?? null,
     'created_at' => $u['created_at'] ?? null,
   ]
