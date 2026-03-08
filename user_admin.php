@@ -96,6 +96,7 @@ if (!isset($_SESSION['uid'])) { header('Location: /loptastic/login.php'); exit; 
           <th>Abteilung</th>
           <th>Letzter Login</th>
           <th>Erstellt</th>
+          <th>Passwortstatus</th>
           <th>Aktionen</th>
         </tr>
       </thead>

@@ -43,6 +43,10 @@ const status = u.pending
   ? '<span class="badge locked">wartet auf Freigabe</span>' 
   : (u.locked ? '<span class="badge locked">gesperrt</span>' : 'aktiv');
 
+const passwordStatus = u.force_password_change
+  ? '<span class="badge locked">Passwortwechsel erforderlich</span>'
+  : '<span class="badge user">ok</span>';
+
 tr.innerHTML = `
   <td>${u.first_name} ${u.last_name}</td>
   <td>${u.userid}<br><small>${u.email}</small></td>
@@ -51,12 +55,14 @@ tr.innerHTML = `
   <td>${u.department ?? '—'}</td>
   <td>${u.last_login_at ?? '—'}</td>
   <td>${u.created_at ?? '—'}</td>
+  <td>${passwordStatus}</td>
   <td>
     ${u.pending 
       ? `<button onclick="approveUser('${u.id}')">Freigeben</button>`
       : `<button onclick="toggleLock('${u.id}', ${!u.locked})">Sperren/Entsperren</button>`
     }
     <button onclick="resetPass('${u.id}')">Passwort setzen</button>
+    <button onclick="forcePwChange('${u.id}')">Reset erzwingen</button>
     <button onclick="delUser('${u.id}')">Löschen</button>
   </td>`;
     tb.appendChild(tr);
@@ -115,6 +121,19 @@ async function resetPass(id) {
   const j = await r.json();
   if (!j.ok) return alert(j.error||'Fehler');
   alert('Passwort aktualisiert');
+  loadUsers();
+}
+
+async function forcePwChange(id) {
+  const r = await fetch('/loptastic/api/users/update.php', {
+    method:'POST', credentials:'include',
+    headers:{'Content-Type':'application/json','X-CSRF-Token':CSRF},
+    body: JSON.stringify({id, force_password_change: true})
+  });
+  const j = await r.json();
+  if (!j.ok) return alert(j.error||'Fehler');
+  alert('Passwort-Reset beim nächsten Login erzwungen');
+  loadUsers();
 }
 
 async function delUser(id) {

@@ -38,6 +38,7 @@ foreach ($users as &$u) {
   if ($u['id'] === $user['id']) {
     if (!password_verify($old, $u['password_hash'] ?? '')) json_err('Altes Passwort falsch', 401);
     $u['password_hash'] = password_hash($new, PASSWORD_DEFAULT);
+    $u['force_password_change'] = false;
     $u['updated_at'] = now_iso();
     save_users($users);
     auth_log("PASS CHANGE uid={$u['id']}");

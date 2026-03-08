@@ -15,6 +15,7 @@ foreach ($users as &$u) {
   if ($u['id'] === $id) {
     $found = true;
     $u['password_hash'] = password_hash($new, PASSWORD_DEFAULT);
+    $u['force_password_change'] = true;
     $u['updated_at'] = now_iso();
     // Reset Fail-Counter bei explizitem PW-Reset
     $u['failed_login_attempts'] = 0;

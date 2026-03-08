@@ -10,6 +10,7 @@
         "created_at": "2025-09-20T00:00:00Z",
         "updated_at": "2025-09-20T00:00:00Z",
         "last_login_at": "2025-10-10T12:36:41+02:00",
+        "force_password_change": false,
         "failed_login_attempts": 0,
         "locked_until": null,
         "password_hash": "$2y$10$89cENx\/soSa5sfM7bSH25utwkvvuIAbfcNZyDOwWWFBBeLb9kmmh6"
