@@ -8,4 +8,5 @@ $data = $section['data'];
 json_ok([
   'registration_mode' => $data['registration_mode'] ?? 'approval',
   'departments' => $data['departments'] ?? [],
+  'password_policy' => get_password_policy(),
 ]);

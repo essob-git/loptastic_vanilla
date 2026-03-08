@@ -45,6 +45,7 @@ $dept = trim((string)($in['department'] ?? ''));
 if ($first===''||$last===''||$userid===''||$email===''||$pass==='') {
     json_err('Alle Felder erforderlich', 422);
 }
+validate_password_or_422($pass);
 if ($dept !== '' && !in_array($dept, $departments, true)) {
     json_err('Ungültige Abteilung', 422);
 }

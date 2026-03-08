@@ -19,6 +19,7 @@ if ($dept !== '' && !in_array($dept, $departments, true)) {
 }
 
 if ($first===''||$last===''||$userid===''||$email===''||$pass==='') json_err('Felder unvollständig', 422);
+validate_password_or_422($pass);
 
 $users = load_users();
 if (user_by_login($userid, $users) || user_by_login($email, $users)) json_err('UserID oder E-Mail bereits vergeben', 409);
@@ -38,6 +39,7 @@ $users[] = [
   'created_at' => $now,
   'updated_at' => $now,
   'last_login_at' => null,
+  'force_password_change' => true,
   'password_hash' => password_hash($pass, PASSWORD_DEFAULT),
   'failed_login_attempts' => 0,
   'locked_until' => null
