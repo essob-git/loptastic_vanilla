@@ -30,6 +30,7 @@ session_start([
   'cookie_httponly' => true,
   'cookie_secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
   'cookie_samesite' => 'Lax',
+'cookie_path'     => '/loptastic/',
   'use_strict_mode' => true,
 ]);
 if (!isset($_SESSION['uid'])) {
@@ -38,15 +39,30 @@ if (!isset($_SESSION['uid'])) {
 }
 
 $usersFile = __DIR__ . '/data/users.json';
+$currentUser = null;
 if (file_exists($usersFile)) {
   $users = json_decode(file_get_contents($usersFile) ?: '[]', true);
   if (is_array($users)) {
     foreach ($users as $u) {
-      if (($u['id'] ?? null) === $_SESSION['uid'] && !empty($u['force_password_change'])) {
-        header('Location: /loptastic/pw.php');
-        exit;
+      if (($u['id'] ?? null) === $_SESSION['uid']) {
+        $currentUser = $u;
+        break;
+      
       }
     }
   }
+}
+if ($currentUser === null) {
+  // Verwaiste Session (User existiert nicht mehr) aufräumen, damit
+  // der Client nicht in einen Redirect-Loop über AuthManager läuft.
+  $_SESSION = [];
+  session_destroy();
+  header('Location: /loptastic/login.php');
+  exit;
+}
+
+if (!empty($currentUser['force_password_change'])) {
+  header('Location: /loptastic/pw.php');
+  exit;
 }
 readfile(__DIR__ . '/app/index.html');

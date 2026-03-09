@@ -29,7 +29,7 @@ import { AuthManager } from './AuthManager.js';
 
 async function loadDefaultConfig() {
     try {
-        const response = await fetch('app/default_config.json');
+        const response = await fetch('./app/default_config.json');
         return await response.json();
     } catch (e) {
         console.error('Konnte default_config.json nicht laden:', e);

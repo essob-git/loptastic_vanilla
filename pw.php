@@ -9,6 +9,7 @@ session_start([
   'cookie_httponly' => true,
   'cookie_secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
   'cookie_samesite' => 'Lax',
+ 'cookie_path'     => '/loptastic/',
   'use_strict_mode' => true,
 ]);
 if (!isset($_SESSION['uid'])) {

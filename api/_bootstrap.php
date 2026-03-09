@@ -31,6 +31,7 @@ session_start([
   'cookie_httponly' => true,
   'cookie_secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
   'cookie_samesite' => 'Lax',
+'cookie_path'     => '/loptastic/',
   'use_strict_mode' => true,
 ]);
 
@@ -47,7 +48,14 @@ $INACTIVE_LIMIT = 60*60*8;
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $INACTIVE_LIMIT)) {
   session_unset();
   session_destroy();
-  session_start();
+  session_start([
+    'cookie_httponly' => true,
+    'cookie_secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+    'cookie_samesite' => 'Lax',
+    'cookie_path'     => '/loptastic/',
+    'use_strict_mode' => true,
+  ]);
+
 }
 $_SESSION['LAST_ACTIVITY'] = time();
 

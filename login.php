@@ -30,11 +30,35 @@ session_start([
   'cookie_httponly' => true,
   'cookie_secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
   'cookie_samesite' => 'Lax',
+ 'cookie_path'     => '/loptastic/',
   'use_strict_mode' => true,
 ]);
 if (isset($_SESSION['uid'])) {
-  header('Location: /loptastic/');
-  exit;
+  $usersFile = __DIR__ . '/data/users.json';
+  $isValidSessionUser = false;
+
+  if (file_exists($usersFile)) {
+    $users = json_decode(file_get_contents($usersFile) ?: '[]', true);
+    if (is_array($users)) {
+      foreach ($users as $u) {
+        if (($u['id'] ?? null) === $_SESSION['uid']) {
+          $isValidSessionUser = true;
+          break;
+        }
+      }
+    }
+  }
+
+  if ($isValidSessionUser) {
+    header('Location: /loptastic/');
+    exit;
+  }
+
+  // Verwaiste Session (User gelöscht/inkonsistent) bereinigen,
+  // damit kein Redirect-Loop login.php <-> index.php entsteht.
+  $_SESSION = [];
+  session_destroy();
+
 }
 ?><!doctype html>
 <html lang="de">
