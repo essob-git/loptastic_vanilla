@@ -8,6 +8,7 @@ $in = json_decode(file_get_contents('php://input'), true) ?? [];
 $id = (string)($in['id'] ?? '');
 $new = (string)($in['password'] ?? '');
 if ($id==='' || $new==='') json_err('ID/Passwort fehlt', 422);
+validate_password_or_422($new);
 
 $users = load_users();
 $found = false;

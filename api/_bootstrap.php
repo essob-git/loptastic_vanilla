@@ -172,6 +172,72 @@ function load_app_settings(): array {
   return is_array($data) ? $data : [];
 }
 
+function default_password_policy(): array {
+  return [
+    'min_length' => 10,
+    'max_length' => 128,
+    'require_uppercase' => false,
+    'require_lowercase' => false,
+    'require_number' => false,
+    'require_special' => false,
+  ];
+}
+
+function get_password_policy(): array {
+  $settings = load_app_settings();
+  $input = $settings['password_policy'] ?? [];
+  $defaults = default_password_policy();
+
+  $min = (int)($input['min_length'] ?? $defaults['min_length']);
+  $max = (int)($input['max_length'] ?? $defaults['max_length']);
+  if ($min < 1) $min = 1;
+  if ($max < $min) $max = $min;
+  if ($max > 512) $max = 512;
+
+  return [
+    'min_length' => $min,
+    'max_length' => $max,
+    'require_uppercase' => (bool)($input['require_uppercase'] ?? $defaults['require_uppercase']),
+    'require_lowercase' => (bool)($input['require_lowercase'] ?? $defaults['require_lowercase']),
+    'require_number' => (bool)($input['require_number'] ?? $defaults['require_number']),
+    'require_special' => (bool)($input['require_special'] ?? $defaults['require_special']),
+  ];
+}
+
+function password_policy_violations(string $password, ?array $policy = null): array {
+  $p = $policy ?? get_password_policy();
+  $violations = [];
+
+  $len = mb_strlen($password, 'UTF-8');
+  if ($len < (int)$p['min_length']) {
+    $violations[] = 'Mindestens ' . (int)$p['min_length'] . ' Zeichen erforderlich';
+  }
+  if ($len > (int)$p['max_length']) {
+    $violations[] = 'Maximal ' . (int)$p['max_length'] . ' Zeichen erlaubt';
+  }
+  if (!empty($p['require_uppercase']) && !preg_match('/[A-Z]/', $password)) {
+    $violations[] = 'Mindestens ein Großbuchstabe erforderlich';
+  }
+  if (!empty($p['require_lowercase']) && !preg_match('/[a-z]/', $password)) {
+    $violations[] = 'Mindestens ein Kleinbuchstabe erforderlich';
+  }
+  if (!empty($p['require_number']) && !preg_match('/[0-9]/', $password)) {
+    $violations[] = 'Mindestens eine Zahl erforderlich';
+  }
+  if (!empty($p['require_special']) && !preg_match('/[^A-Za-z0-9]/', $password)) {
+    $violations[] = 'Mindestens ein Sonderzeichen erforderlich';
+  }
+
+  return $violations;
+}
+
+function validate_password_or_422(string $password): void {
+  $violations = password_policy_violations($password);
+  if (!empty($violations)) {
+    json_err('Passwort erfüllt die Richtlinie nicht: ' . implode('; ', $violations), 422);
+  }
+}
+
 function load_json_file(string $file, array $fallback = []): array {
   if (!file_exists($file)) return $fallback;
   $raw = file_get_contents($file);
@@ -284,9 +350,26 @@ function validate_settings_payload(string $key, array $payload): array {
       }
     }
 
+    $policyInput = is_array($payload['password_policy'] ?? null) ? $payload['password_policy'] : [];
+    $defaultPolicy = default_password_policy();
+
+    $min = (int)($policyInput['min_length'] ?? $defaultPolicy['min_length']);
+    $max = (int)($policyInput['max_length'] ?? $defaultPolicy['max_length']);
+    if ($min < 1) $min = 1;
+    if ($max < $min) $max = $min;
+    if ($max > 512) $max = 512;
+
     return [
       'registration_mode' => $mode,
       'departments' => array_values(array_unique($cleanDepartments)),
+      'password_policy' => [
+        'min_length' => $min,
+        'max_length' => $max,
+        'require_uppercase' => (bool)($policyInput['require_uppercase'] ?? $defaultPolicy['require_uppercase']),
+        'require_lowercase' => (bool)($policyInput['require_lowercase'] ?? $defaultPolicy['require_lowercase']),
+        'require_number' => (bool)($policyInput['require_number'] ?? $defaultPolicy['require_number']),
+        'require_special' => (bool)($policyInput['require_special'] ?? $defaultPolicy['require_special']),
+      ],
     ];
   }
 
