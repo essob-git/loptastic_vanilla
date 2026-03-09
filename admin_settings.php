@@ -12,8 +12,9 @@ if (!isset($_SESSION['uid'])) { header('Location: /loptastic/login.php'); exit; 
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <title>LopTastic – Systemeinstellungen</title>
+  <title>LopTastic – Einstellungen</title>
   <link rel="stylesheet" href="/loptastic/assets/admin.css">
+  <link rel="icon" type="image/x-icon" href="/loptastic/app/images/favicon.ico">
   <style>
     .container{max-width:95%;margin:40px auto;background:#fff;border-radius:16px;padding:24px;color:#0f172a}
     .topbar{display:flex;justify-content:space-between;align-items:center;color:#fff;padding:16px}
@@ -36,7 +37,7 @@ if (!isset($_SESSION['uid'])) { header('Location: /loptastic/login.php'); exit; 
 </head>
 <body class="splash-bg">
   <div class="topbar">
-    <div><strong>loptastic</strong> – Adminbereich</div>
+    <div><strong>loptastic</strong> – Einstellungen</div>
     <div><a class="link" href="/loptastic/">Zurück zur App</a></div>
   </div>
 
@@ -57,8 +58,6 @@ if (!isset($_SESSION['uid'])) { header('Location: /loptastic/login.php'); exit; 
           <button class="btn secondary" id="btn-reload" type="button">Neu laden</button>
           <button class="btn" id="btn-save" type="button">Speichern</button>
         </div>
-        <div class="hint">Das Settings-System ist bereichsbasiert. Neue Bereiche können serverseitig in der Registry ergänzt werden und erscheinen automatisch in dieser Navigation.</div>
-      </div>
     </div>
   </div>
 
