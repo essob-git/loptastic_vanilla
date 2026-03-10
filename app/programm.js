@@ -25,7 +25,7 @@
 import { UIManager } from "./uiManager.js";
 
 export const Programm = {
-     version: "dev-branch2026 0.X.0",
+     version: "0.26.0",
 
     getName()      { return 'LopTastic'; },
     getVersion()   { return `${this.version}-alpha`; },
