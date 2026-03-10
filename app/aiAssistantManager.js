@@ -2,20 +2,74 @@ import { StateManager } from './stateManager.js';
 import { UIManager } from './uiManager.js';
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
+const CLOSED_STATUS_KEYWORDS = ['erledigt', 'abgeschlossen', 'done', 'closed', 'verworfen', 'abgebrochen', 'cancelled', 'storniert'];
 
-function flattenItems(items = [], listId = null, acc = []) {
+function flattenItems(items = [], listId = null, listName = '', acc = []) {
     items.forEach(item => {
-        acc.push({ ...item, __listId: listId });
+        acc.push({ ...item, __listId: listId, __listName: listName });
         if (Array.isArray(item.children) && item.children.length > 0) {
-            flattenItems(item.children, listId, acc);
+            flattenItems(item.children, listId, listName, acc);
         }
     });
     return acc;
 }
 
+function normalizeStatus(status) {
+    return String(status || '').trim().toLowerCase();
+}
+
+function isClosedStatus(status) {
+    const s = normalizeStatus(status);
+    return CLOSED_STATUS_KEYWORDS.some(key => s.includes(key));
+}
+
+function isTaskItem(item) {
+    return item && !item.isDeleted && item.type === 'p';
+}
+
 function parseDate(value) {
     if (!value) return null;
-    const d = new Date(value);
+    const raw = String(value).trim();
+    if (!raw) return null;
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+        const d = new Date(raw + 'T00:00:00');
+        return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    const germanDate = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(raw);
+    if (germanDate) {
+        const d = new Date(Number(germanDate[3]), Number(germanDate[2]) - 1, Number(germanDate[1]));
+        return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    const monthMap = {
+        januar: 0, jan: 0,
+        februar: 1, feb: 1,
+        maerz: 2, märz: 2, mar: 2,
+        april: 3, apr: 3,
+        mai: 4,
+        juni: 5, jun: 5,
+        juli: 6, jul: 6,
+        august: 7, aug: 7,
+        september: 8, sep: 8,
+        oktober: 9, okt: 9,
+        november: 10, nov: 10,
+        dezember: 11, dez: 11
+    };
+
+    const monthYear = /^([A-Za-zÄÖÜäöüß.]+)\s+(\d{4})$/.exec(raw);
+    if (monthYear) {
+        const monthName = monthYear[1].replace('.', '').toLowerCase();
+        const month = monthMap[monthName];
+        if (month !== undefined) {
+            const year = Number(monthYear[2]);
+            const d = new Date(year, month + 1, 0);
+            return Number.isNaN(d.getTime()) ? null : d;
+        }
+    }
+
+    const d = new Date(raw);
     return Number.isNaN(d.getTime()) ? null : d;
 }
 
@@ -25,6 +79,7 @@ function getLagDays(dep) {
     const unit = dep.lag.unit || 'd';
     if (unit === 'w') return v * 7;
     if (unit === 'm') return v * 30;
+    if (unit === 'y') return v * 365;
     return v;
 }
 
@@ -41,7 +96,7 @@ function summarizeHistory(changelog = {}, itemMap = new Map()) {
     });
 
     entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    return entries.slice(0, 50);
+    return entries.slice(0, 100);
 }
 
 async function tryLoadWebLLM() {
@@ -115,29 +170,67 @@ class LoptasticAIAssistant {
 
     collectContext() {
         const project = StateManager.getCurrentProject();
-        const allLists = StateManager.getAllLists2();
-        const allItems = allLists.flatMap(list => flattenItems(list.items || [], list.meta?.id));
-        const itemMap = new Map(allItems.map(item => [item.id, item]));
+        const allLists = StateManager.getAllLists2().filter(list => list && !list.meta?.isDeleted);
+        const allItems = allLists.flatMap(list => flattenItems(list.items || [], list.meta?.id, list.meta?.name || 'Unbenannte Liste'));
+        const taskItems = allItems.filter(isTaskItem);
+        const itemMap = new Map(taskItems.map(item => [item.id, item]));
         const history = summarizeHistory(project?.changelog || {}, itemMap);
 
-        return { project, allLists, allItems, itemMap, history };
+        return { project, allLists, allItems, taskItems, itemMap, history };
+    }
+
+    deriveDeadline(item, itemMap, memo = new Map(), visiting = new Set()) {
+        if (memo.has(item.id)) return memo.get(item.id);
+        if (visiting.has(item.id)) return null;
+        visiting.add(item.id);
+
+        let own = parseDate(item.data?.report_deadline);
+        const deps = Array.isArray(item.data?.dependencies) ? item.data.dependencies : [];
+        const predecessorDates = [];
+
+        deps.forEach(dep => {
+            const pred = itemMap.get(dep.id);
+            if (!pred) return;
+
+            const predDate = this.deriveDeadline(pred, itemMap, memo, visiting) || parseDate(pred.data?.report_deadline);
+            if (!predDate) return;
+            const shifted = new Date(predDate.getTime() + getLagDays(dep) * ONE_DAY);
+            predecessorDates.push(shifted);
+        });
+
+        if (!own && predecessorDates.length > 0) {
+            own = new Date(Math.max(...predecessorDates.map(d => d.getTime())));
+        }
+
+        visiting.delete(item.id);
+        memo.set(item.id, own || null);
+        return own || null;
     }
 
     async analyzeSchedule() {
-        const { allItems, itemMap } = this.collectContext();
+        const { taskItems, itemMap, allLists } = this.collectContext();
         const findings = [];
         const now = new Date();
+        const derivedMemo = new Map();
 
-        allItems.forEach(item => {
+        if (!allLists.length) {
+            return [{ severity: 'info', message: 'Keine aktive Liste im Projekt gefunden.' }];
+        }
+
+        taskItems.forEach(item => {
             const idLabel = item.data?.report_id ? `[${item.data.report_id}] ` : '';
-            const topic = `${idLabel}${item.data?.report_topic || 'Ohne Titel'}`;
-            const deadline = parseDate(item.data?.report_deadline);
-            const status = (item.data?.report_status || '').toLowerCase();
+            const topic = `${idLabel}${item.data?.report_topic || 'Ohne Titel'} (${item.__listName || 'Liste'})`;
+            const explicitDeadline = parseDate(item.data?.report_deadline);
+            const effectiveDeadline = explicitDeadline || this.deriveDeadline(item, itemMap, derivedMemo);
+            const closed = isClosedStatus(item.data?.report_status);
 
-            if (!deadline) {
-                findings.push({ severity: 'warn', message: `Fehlende Frist bei ${topic}` });
-            } else if (deadline < now && !status.includes('abgeschlossen') && !status.includes('done')) {
-                findings.push({ severity: 'error', message: `Überfälliger Termin bei ${topic} (${item.data.report_deadline})` });
+            if (!effectiveDeadline) {
+                findings.push({ severity: 'warn', message: `Fehlende/ungültige Frist bei ${topic}` });
+            } else if (effectiveDeadline < now && !closed) {
+                findings.push({
+                    severity: 'error',
+                    message: `Überfälliger offener Termin bei ${topic} (Frist: ${item.data?.report_deadline || effectiveDeadline.toISOString().slice(0, 10)})`
+                });
             }
 
             const deps = Array.isArray(item.data?.dependencies) ? item.data.dependencies : [];
@@ -153,51 +246,45 @@ class LoptasticAIAssistant {
                     return;
                 }
 
-                const predecessorDeadline = parseDate(predecessor.data?.report_deadline);
-                if (deadline && predecessorDeadline) {
+                const predecessorDeadline = parseDate(predecessor.data?.report_deadline) || this.deriveDeadline(predecessor, itemMap, derivedMemo);
+                if (effectiveDeadline && predecessorDeadline) {
                     const minStart = new Date(predecessorDeadline.getTime() + getLagDays(dep) * ONE_DAY);
-                    if (deadline < minStart) {
+                    if (effectiveDeadline < minStart) {
                         findings.push({
                             severity: 'error',
-                            message: `Terminlogik verletzt: ${topic} liegt vor/zu nah am Vorgänger ${predecessor.data?.report_topic || predecessor.id}`
+                            message: `Terminlogik verletzt: ${topic} liegt vor dem zulässigen Termin nach Vorgänger ${predecessor.data?.report_topic || predecessor.id}`
                         });
                     }
                 }
             });
         });
 
-        const cycleFindings = this.detectCycles(allItems);
-        findings.push(...cycleFindings);
+        findings.push(...this.detectCycles(taskItems));
 
         if (this.engine === 'tfjs') {
             const tf = await tryLoadTensorFlow();
             if (tf) {
-                const tfHints = this.tfRiskHints(allItems, tf);
-                findings.push(...tfHints);
+                findings.push(...this.tfRiskHints(taskItems, tf));
             } else {
                 findings.push({ severity: 'info', message: 'TensorFlow.js nicht verfügbar – Regelanalyse wurde genutzt.' });
             }
         }
 
-        if (findings.length === 0) {
+        if (!findings.length) {
             findings.push({ severity: 'ok', message: 'Keine Unstimmigkeiten gefunden.' });
         }
-
         return findings;
     }
 
-    detectCycles(allItems) {
-        const map = new Map(allItems.map(item => [item.id, item]));
+    detectCycles(taskItems) {
+        const map = new Map(taskItems.map(item => [item.id, item]));
         const visited = new Set();
         const stack = new Set();
         const findings = [];
 
         const dfs = (id, path = []) => {
             if (stack.has(id)) {
-                findings.push({
-                    severity: 'error',
-                    message: `Zyklische Verkettung erkannt: ${[...path, id].join(' -> ')}`
-                });
+                findings.push({ severity: 'error', message: `Zyklische Verkettung erkannt: ${[...path, id].join(' -> ')}` });
                 return;
             }
             if (visited.has(id)) return;
@@ -212,12 +299,12 @@ class LoptasticAIAssistant {
             stack.delete(id);
         };
 
-        allItems.forEach(item => dfs(item.id));
+        taskItems.forEach(item => dfs(item.id));
         return findings;
     }
 
-    tfRiskHints(allItems, tf) {
-        const durations = allItems.map(i => Number(i.data?.estimated_duration?.value || 0)).filter(Boolean);
+    tfRiskHints(taskItems, tf) {
+        const durations = taskItems.map(i => Number(i.data?.estimated_duration?.value || 0)).filter(Boolean);
         if (durations.length < 3) return [];
 
         const tensor = tf.tensor1d(durations);
@@ -226,18 +313,14 @@ class LoptasticAIAssistant {
         tensor.dispose();
 
         const hints = [];
-        allItems.forEach(item => {
+        taskItems.forEach(item => {
             const duration = Number(item.data?.estimated_duration?.value || 0);
             if (!duration) return;
             const z = (duration - mean) / std;
             if (Math.abs(z) > 2.2) {
-                hints.push({
-                    severity: 'warn',
-                    message: `Auffällige Dauer (TensorFlow-Ausreißer): ${item.data?.report_topic || item.id} mit ${duration}`
-                });
+                hints.push({ severity: 'warn', message: `Auffällige Dauer (TensorFlow-Ausreißer): ${item.data?.report_topic || item.id} mit ${duration}` });
             }
         });
-
         return hints;
     }
 
@@ -271,19 +354,17 @@ class LoptasticAIAssistant {
                     this.webllmEngine = await webllm.CreateMLCEngine('Llama-3.2-1B-Instruct-q4f16_1-MLC');
                 }
                 const prompt = this.buildPrompt(question, context);
-                const result = await this.webllmEngine.chat.completions.create({
-                    messages: [{ role: 'user', content: prompt }]
-                });
+                const result = await this.webllmEngine.chat.completions.create({ messages: [{ role: 'user', content: prompt }] });
                 return result.choices?.[0]?.message?.content || 'Keine Antwort verfügbar.';
             }
         }
-
         return this.ruleBasedAnswer(question, context);
     }
 
     buildPrompt(question, context) {
-        const items = context.allItems.slice(0, 120).map(item => ({
+        const items = context.taskItems.slice(0, 140).map(item => ({
             id: item.id,
+            list: item.__listName,
             report_id: item.data?.report_id,
             topic: item.data?.report_topic,
             deadline: item.data?.report_deadline,
@@ -291,7 +372,7 @@ class LoptasticAIAssistant {
             deps: item.data?.dependencies || []
         }));
 
-        const history = context.history.slice(0, 40).map(h => ({
+        const history = context.history.slice(0, 60).map(h => ({
             timestamp: h.timestamp,
             user: h.user,
             action: h.action,
@@ -300,56 +381,53 @@ class LoptasticAIAssistant {
             changes: h.changes
         }));
 
-        return `Du bist der LopTastic KI-Assistent. Antworte auf Deutsch, präzise und nachvollziehbar.
-
-Frage:\n${question}
-
-Projektkontext (JSON):\n${JSON.stringify({ items, history }, null, 2)}
-
-Wenn du Inkonsistenzen siehst, benenne sie klar mit Item-Bezug.`;
+        return `Du bist der LopTastic KI-Assistent. Antworte auf Deutsch, präzise und nachvollziehbar. Berücksichtige Statuslogik: erledigt, verworfen, abgebrochen sind i.d.R. nicht kritisch bei überfälligen Fristen.\n\nFrage:\n${question}\n\nProjektkontext (JSON):\n${JSON.stringify({ items, history }, null, 2)}\n\nWenn du Inkonsistenzen siehst, benenne sie klar mit Item- und Listenbezug.`;
     }
 
     ruleBasedAnswer(question, context) {
         const q = question.toLowerCase();
+
         if (q.includes('überfällig') || q.includes('deadline') || q.includes('frist')) {
-            const overdue = context.allItems.filter(item => {
-                const d = parseDate(item.data?.report_deadline);
+            const overdue = context.taskItems.filter(item => {
+                const d = parseDate(item.data?.report_deadline) || this.deriveDeadline(item, context.itemMap);
                 if (!d) return false;
-                const done = (item.data?.report_status || '').toLowerCase().includes('abgeschlossen');
-                return d < new Date() && !done;
+                return d < new Date() && !isClosedStatus(item.data?.report_status);
             });
 
-            if (overdue.length === 0) return 'Es gibt aktuell keine überfälligen offenen Termine.';
-            return `Überfällige offene Termine (${overdue.length}):\n- ` + overdue
-                .slice(0, 12)
-                .map(i => `${i.data?.report_topic || i.id} (Frist: ${i.data?.report_deadline || '—'})`)
-                .join('\n- ');
+            if (!overdue.length) return 'Es gibt aktuell keine überfälligen offenen Termine.';
+            return `Überfällige offene Termine (${overdue.length}):\n- ` + overdue.slice(0, 15).map(i => `${i.data?.report_topic || i.id} [${i.__listName}] (Frist: ${i.data?.report_deadline || 'abgeleitet'})`).join('\n- ');
         }
 
         if (q.includes('verkett') || q.includes('abhäng')) {
-            const withDeps = context.allItems.filter(i => Array.isArray(i.data?.dependencies) && i.data.dependencies.length > 0);
+            const withDeps = context.taskItems.filter(i => Array.isArray(i.data?.dependencies) && i.data.dependencies.length > 0);
             if (!withDeps.length) return 'Es sind keine Verkettungen/Abhängigkeiten definiert.';
-            return `Es gibt ${withDeps.length} Elemente mit Verkettungen. Beispiel:\n` + withDeps.slice(0, 8).map(i => {
+            return `Es gibt ${withDeps.length} Elemente mit Verkettungen. Beispiele:\n` + withDeps.slice(0, 10).map(i => {
                 const deps = i.data.dependencies.map(d => d.id).join(', ');
-                return `- ${i.data?.report_topic || i.id}: ${deps}`;
+                return `- ${i.data?.report_topic || i.id} [${i.__listName}]: ${deps}`;
             }).join('\n');
         }
 
-        const hits = context.allItems.filter(i => {
+        if (q.includes('liste') || q.includes('listen')) {
+            const byList = new Map();
+            context.taskItems.forEach(item => {
+                const key = item.__listName || 'Unbekannt';
+                byList.set(key, (byList.get(key) || 0) + 1);
+            });
+            return `Ich sehe ${context.allLists.length} aktive Listen:\n- ` + [...byList.entries()].map(([name, count]) => `${name}: ${count} Aufgaben`).join('\n- ');
+        }
+
+        const hits = context.taskItems.filter(i => {
             const t = (i.data?.report_topic || '').toLowerCase();
             const d = (i.data?.report_desc || '').toLowerCase();
             return t.includes(q) || d.includes(q);
         });
 
         if (hits.length > 0) {
-            return `Ich habe ${hits.length} passende Elemente gefunden:\n- ` + hits.slice(0, 10).map(i => {
-                const deadline = i.data?.report_deadline || 'keine Frist';
-                return `${i.data?.report_topic || i.id} (${deadline})`;
-            }).join('\n- ');
+            return `Ich habe ${hits.length} passende Elemente gefunden:\n- ` + hits.slice(0, 12).map(i => `${i.data?.report_topic || i.id} [${i.__listName}] (${i.data?.report_deadline || 'keine Frist'})`).join('\n- ');
         }
 
         const latestChanges = context.history.slice(0, 8).map(h => `${h.timestamp}: ${h.action} – ${h.topic}`).join('\n');
-        return `Ich konnte keine direkte Zuordnung zur Frage finden. Letzte Änderungen:\n${latestChanges || 'Keine Historie verfügbar.'}`;
+        return `Keine direkte Zuordnung zur Frage. Letzte Änderungen:\n${latestChanges || 'Keine Historie verfügbar.'}`;
     }
 
     renderFindings(findings) {
