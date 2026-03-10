@@ -120,10 +120,83 @@ async function tryLoadTensorFlow() {
     }
 }
 
+function getWebGLRendererInfo() {
+    try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl2', { powerPreference: 'high-performance' })
+            || canvas.getContext('webgl', { powerPreference: 'high-performance' });
+        if (!gl) return 'unbekannt';
+
+        const ext = gl.getExtension('WEBGL_debug_renderer_info');
+        if (!ext) return 'Renderer nicht auslesbar';
+        const renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+        return renderer || 'unbekannt';
+    } catch (err) {
+        return 'unbekannt';
+    }
+}
+
+async function preferHighPerformanceTfBackend(tf) {
+    try {
+        if (typeof tf.env === 'function') {
+            tf.env().set('WEBGL_CONTEXT_ATTRIBUTES', {
+                alpha: false,
+                antialias: false,
+                premultipliedAlpha: false,
+                preserveDrawingBuffer: false,
+                depth: false,
+                stencil: false,
+                failIfMajorPerformanceCaveat: false,
+                powerPreference: 'high-performance'
+            });
+        }
+    } catch (err) {
+        console.warn('Konnte WEBGL_CONTEXT_ATTRIBUTES nicht setzen:', err);
+    }
+
+    const backends = typeof tf.engine === 'function' ? tf.engine().registryFactory : {};
+    const hasWebGPU = !!backends?.webgpu;
+    const hasWebGL = !!backends?.webgl;
+
+    if (hasWebGPU) {
+        try {
+            const ok = await tf.setBackend('webgpu');
+            if (ok) {
+                await tf.ready();
+                return 'webgpu';
+            }
+        } catch (err) {
+            console.warn('TF.js webgpu Backend nicht nutzbar, fallback auf webgl/cpu:', err);
+        }
+    }
+
+    if (hasWebGL) {
+        try {
+            const ok = await tf.setBackend('webgl');
+            if (ok) {
+                await tf.ready();
+                return 'webgl';
+            }
+        } catch (err) {
+            console.warn('TF.js webgl Backend nicht nutzbar, fallback auf cpu:', err);
+        }
+    }
+
+    try {
+        await tf.setBackend('cpu');
+        await tf.ready();
+    } catch (err) {
+        console.warn('TF.js cpu Backend konnte nicht aktiviert werden:', err);
+    }
+    return tf.getBackend?.() || 'cpu';
+}
+
 class LoptasticAIAssistant {
     constructor() {
         this.engine = 'tfjs';
         this.isBusy = false;
+        this.tfBackend = null;
+        this.tfRendererInfo = null;
     }
 
     async init() {
@@ -349,9 +422,18 @@ class LoptasticAIAssistant {
 Antwort aus lokalem Regelmodus:
 ${this.ruleBasedAnswer(question, context)}`;
             }
+
+            if (!this.tfBackend) {
+                this.tfBackend = await preferHighPerformanceTfBackend(tf);
+                this.tfRendererInfo = getWebGLRendererInfo();
+                UIManager.showToast(`TensorFlow aktiv (${this.tfBackend})`, 'info');
+            }
         }
 
-        return this.ruleBasedAnswer(question, context);
+        const base = this.ruleBasedAnswer(question, context);
+        if (this.engine !== 'tfjs') return base;
+
+        return `${base}\n\n[TensorFlow Backend: ${this.tfBackend || 'unbekannt'} | Renderer: ${this.tfRendererInfo || 'unbekannt'}]`;
     }
 
     ruleBasedAnswer(question, context) {
