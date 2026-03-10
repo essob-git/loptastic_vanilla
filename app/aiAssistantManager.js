@@ -99,30 +99,9 @@ function summarizeHistory(changelog = {}, itemMap = new Map()) {
     return entries.slice(0, 100);
 }
 
-async function tryLoadWebLLM() {
-    try {
-        const mod = await import('https://esm.run/@mlc-ai/web-llm');
-        return mod;
-    } catch (err) {
-        console.warn('WebLLM konnte nicht geladen werden:', err);
-        return null;
-    }
-}
 
 
-function supportsWebGPU() {
-    return !!(navigator && navigator.gpu);
-}
 
-function isWebGPUUnsupportedError(err) {
-    const msg = String(err?.message || err || '').toLowerCase();
-    return msg.includes('webgpu is not supported') || msg.includes('webgpu') && msg.includes('not supported');
-}
-
-function isOutOfMemoryError(err) {
-    const msg = String(err?.message || err || '').toLowerCase();
-    return msg.includes('not enough memory') || msg.includes('out of memory') || msg.includes('allocation') && msg.includes('failed');
-}
 
 async function tryLoadTensorFlow() {
     if (window.tf) return window.tf;
@@ -143,10 +122,7 @@ async function tryLoadTensorFlow() {
 
 class LoptasticAIAssistant {
     constructor() {
-        this.engine = 'rules';
-        this.webllmEngine = null;
-        this.webllmUnavailableReason = null;
-        this.webllmDisabledForSession = false;
+        this.engine = 'tfjs';
         this.isBusy = false;
     }
 
@@ -364,83 +340,18 @@ class LoptasticAIAssistant {
     }
 
     async generateAnswer(question, context) {
-        if (this.engine === 'webllm') {
-            if (this.webllmDisabledForSession) {
-                return `${this.webllmUnavailableReason || 'WebLLM ist für diese Sitzung deaktiviert.'}
+        if (this.engine === 'tfjs') {
+            const tf = await tryLoadTensorFlow();
+            if (!tf) {
+                UIManager.showToast('TensorFlow.js nicht ladbar – nutze Regelmodus.', 'warning');
+                return `TensorFlow.js konnte nicht geladen werden.
 
 Antwort aus lokalem Regelmodus:
 ${this.ruleBasedAnswer(question, context)}`;
             }
-
-            if (!supportsWebGPU()) {
-                this.webllmUnavailableReason = 'WebLLM benötigt WebGPU (nicht WebGL). In dieser Umgebung ist WebGPU nicht verfügbar.';
-                this.webllmDisabledForSession = true;
-                UIManager.showToast('WebLLM nicht verfügbar (WebGPU fehlt) – nutze Regelmodus.', 'warning');
-                return `${this.webllmUnavailableReason}
-
-Antwort aus lokalem Regelmodus:
-${this.ruleBasedAnswer(question, context)}`;
-            }
-
-            try {
-                const webllm = await tryLoadWebLLM();
-                if (webllm) {
-                    if (!this.webllmEngine) {
-                        this.webllmEngine = await webllm.CreateMLCEngine('Llama-3.2-1B-Instruct-q4f16_1-MLC');
-                    }
-                    const prompt = this.buildPrompt(question, context);
-                    const result = await this.webllmEngine.chat.completions.create({ messages: [{ role: 'user', content: prompt }] });
-                    return result.choices?.[0]?.message?.content || 'Keine Antwort verfügbar.';
-                }
-            } catch (err) {
-                const webgpuIssue = isWebGPUUnsupportedError(err);
-                const oomIssue = isOutOfMemoryError(err);
-                this.webllmUnavailableReason = webgpuIssue
-                    ? 'WebLLM-Start fehlgeschlagen: Browser unterstützt hier kein WebGPU. WebGL v1/v2 allein reicht für WebLLM nicht aus.'
-                    : oomIssue
-                        ? 'WebLLM-Start fehlgeschlagen: Nicht genug GPU-Speicher verfügbar. Entscheidend ist primär VRAM (z. B. auf der T1000), nicht nur CPU/RAM.'
-                        : `WebLLM-Start fehlgeschlagen: ${err?.message || err}`;
-                this.webllmDisabledForSession = true;
-                console.warn(this.webllmUnavailableReason, err);
-                UIManager.showToast('WebLLM Fehler – nutze Regelmodus.', 'warning');
-                return `${this.webllmUnavailableReason}
-
-Antwort aus lokalem Regelmodus:
-${this.ruleBasedAnswer(question, context)}`;
-            }
-
-            this.webllmUnavailableReason = 'WebLLM konnte nicht geladen werden (CDN/Import fehlgeschlagen).';
-            this.webllmDisabledForSession = true;
-            UIManager.showToast('WebLLM nicht ladbar – nutze Regelmodus.', 'warning');
-            return `${this.webllmUnavailableReason}
-
-Antwort aus lokalem Regelmodus:
-${this.ruleBasedAnswer(question, context)}`;
         }
+
         return this.ruleBasedAnswer(question, context);
-    }
-
-    buildPrompt(question, context) {
-        const items = context.taskItems.slice(0, 140).map(item => ({
-            id: item.id,
-            list: item.__listName,
-            report_id: item.data?.report_id,
-            topic: item.data?.report_topic,
-            deadline: item.data?.report_deadline,
-            status: item.data?.report_status,
-            deps: item.data?.dependencies || []
-        }));
-
-        const history = context.history.slice(0, 60).map(h => ({
-            timestamp: h.timestamp,
-            user: h.user,
-            action: h.action,
-            itemId: h.itemId,
-            topic: h.topic,
-            changes: h.changes
-        }));
-
-        return `Du bist der LopTastic KI-Assistent. Antworte auf Deutsch, präzise und nachvollziehbar. Berücksichtige Statuslogik: erledigt, verworfen, abgebrochen sind i.d.R. nicht kritisch bei überfälligen Fristen.\n\nFrage:\n${question}\n\nProjektkontext (JSON):\n${JSON.stringify({ items, history }, null, 2)}\n\nWenn du Inkonsistenzen siehst, benenne sie klar mit Item- und Listenbezug.`;
     }
 
     ruleBasedAnswer(question, context) {
