@@ -371,14 +371,15 @@ class LoptasticAIAssistant {
             return null;
         }
 
+        // Bevorzugt einfache/kleine Q4-Modelle für bessere Startchancen
         const f16Models = [
-            'Llama-3.2-1B-Instruct-q4f16_1-MLC',
             'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',
+            'Llama-3.2-1B-Instruct-q4f16_1-MLC',
             'Qwen2.5-1.5B-Instruct-q4f16_1-MLC'
         ];
         const nonF16Models = [
-            'Llama-3.2-1B-Instruct-q4f32_1-MLC',
             'Qwen2.5-0.5B-Instruct-q4f32_1-MLC',
+            'Llama-3.2-1B-Instruct-q4f32_1-MLC',
             'Qwen2.5-1.5B-Instruct-q4f32_1-MLC'
         ];
 
