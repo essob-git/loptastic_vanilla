@@ -141,12 +141,6 @@ async function tryLoadWebLLM() {
 }
 
 
-function isF16UnsupportedError(err) {
-    const msg = String(err?.message || err || '').toLowerCase();
-    return msg.includes("extension 'f16' is not allowed")
-        || msg.includes('enable f16')
-        || (msg.includes('wgsl') && msg.includes('f16'));
-}
 
 class LoptasticAIAssistant {
     constructor() {
@@ -155,7 +149,6 @@ class LoptasticAIAssistant {
         this.tfBackend = null;
         this.webllmEngine = null;
         this.webllmModel = null;
-        this.webllmF16Unsupported = false;
         this.webllmDisabledReason = null;
     }
 
@@ -371,21 +364,12 @@ class LoptasticAIAssistant {
             return null;
         }
 
-        // Bevorzugt einfache/kleine Q4-Modelle für bessere Startchancen
-        const f16Models = [
-            'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',
-            'Llama-3.2-1B-Instruct-q4f16_1-MLC',
-            'Qwen2.5-1.5B-Instruct-q4f16_1-MLC'
+        // Nur einfache Q4-Modelle (ohne f16/f32-Suffix)
+        const modelCandidates = [
+            'Qwen2.5-0.5B-Instruct-q4-MLC',
+            'Llama-3.2-1B-Instruct-q4-MLC',
+            'Qwen2.5-1.5B-Instruct-q4-MLC'
         ];
-        const nonF16Models = [
-            'Qwen2.5-0.5B-Instruct-q4f32_1-MLC',
-            'Llama-3.2-1B-Instruct-q4f32_1-MLC',
-            'Qwen2.5-1.5B-Instruct-q4f32_1-MLC'
-        ];
-
-        const modelCandidates = this.webllmF16Unsupported
-            ? nonF16Models
-            : [...f16Models, ...nonF16Models];
 
         for (const model of modelCandidates) {
             try {
@@ -395,17 +379,11 @@ class LoptasticAIAssistant {
                 UIManager.showToast(`WebLLM aktiv (${model})`, 'success');
                 return this.webllmEngine;
             } catch (err) {
-                if (isF16UnsupportedError(err)) {
-                    this.webllmF16Unsupported = true;
-                    console.warn('WebLLM f16 wird von der GPU/Browser-Kombi nicht unterstützt, versuche f32 Modelle.', err);
-                }
                 console.warn(`WebLLM Modell ${model} fehlgeschlagen:`, err);
             }
         }
 
-        this.webllmDisabledReason = this.webllmF16Unsupported
-            ? 'WebLLM konnte nicht gestartet werden: f16 ist nicht unterstützt und kein kompatibles f32-Modell war verfügbar.'
-            : 'WebLLM konnte nicht gestartet werden: kein kompatibles Modell verfügbar.';
+        this.webllmDisabledReason = 'WebLLM konnte nicht gestartet werden: kein kompatibles Q4-Modell verfügbar.';
         return null;
     }
 
