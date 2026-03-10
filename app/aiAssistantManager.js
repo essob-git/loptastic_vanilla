@@ -140,6 +140,14 @@ async function tryLoadWebLLM() {
     }
 }
 
+
+function isF16UnsupportedError(err) {
+    const msg = String(err?.message || err || '').toLowerCase();
+    return msg.includes("extension 'f16' is not allowed")
+        || msg.includes('enable f16')
+        || (msg.includes('wgsl') && msg.includes('f16'));
+}
+
 class LoptasticAIAssistant {
     constructor() {
         this.engine = 'webllm';
@@ -147,6 +155,8 @@ class LoptasticAIAssistant {
         this.tfBackend = null;
         this.webllmEngine = null;
         this.webllmModel = null;
+        this.webllmF16Unsupported = false;
+        this.webllmDisabledReason = null;
     }
 
     async init() {
@@ -353,25 +363,48 @@ class LoptasticAIAssistant {
 
     async initWebLLMEngine() {
         if (this.webllmEngine) return this.webllmEngine;
-        const webllm = await tryLoadWebLLM();
-        if (!webllm) return null;
+        if (this.webllmDisabledReason) return null;
 
-        const modelCandidates = [
+        const webllm = await tryLoadWebLLM();
+        if (!webllm) {
+            this.webllmDisabledReason = 'WebLLM konnte nicht geladen werden (Import/CDN).';
+            return null;
+        }
+
+        const f16Models = [
             'Llama-3.2-1B-Instruct-q4f16_1-MLC',
             'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',
             'Qwen2.5-1.5B-Instruct-q4f16_1-MLC'
         ];
+        const nonF16Models = [
+            'Llama-3.2-1B-Instruct-q4f32_1-MLC',
+            'Qwen2.5-0.5B-Instruct-q4f32_1-MLC',
+            'Qwen2.5-1.5B-Instruct-q4f32_1-MLC'
+        ];
+
+        const modelCandidates = this.webllmF16Unsupported
+            ? nonF16Models
+            : [...f16Models, ...nonF16Models];
 
         for (const model of modelCandidates) {
             try {
                 this.webllmEngine = await webllm.CreateMLCEngine(model);
                 this.webllmModel = model;
+                this.webllmDisabledReason = null;
                 UIManager.showToast(`WebLLM aktiv (${model})`, 'success');
                 return this.webllmEngine;
             } catch (err) {
+                if (isF16UnsupportedError(err)) {
+                    this.webllmF16Unsupported = true;
+                    console.warn('WebLLM f16 wird von der GPU/Browser-Kombi nicht unterstützt, versuche f32 Modelle.', err);
+                }
                 console.warn(`WebLLM Modell ${model} fehlgeschlagen:`, err);
             }
         }
+
+        this.webllmDisabledReason = this.webllmF16Unsupported
+            ? 'WebLLM konnte nicht gestartet werden: f16 ist nicht unterstützt und kein kompatibles f32-Modell war verfügbar.'
+            : 'WebLLM konnte nicht gestartet werden: kein kompatibles Modell verfügbar.';
         return null;
     }
 
@@ -420,7 +453,7 @@ class LoptasticAIAssistant {
                     UIManager.showToast('WebLLM Antwort fehlgeschlagen – nutze Regelmodus.', 'warning');
                 }
             } else {
-                UIManager.showToast('WebLLM nicht verfügbar – nutze Regelmodus.', 'warning');
+                UIManager.showToast((this.webllmDisabledReason || 'WebLLM nicht verfügbar') + ' – nutze Regelmodus.', 'warning');
             }
         }
 
