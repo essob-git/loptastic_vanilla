@@ -4,6 +4,22 @@ import { UIManager } from './uiManager.js';
 const ONE_DAY = 24 * 60 * 60 * 1000;
 const CLOSED_STATUS_KEYWORDS = ['erledigt', 'abgeschlossen', 'done', 'closed', 'verworfen', 'abgebrochen', 'cancelled', 'storniert'];
 
+const QUESTION_STOPWORDS = new Set([
+    'was','ist','sind','der','die','das','den','dem','ein','eine','einer','eines','und','oder','mit','von','zu','im','in','am','an',
+    'für','fuer','bei','auf','über','ueber','wie','welche','welcher','welches','gibt','es','mir','bitte','zeige','zeig','alle','zur','zum','des'
+]);
+
+function normalizeText(value) {
+    return String(value || '').toLowerCase().replace(/[^a-z0-9äöüß\s-]/gi, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function extractKeywords(question) {
+    return normalizeText(question)
+        .split(' ')
+        .map(t => t.trim())
+        .filter(t => t.length >= 3 && !QUESTION_STOPWORDS.has(t));
+}
+
 function flattenItems(items = [], listId = null, listName = '', acc = []) {
     items.forEach(item => {
         acc.push({ ...item, __listId: listId, __listName: listName });
@@ -437,49 +453,106 @@ ${this.ruleBasedAnswer(question, context)}`;
     }
 
     ruleBasedAnswer(question, context) {
-        const q = question.toLowerCase();
+        const q = normalizeText(question);
+        const keywords = extractKeywords(question);
+        const items = context.taskItems || [];
 
-        if (q.includes('überfällig') || q.includes('deadline') || q.includes('frist')) {
-            const overdue = context.taskItems.filter(item => {
-                const d = parseDate(item.data?.report_deadline) || this.deriveDeadline(item, context.itemMap);
-                if (!d) return false;
-                return d < new Date() && !isClosedStatus(item.data?.report_status);
-            });
+        const overdue = items.filter(item => {
+            const d = parseDate(item.data?.report_deadline) || this.deriveDeadline(item, context.itemMap);
+            if (!d) return false;
+            return d < new Date() && !isClosedStatus(item.data?.report_status);
+        });
 
+        if (q.includes('überfällig') || q.includes('ueberfaellig') || q.includes('deadline') || q.includes('frist')) {
             if (!overdue.length) return 'Es gibt aktuell keine überfälligen offenen Termine.';
-            return `Überfällige offene Termine (${overdue.length}):\n- ` + overdue.slice(0, 15).map(i => `${i.data?.report_topic || i.id} [${i.__listName}] (Frist: ${i.data?.report_deadline || 'abgeleitet'})`).join('\n- ');
+            return `Überfällige offene Termine (${overdue.length}):
+- ` + overdue.slice(0, 15).map(i => `${i.data?.report_topic || i.id} [${i.__listName}] (Frist: ${i.data?.report_deadline || 'abgeleitet'})`).join('
+- ');
         }
 
-        if (q.includes('verkett') || q.includes('abhäng')) {
-            const withDeps = context.taskItems.filter(i => Array.isArray(i.data?.dependencies) && i.data.dependencies.length > 0);
+        if (q.includes('verkett') || q.includes('abhäng') || q.includes('abhaeng')) {
+            const withDeps = items.filter(i => Array.isArray(i.data?.dependencies) && i.data.dependencies.length > 0);
             if (!withDeps.length) return 'Es sind keine Verkettungen/Abhängigkeiten definiert.';
-            return `Es gibt ${withDeps.length} Elemente mit Verkettungen. Beispiele:\n` + withDeps.slice(0, 10).map(i => {
+            return `Es gibt ${withDeps.length} Elemente mit Verkettungen. Beispiele:
+` + withDeps.slice(0, 10).map(i => {
                 const deps = i.data.dependencies.map(d => d.id).join(', ');
                 return `- ${i.data?.report_topic || i.id} [${i.__listName}]: ${deps}`;
-            }).join('\n');
+            }).join('
+');
         }
 
         if (q.includes('liste') || q.includes('listen')) {
             const byList = new Map();
-            context.taskItems.forEach(item => {
+            items.forEach(item => {
                 const key = item.__listName || 'Unbekannt';
                 byList.set(key, (byList.get(key) || 0) + 1);
             });
-            return `Ich sehe ${context.allLists.length} aktive Listen:\n- ` + [...byList.entries()].map(([name, count]) => `${name}: ${count} Aufgaben`).join('\n- ');
+            return `Ich sehe ${context.allLists.length} aktive Listen:
+- ` + [...byList.entries()].map(([name, count]) => `${name}: ${count} Aufgaben`).join('
+- ');
         }
 
-        const hits = context.taskItems.filter(i => {
-            const t = (i.data?.report_topic || '').toLowerCase();
-            const d = (i.data?.report_desc || '').toLowerCase();
-            return t.includes(q) || d.includes(q);
-        });
+        const ranked = items.map(item => {
+            const hay = normalizeText([
+                item.data?.report_id,
+                item.data?.report_topic,
+                item.data?.report_desc,
+                item.data?.report_responsible,
+                item.data?.report_status,
+                item.__listName
+            ].join(' '));
 
-        if (hits.length > 0) {
-            return `Ich habe ${hits.length} passende Elemente gefunden:\n- ` + hits.slice(0, 12).map(i => `${i.data?.report_topic || i.id} [${i.__listName}] (${i.data?.report_deadline || 'keine Frist'})`).join('\n- ');
+            let score = 0;
+            keywords.forEach(k => {
+                if (hay.includes(k)) score += 2;
+                if ((item.data?.report_topic || '').toLowerCase().includes(k)) score += 1;
+            });
+
+            if ((q.includes('status') || q.includes('zustand')) && item.data?.report_status) score += 0.5;
+            if ((q.includes('verantwort') || q.includes('zuständig') || q.includes('zustaendig')) && item.data?.report_responsible) score += 0.5;
+            if ((q.includes('wann') || q.includes('fällig') || q.includes('faellig')) && (item.data?.report_deadline || this.deriveDeadline(item, context.itemMap))) score += 0.5;
+
+            return { item, score };
+        }).filter(r => r.score > 0).sort((a, b) => b.score - a.score);
+
+        const top = ranked.slice(0, 8).map(r => r.item);
+
+        if ((q.includes('status') || q.includes('zustand')) && top.length) {
+            return 'Status-Übersicht zu deiner Anfrage:
+- ' + top.map(i => `${i.data?.report_topic || i.id} [${i.__listName}]: ${i.data?.report_status || 'kein Status'}`).join('
+- ');
         }
 
-        const latestChanges = context.history.slice(0, 8).map(h => `${h.timestamp}: ${h.action} – ${h.topic}`).join('\n');
-        return `Keine direkte Zuordnung zur Frage. Letzte Änderungen:\n${latestChanges || 'Keine Historie verfügbar.'}`;
+        if ((q.includes('verantwort') || q.includes('zuständig') || q.includes('zustaendig')) && top.length) {
+            return 'Verantwortlichkeiten zu deiner Anfrage:
+- ' + top.map(i => `${i.data?.report_topic || i.id} [${i.__listName}]: ${i.data?.report_responsible || 'nicht gesetzt'}`).join('
+- ');
+        }
+
+        if ((q.includes('wann') || q.includes('fällig') || q.includes('faellig') || q.includes('termin')) && top.length) {
+            return 'Termin-/Fristinfo zu deiner Anfrage:
+- ' + top.map(i => `${i.data?.report_topic || i.id} [${i.__listName}]: ${i.data?.report_deadline || 'abgeleitet/keine explizite Frist'}`).join('
+- ');
+        }
+
+        if (top.length) {
+            return `Ich habe ${ranked.length} thematisch passende Einträge gefunden (Top ${top.length}):
+- ` + top.map(i => {
+                const deadline = i.data?.report_deadline || 'keine Frist';
+                const status = i.data?.report_status || 'kein Status';
+                return `${i.data?.report_topic || i.id} [${i.__listName}] | Frist: ${deadline} | Status: ${status}`;
+            }).join('
+- ');
+        }
+
+        if (!keywords.length) {
+            return 'Bitte stelle eine konkretere Frage, z. B. „Welche Aufgaben von Müller sind überfällig?“ oder „Status von Aufgabe X“. '; 
+        }
+
+        const latestChanges = context.history.slice(0, 8).map(h => `${h.timestamp}: ${h.action} – ${h.topic}`).join('
+');
+        return `Ich konnte keine direkten Treffer auf deine Stichwörter (${keywords.join(', ')}) finden. Letzte Änderungen:
+${latestChanges || 'Keine Historie verfügbar.'}`;
     }
 
     renderFindings(findings) {
