@@ -25,13 +25,14 @@
 
 // /loptastic/api/_bootstrap.php
 declare(strict_types=1);
+require_once __DIR__ . '/../lib_app_base.php';
 
 ini_set('session.use_strict_mode', '1');
 session_start([
   'cookie_httponly' => true,
   'cookie_secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
   'cookie_samesite' => 'Lax',
-'cookie_path'     => '/loptastic/',
+'cookie_path'     => loptastic_url('/'),
   'use_strict_mode' => true,
 ]);
 
@@ -52,7 +53,7 @@ if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 
     'cookie_httponly' => true,
     'cookie_secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
     'cookie_samesite' => 'Lax',
-    'cookie_path'     => '/loptastic/',
+    'cookie_path'     => loptastic_url('/'),
     'use_strict_mode' => true,
   ]);
 

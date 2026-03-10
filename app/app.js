@@ -95,14 +95,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     
      // Logout-Handler
+    const appBasePath = window.location.pathname
+        .replace(/\/[^/]*$/, '')
+        .replace(/\/$/, '');
+    const appUrl = (path) => `${appBasePath}${path.startsWith('/') ? path : `/${path}`}`;
+
     const logoutEl = document.getElementById('logout-link');
     if (logoutEl) {
         logoutEl.addEventListener('click', async (e) => {
             e.preventDefault();
             try {
-                await fetch('/loptastic/api/auth/logout.php', { credentials: 'include' });
+                await fetch(appUrl('/api/auth/logout.php'), { credentials: 'include' });
             } finally {
-                location.href = '/loptastic/login.php';
+                location.href = appUrl('/login.php');
             }
         });
     }

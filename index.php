@@ -25,16 +25,17 @@
 
 // /loptastic/index.php
 declare(strict_types=1);
+require_once __DIR__ . '/lib_app_base.php';
 ini_set('session.use_strict_mode', '1');
 session_start([
   'cookie_httponly' => true,
   'cookie_secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
   'cookie_samesite' => 'Lax',
-'cookie_path'     => '/loptastic/',
+'cookie_path'     => loptastic_url('/'),
   'use_strict_mode' => true,
 ]);
 if (!isset($_SESSION['uid'])) {
-  header('Location: /loptastic/login.php');
+  header('Location: ' . loptastic_url('login.php'));
   exit;
 }
 
@@ -57,12 +58,12 @@ if ($currentUser === null) {
   // der Client nicht in einen Redirect-Loop über AuthManager läuft.
   $_SESSION = [];
   session_destroy();
-  header('Location: /loptastic/login.php');
+  header('Location: ' . loptastic_url('login.php'));
   exit;
 }
 
 if (!empty($currentUser['force_password_change'])) {
-  header('Location: /loptastic/pw.php');
+  header('Location: ' . loptastic_url('pw.php'));
   exit;
 }
 readfile(__DIR__ . '/app/index.html');

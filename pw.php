@@ -4,16 +4,17 @@
  * Projektmanagement-Tool
  */
 declare(strict_types=1);
+require_once __DIR__ . '/lib_app_base.php';
 ini_set('session.use_strict_mode', '1');
 session_start([
   'cookie_httponly' => true,
   'cookie_secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
   'cookie_samesite' => 'Lax',
- 'cookie_path'     => '/loptastic/',
+ 'cookie_path'     => loptastic_url('/'),
   'use_strict_mode' => true,
 ]);
 if (!isset($_SESSION['uid'])) {
-  header('Location: /loptastic/login.php');
+  header('Location: ' . loptastic_url('login.php'));
   exit;
 }
 ?><!doctype html>
@@ -22,7 +23,7 @@ if (!isset($_SESSION['uid'])) {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>LopTastic – Passwort ändern</title>
-  <link rel="stylesheet" href="/loptastic/assets/login.css">
+  <link rel="stylesheet" href="assets/login.css">
   <style>
     .pw-rule { padding:4px 8px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; }
     .pw-rule.ok { background:#f0fdf4; border-color:#86efac; color:#166534; }
@@ -54,12 +55,12 @@ if (!isset($_SESSION['uid'])) {
 
           <button type="submit" id="btn-change">Speichern</button>
           <p id="msg" class="msg"></p>
-          <p style="margin-top: 20px;"><a href="/loptastic/">Zurück zur App</a></p>
+          <p style="margin-top: 20px;"><a href="./">Zurück zur App</a></p>
         </form>
       </div>
     </div>
   </div>
 
-  <script src="/loptastic/assets/change-password.js" defer></script>
+  <script src="assets/change-password.js" defer></script>
 </body>
 </html>

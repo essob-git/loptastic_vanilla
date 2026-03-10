@@ -20,17 +20,17 @@ function val(id){
 function clearInputs(...ids){ ids.forEach(i=>{ const el = document.getElementById(i); if (el) el.value=''; }); }
 
 async function me() {
-  const r = await fetch('/loptastic/api/auth/me.php', {credentials:'include'});
+  const r = await fetch('api/auth/me.php', {credentials:'include'});
   const j = await r.json();
-  if (!j.ok) { alert(j.error||'Fehler'); location.href='/loptastic/login.php'; return; }
+  if (!j.ok) { alert(j.error||'Fehler'); location.href='login.php'; return; }
   CSRF = j.data.csrf;
   if (!j.data.authenticated || (j.data.user.role!=='admin')) {
-    alert('Adminrechte erforderlich'); location.href='/loptastic/'; return;
+    alert('Adminrechte erforderlich'); location.href='./'; return;
   }
 }
 
 async function loadUsers() {
-  const r = await fetch('/loptastic/api/users/list.php', {credentials:'include'});
+  const r = await fetch('api/users/list.php', {credentials:'include'});
   const j = await r.json();
   if (!j.ok) { alert(j.error||'Fehler'); return; }
 
@@ -69,7 +69,7 @@ tr.innerHTML = `
   });
 }
 async function approveUser(id) {
-  const r = await fetch('/loptastic/api/users/approve.php', {
+  const r = await fetch('api/users/approve.php', {
     method:'POST', credentials:'include',
     headers:{'Content-Type':'application/json','X-CSRF-Token':CSRF},
     body: JSON.stringify({id})
@@ -88,7 +88,7 @@ async function createUser() {
     password: val('password'),
     department: val('department')
   };
-  const r = await fetch('/loptastic/api/users/create.php', {
+  const r = await fetch('api/users/create.php', {
     method:'POST', credentials:'include',
     headers:{'Content-Type':'application/json','X-CSRF-Token':CSRF},
     body: JSON.stringify(body)
@@ -100,7 +100,7 @@ async function createUser() {
 }
 
 async function toggleLock(id, lock) {
-  const r = await fetch('/loptastic/api/users/update.php', {
+  const r = await fetch('api/users/update.php', {
     method:'POST', credentials:'include',
     headers:{'Content-Type':'application/json','X-CSRF-Token':CSRF},
     body: JSON.stringify({id, locked: !!lock})
@@ -113,7 +113,7 @@ async function toggleLock(id, lock) {
 async function resetPass(id) {
   const pw = prompt('Neues Passwort:');
   if (!pw) return;
-  const r = await fetch('/loptastic/api/users/set_password.php', {
+  const r = await fetch('api/users/set_password.php', {
     method:'POST', credentials:'include',
     headers:{'Content-Type':'application/json','X-CSRF-Token':CSRF},
     body: JSON.stringify({id, password: pw})
@@ -125,7 +125,7 @@ async function resetPass(id) {
 }
 
 async function forcePwChange(id) {
-  const r = await fetch('/loptastic/api/users/force_password_reset.php', {
+  const r = await fetch('api/users/force_password_reset.php', {
     method:'POST', credentials:'include',
     headers:{'Content-Type':'application/json','X-CSRF-Token':CSRF},
     body: JSON.stringify({id})
@@ -138,7 +138,7 @@ async function forcePwChange(id) {
 
 async function delUser(id) {
   if (!confirm('User wirklich löschen?')) return;
-  const r = await fetch('/loptastic/api/users/delete.php', {
+  const r = await fetch('api/users/delete.php', {
     method:'POST', credentials:'include',
     headers:{'Content-Type':'application/json','X-CSRF-Token':CSRF},
     body: JSON.stringify({id})
@@ -150,7 +150,7 @@ async function delUser(id) {
 
 async function loadDepartmentsSelect(selectId, currentValue="") {
   try {
-    const res = await fetch('/loptastic/api/public/settings/registration.php', {cache:"no-cache"});
+    const res = await fetch('api/public/settings/registration.php', {cache:"no-cache"});
     const payload = await res.json();
     const departments = payload?.data?.departments || [];
     const sel = document.getElementById(selectId);
