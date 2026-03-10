@@ -48,6 +48,7 @@ import { GanttManager } from './ganttManager.js';
 import { AuthManager } from './AuthManager.js';
 import { PlanModeManager } from './planModeManager.js';
 import { StateManager } from './stateManager.js';
+import { AIAssistantManager } from './aiAssistantManager.js';
 
 
 
@@ -57,6 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await SettingsManager.init();
     await PhaseHelper.init();
     await   UIManager.init();
+    await AIAssistantManager.init();
 
     // CollapseManager initialisieren, falls vorhanden
     if (window.CollapseManager) {
