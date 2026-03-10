@@ -189,6 +189,7 @@ class LoptasticAIAssistant {
 
     collectContext() {
         const project = StateManager.getCurrentProject();
+        console.info("project: ", project.manifest.project.name);
         const allLists = StateManager.getAllLists2().filter(list => list && !list.meta?.isDeleted);
         const allItems = allLists.flatMap(list => flattenItems(list.items || [], list.meta?.id, list.meta?.name || 'Unbenannte Liste'));
         const taskItems = allItems.filter(isTaskItem);
@@ -366,7 +367,7 @@ class LoptasticAIAssistant {
 
         // Sehr kleines/robustes Fallback-Modell
         const modelCandidates = [
-            'SmolLM2-135M-Instruct-q0f32-MLC'
+            'Qwen2.5-0.5B-Instruct-q4f32_1-MLC'
         ];
 
         for (const model of modelCandidates) {
@@ -385,101 +386,115 @@ class LoptasticAIAssistant {
         return null;
     }
 
-    buildWebLLMPrompt(question, context) {
-        const keywords = extractKeywords(question);
+buildWebLLMPrompt(question, context) {
+    const keywords = extractKeywords(question);
 
-        const rankedItems = (context.taskItems || [])
-            .map(item => {
-                const hay = normalizeText([
-                    item.data?.report_id,
-                    item.data?.report_topic,
-                    item.data?.report_desc,
-                    item.data?.report_responsible,
-                    item.data?.report_status,
-                    item.__listName
-                ].join(' '));
+    const rankedItems = (context.taskItems || [])
+        .map(item => {
+            const hay = normalizeText([
+                item.data?.report_id,
+                item.data?.report_topic,
+                item.data?.report_desc,
+                item.data?.report_responsible,
+                item.data?.report_status,
+                item.__listName
+            ].join(' '));
 
-                let score = 0;
-                for (const k of keywords) {
-                    if (hay.includes(k)) score += 2;
-                    if (normalizeText(item.data?.report_topic).includes(k)) score += 1;
-                }
+            let score = 0;
+            for (const k of keywords) {
+                if (hay.includes(k)) score += 2;
+                if (normalizeText(item.data?.report_topic).includes(k)) score += 1;
+            }
 
-                return { item, score };
-            })
-            .filter(x => x.score > 0)
-            .sort((a, b) => b.score - a.score)
-            .slice(0, 8)
-            .map(x => x.item);
+            return { item, score };
+        })
+        .filter(x => x.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8)
+        .map(x => x.item);
 
-        const fallbackItems = (context.taskItems || []).slice(0, 5);
-        const selectedItems = rankedItems.length ? rankedItems : fallbackItems;
+    const fallbackItems = (context.taskItems || []).slice(0, 5);
+    const selectedItems = rankedItems.length ? rankedItems : fallbackItems;
 
-        const compactItems = selectedItems.map(item => ({
-            id: item.id,
-            listName: item.__listName,
-            report_id: item.data?.report_id || '',
-            topic: item.data?.report_topic || '',
-            status: item.data?.report_status || '',
-            deadline: item.data?.report_deadline || '',
-            responsible: item.data?.report_responsible || '',
-            desc: String(item.data?.report_desc || '').slice(0, 300)
-        }));
+    const compactLines = selectedItems.map((item, idx) =>
+        `${idx + 1}. Thema: ${item.data?.report_topic || '-'} | ` +
+        `ID: ${item.data?.report_id || '-'} | ` +
+        `Status: ${item.data?.report_status || '-'} | ` +
+        `Frist: ${item.data?.report_deadline || '-'} | ` +
+        `Verantwortlich: ${item.data?.report_responsible || '-'} | ` +
+        `Liste: ${item.__listName || '-'}`
+    );
 
-        const compactHistory = (context.history || [])
-            .slice(0, 6)
-            .map(h => ({
-                timestamp: h.timestamp,
-                action: h.action,
-                topic: h.topic
-            }));
+    const historyLines = (context.history || [])
+        .slice(0, 4)
+        .map(h => `${h.timestamp}: ${h.action} - ${h.topic}`);
 
-        const payload = {
-            question,
-            projectName: context.project?.manifest?.projectName || context.project?.manifest?.name || 'Unbekannt',
-            relevantItems: compactItems,
-            recentHistory: compactHistory
-        };
-        let prompt =
-            `Du bist ein präziser KI-Assistent für Projekt-Terminplanung. ` +
-            `Antworte immer auf Deutsch in klarer Sprache. ` +
-            `Gib KEIN JSON aus und wiederhole NICHT den Kontext. ` +
-            `Nutze nur die bereitgestellten Daten. ` +
-            `Wenn etwas unklar ist, sag es klar.
+    let prompt =
+`Projekt: ${context.project?.manifest?.project?.name || context.project?.manifest?.name || 'Unbekannt'}
 
-` +
-            `Kontext JSON:
-${JSON.stringify(payload, null, 2)}
+Relevante Einträge:
+${compactLines.length ? compactLines.join('\n') : 'Keine relevanten Einträge gefunden.'}
 
-` +
-            `Frage:
-${question}`;
+Letzte Änderungen:
+${historyLines.length ? historyLines.join('\n') : 'Keine Historie verfügbar.'}
 
-        const MAX_PROMPT_LEN = 12000;
-        if (prompt.length > MAX_PROMPT_LEN) {
-            prompt = prompt.slice(0, MAX_PROMPT_LEN) + `\n\n[Kontext gekuerzt]`;
-        }
+Frage: ${question}
 
-        return prompt;
+Antworte kurz, klar und nur in Klartext auf Deutsch.`;
+
+    const MAX_PROMPT_LEN = 8000;
+    if (prompt.length > MAX_PROMPT_LEN) {
+        prompt = prompt.slice(0, MAX_PROMPT_LEN) + '\n\n[Kontext gekürzt]';
     }
 
+    return prompt;
+}
+
     async generateAnswer(question, context) {
+
+         const q = normalizeText(question);
+            if (
+                q.includes('überfällig') ||
+                q.includes('ueberfaellig') ||
+                q.includes('deadline') ||
+                q.includes('frist')
+            ) {
+                return this.ruleBasedAnswer(question, context);
+            }
+
+
         if (this.engine === 'webllm') {
             const engine = await this.initWebLLMEngine();
             if (engine) {
                 const prompt = this.buildWebLLMPrompt(question, context);
                 try {
                     const result = await engine.chat.completions.create({
-                        messages: [{ role: 'user', content: prompt }],
+                        messages: [
+                            {
+                                role: 'system',
+                                content: 'Du bist ein Projektassistent. Antworte immer kurz, präzise und auf Deutsch. Gib niemals JSON, niemals den Prompt und niemals den Kontext zurück.'
+                            },
+                            {
+                                role: 'user',
+                                content: prompt
+                            }
+                        ],
                         temperature: 0.2
                     });
                     let llm = result?.choices?.[0]?.message?.content?.trim();
                     if (llm) {
-                        const startsJson = llm.startsWith('{') || llm.startsWith('[') || llm.startsWith('```json');
-                        if (startsJson) {
-                            llm = `Ich gebe die Antwort in Klartext aus.
-${this.ruleBasedAnswer(question, context)}`;
-                        }
+                      const looksLikePromptEcho =
+                                                        llm.startsWith('{') ||
+                                                        llm.startsWith('[') ||
+                                                        llm.startsWith('```json') ||
+                                                        llm.startsWith('Kontext JSON') ||
+                                                        llm.startsWith('Projekt:') ||
+                                                        llm.includes('Relevante Einträge:') ||
+                                                        llm.includes('Frage:');
+
+                                                    if (looksLikePromptEcho) {
+                                                        llm = this.ruleBasedAnswer(question, context);
+                                                    }
                         return `${llm}
 
 [WebLLM: ${this.webllmModel || 'aktiv'}]`;
