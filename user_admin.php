@@ -23,24 +23,25 @@
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
-// /loptastic/user-admin.php
+// ./user-admin.php
 declare(strict_types=1);
+require_once __DIR__ . '/lib_app_base.php';
 ini_set('session.use_strict_mode', '1');
 session_start([
   'cookie_httponly' => true,
   'cookie_secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
   'cookie_samesite' => 'Lax',
- 'cookie_path'     => '/loptastic/',
+ 'cookie_path'     => loptastic_url('/'),
   'use_strict_mode' => true,
 ]);
-if (!isset($_SESSION['uid'])) { header('Location: /loptastic/login.php'); exit; }
+if (!isset($_SESSION['uid'])) { header('Location: ' . loptastic_url('login.php')); exit; }
 ?><!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8">
   <title>LopTastic – Userverwaltung</title>
-  <link rel="stylesheet" href="/loptastic/assets/admin.css">
-  <link rel="icon" type="image/x-icon" href="/loptastic/app/images/favicon.ico">
+  <link rel="stylesheet" href="assets/admin.css">
+  <link rel="icon" type="image/x-icon" href="app/images/favicon.ico">
   <style>
     .container{max-width:95%;margin:40px auto;background:#fff;border-radius:16px;padding:24px}
     table{width:100%;border-collapse:collapse;margin-top:16px; color: black}
@@ -62,12 +63,12 @@ if (!isset($_SESSION['uid'])) { header('Location: /loptastic/login.php'); exit; 
 <body class="splash-bg">
   <div class="topbar">
     <div><strong>loptastic</strong> – Userverwaltung</div>
-    <div><a class="link" href="/loptastic/">Zurück zur App</a></div>
+    <div><a class="link" href="./">Zurück zur App</a></div>
   </div>
   <div class="container">
     <nav style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" aria-label="Admin Navigation">
-      <a style="padding:8px 12px;border-radius:8px;background:#0f172a;color:#fff;text-decoration:none;font-weight:600" href="/loptastic/user_admin.php">Userverwaltung</a>
-      <a style="padding:8px 12px;border-radius:8px;background:#e2e8f0;color:#0f172a;text-decoration:none;font-weight:600" href="/loptastic/admin_settings.php">Einstellungen</a>
+      <a style="padding:8px 12px;border-radius:8px;background:#0f172a;color:#fff;text-decoration:none;font-weight:600" href="./user_admin.php">Userverwaltung</a>
+      <a style="padding:8px 12px;border-radius:8px;background:#e2e8f0;color:#0f172a;text-decoration:none;font-weight:600" href="./admin_settings.php">Einstellungen</a>
     </nav>
     <div class="toolbar">
       <div class="row">
@@ -105,6 +106,6 @@ if (!isset($_SESSION['uid'])) { header('Location: /loptastic/login.php'); exit; 
       <tbody></tbody>
     </table>
   </div>
-  <script src="/loptastic/assets/user-admin.js" defer></script>
+  <script src="assets/user-admin.js" defer></script>
 </body>
 </html>

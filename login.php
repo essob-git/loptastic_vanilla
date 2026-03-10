@@ -23,14 +23,15 @@
  * - Externe Bibliotheken behalten ihre eigenen Lizenzen.
  */
 
-// /loptastic/login.php
+// ./login.php
 declare(strict_types=1);
+require_once __DIR__ . '/lib_app_base.php';
 ini_set('session.use_strict_mode', '1');
 session_start([
   'cookie_httponly' => true,
   'cookie_secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
   'cookie_samesite' => 'Lax',
- 'cookie_path'     => '/loptastic/',
+ 'cookie_path'     => loptastic_url('/'),
   'use_strict_mode' => true,
 ]);
 if (isset($_SESSION['uid'])) {
@@ -50,7 +51,7 @@ if (isset($_SESSION['uid'])) {
   }
 
   if ($isValidSessionUser) {
-    header('Location: /loptastic/');
+    header('Location: ' . loptastic_url('/'));
     exit;
   }
 
@@ -66,7 +67,7 @@ if (isset($_SESSION['uid'])) {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>LopTastic – Login</title>
-  <link rel="stylesheet" href="/loptastic/assets/login.css">
+  <link rel="stylesheet" href="assets/login.css">
 </head>
 <body class="splash-bg">
   <div class="login-wrapper">
@@ -84,7 +85,7 @@ if (isset($_SESSION['uid'])) {
             <input type="password" id="password" autocomplete="current-password" required>
           </div>
           <button type="submit" id="btn-login">Login</button>
-          <p style="margin-top: 50px;">Noch keinen Account? <a href="/loptastic/register.php">Jetzt Registrieren</a></p>
+          <p style="margin-top: 50px;">Noch keinen Account? <a href="register.php">Jetzt Registrieren</a></p>
           <p id="msg" class="msg"></p>
         </form>
         
@@ -101,7 +102,7 @@ if (isset($_SESSION['uid'])) {
   </div>
 
 
-  <script src="/loptastic/assets/login.js" defer></script>
+  <script src="assets/login.js" defer></script>
 </body>
 </html>
 

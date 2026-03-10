@@ -1,21 +1,22 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/lib_app_base.php';
 ini_set('session.use_strict_mode', '1');
 session_start([
   'cookie_httponly' => true,
   'cookie_secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
   'cookie_samesite' => 'Lax',
-'cookie_path'     => '/loptastic/',
+'cookie_path'     => loptastic_url('/'),
   'use_strict_mode' => true,
 ]);
-if (!isset($_SESSION['uid'])) { header('Location: /loptastic/login.php'); exit; }
+if (!isset($_SESSION['uid'])) { header('Location: ' . loptastic_url('login.php')); exit; }
 ?><!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8">
   <title>LopTastic – Einstellungen</title>
-  <link rel="stylesheet" href="/loptastic/assets/admin.css">
-  <link rel="icon" type="image/x-icon" href="/loptastic/app/images/favicon.ico">
+  <link rel="stylesheet" href="assets/admin.css">
+  <link rel="icon" type="image/x-icon" href="app/images/favicon.ico">
   <style>
     .container{max-width:95%;margin:40px auto;background:#fff;border-radius:16px;padding:24px;color:#0f172a}
     .topbar{display:flex;justify-content:space-between;align-items:center;color:#fff;padding:16px}
@@ -39,13 +40,13 @@ if (!isset($_SESSION['uid'])) { header('Location: /loptastic/login.php'); exit; 
 <body class="splash-bg">
   <div class="topbar">
     <div><strong>loptastic</strong> – Einstellungen</div>
-    <div><a class="link" href="/loptastic/">Zurück zur App</a></div>
+    <div><a class="link" href="./">Zurück zur App</a></div>
   </div>
 
   <div class="container">
     <nav class="admin-nav" aria-label="Admin Navigation">
-      <a href="/loptastic/user_admin.php">Userverwaltung</a>
-      <a href="/loptastic/admin_settings.php" class="active">Einstellungen</a>
+      <a href="./user_admin.php">Userverwaltung</a>
+      <a href="./admin_settings.php" class="active">Einstellungen</a>
     </nav>
 
     <h1 style="margin-top:0">Systemeinstellungen</h1>
@@ -62,6 +63,6 @@ if (!isset($_SESSION['uid'])) { header('Location: /loptastic/login.php'); exit; 
     </div>
   </div>
 
-  <script src="/loptastic/assets/admin-settings.js" defer></script>
+  <script src="assets/admin-settings.js" defer></script>
 </body>
 </html>

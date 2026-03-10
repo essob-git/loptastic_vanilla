@@ -63,7 +63,7 @@
 
   async function loadPolicy() {
     try {
-      const res = await fetch('/loptastic/api/public/settings/password_policy.php', { cache: 'no-cache' });
+      const res = await fetch('api/public/settings/password_policy.php', { cache: 'no-cache' });
       const data = await res.json();
       if (data?.ok && data?.data?.password_policy) {
         policy = { ...policy, ...data.data.password_policy };
@@ -77,10 +77,10 @@
   }
 
   async function loadMe() {
-    const res = await fetch('/loptastic/api/auth/me.php', { credentials: 'include' });
+    const res = await fetch('api/auth/me.php', { credentials: 'include' });
     const data = await res.json();
     if (!data.ok || !data?.data?.authenticated) {
-      location.href = '/loptastic/login.php';
+      location.href = 'login.php';
       return;
     }
 
@@ -114,7 +114,7 @@
 
     btn.disabled = true;
     try {
-      const res = await fetch('/loptastic/api/auth/change_password.php', {
+      const res = await fetch('api/auth/change_password.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +129,7 @@
 
       setMsg('Passwort erfolgreich geändert. Du wirst zur App weitergeleitet.', false);
       setTimeout(() => {
-        location.href = '/loptastic/';
+        location.href = './';
       }, 1000);
     } catch (err) {
       setMsg(err.message || 'Fehler beim Ändern des Passworts');
@@ -139,6 +139,6 @@
   });
 
   Promise.all([loadPolicy(), loadMe()]).catch(() => {
-    location.href = '/loptastic/login.php';
+    location.href = 'login.php';
   });
 })();

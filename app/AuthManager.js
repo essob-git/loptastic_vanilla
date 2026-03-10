@@ -26,9 +26,13 @@
 // /loptastic/app/AuthManager.js
 export const AuthManager = (function(){
   let _me = null;
+  const appBasePath = window.location.pathname
+    .replace(/\/[^/]*$/, '')
+    .replace(/\/$/, '');
+  const appUrl = (path) => `${appBasePath}${path.startsWith('/') ? path : `/${path}`}`;
 
   async function me() {
-    const res = await fetch('/loptastic/api/auth/me.php', { credentials: 'include' });
+    const res = await fetch(appUrl('/api/auth/me.php'), { credentials: 'include' });
     const j = await res.json();
     if (!j.ok) throw new Error(j.error || 'Auth Fehler');
     _me = j.data;
@@ -38,12 +42,12 @@ export const AuthManager = (function(){
   async function ensureLoggedIn() {
     const info = await me();
     if (!info.authenticated) {
-      window.location.href = '/loptastic/login.php';
+      window.location.href = appUrl('/login.php');
       return;
     }
 
     if (info?.user?.force_password_change) {
-      window.location.href = '/loptastic/pw.php';
+      window.location.href = appUrl('/pw.php');
       return;
     }
 

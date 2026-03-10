@@ -13,7 +13,7 @@
     try {
       const login = document.getElementById('login').value.trim();
       const password = document.getElementById('password').value;
-      const res = await fetch('/loptastic/api/auth/login.php', {
+      const res = await fetch('api/auth/login.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ login, password }),
@@ -22,10 +22,10 @@
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'Login fehlgeschlagen');
       if (data?.data?.user?.force_password_change) {
-        location.href = '/loptastic/pw.php';
+        location.href = 'pw.php';
         return;
       }
-      location.href = '/loptastic/';
+      location.href = './';
     } catch (err) {
       setMsg(err.message);
     } finally {

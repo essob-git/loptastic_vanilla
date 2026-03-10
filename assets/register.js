@@ -64,7 +64,7 @@ function isPasswordPolicySatisfied(password) {
 
 async function loadDepartmentsAndPolicy() {
   try {
-    const res = await fetch('/loptastic/api/public/settings/registration.php');
+    const res = await fetch('api/public/settings/registration.php');
     const payload = await res.json();
     const departments = payload?.data?.departments || [];
     const policy = payload?.data?.password_policy;
@@ -122,7 +122,7 @@ document.getElementById('register-form')?.addEventListener('submit', async (e) =
   }
 
   try {
-    const res = await fetch('/loptastic/api/auth/register.php', {
+    const res = await fetch('api/auth/register.php', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify(body)

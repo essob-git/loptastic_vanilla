@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>LopTastic – Registrierung</title>
-  <link rel="stylesheet" href="/loptastic/assets/login.css">
+  <link rel="stylesheet" href="assets/login.css">
   <style>
     .pw-rule { padding:4px 8px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; }
     .pw-rule.ok { background:#f0fdf4; border-color:#86efac; color:#166534; }
@@ -51,7 +51,7 @@
           <button type="submit" id="btn-register">Registrieren</button>
           <p id="msg" class="msg"></p>
           <p class="small" style="margin-top: 50px;">
-            Schon einen Account? <a href="/loptastic/login.php">besser zum Login</a>
+            Schon einen Account? <a href="./login.php">besser zum Login</a>
           </p>
         </form>
       </div>
@@ -65,6 +65,6 @@
       </div>
     </div>
   </div>
-  <script src="/loptastic/assets/register.js" defer></script>
+  <script src="./assets/register.js" defer></script>
 </body>
 </html>
