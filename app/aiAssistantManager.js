@@ -364,11 +364,9 @@ class LoptasticAIAssistant {
             return null;
         }
 
-        // Nur einfache Q4-Modelle (ohne f16/f32-Suffix)
+        // Sehr kleines/robustes Fallback-Modell
         const modelCandidates = [
-            'Qwen2.5-0.5B-Instruct-q4-MLC',
-            'Llama-3.2-1B-Instruct-q4-MLC',
-            'Qwen2.5-1.5B-Instruct-q4-MLC'
+            'SmolLM2-135M-Instruct-q0f32-MLC'
         ];
 
         for (const model of modelCandidates) {
@@ -388,31 +386,81 @@ class LoptasticAIAssistant {
     }
 
     buildWebLLMPrompt(question, context) {
+        const keywords = extractKeywords(question);
+
+        const rankedItems = (context.taskItems || [])
+            .map(item => {
+                const hay = normalizeText([
+                    item.data?.report_id,
+                    item.data?.report_topic,
+                    item.data?.report_desc,
+                    item.data?.report_responsible,
+                    item.data?.report_status,
+                    item.__listName
+                ].join(' '));
+
+                let score = 0;
+                for (const k of keywords) {
+                    if (hay.includes(k)) score += 2;
+                    if (normalizeText(item.data?.report_topic).includes(k)) score += 1;
+                }
+
+                return { item, score };
+            })
+            .filter(x => x.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 8)
+            .map(x => x.item);
+
+        const fallbackItems = (context.taskItems || []).slice(0, 5);
+        const selectedItems = rankedItems.length ? rankedItems : fallbackItems;
+
+        const compactItems = selectedItems.map(item => ({
+            id: item.id,
+            listName: item.__listName,
+            report_id: item.data?.report_id || '',
+            topic: item.data?.report_topic || '',
+            status: item.data?.report_status || '',
+            deadline: item.data?.report_deadline || '',
+            responsible: item.data?.report_responsible || '',
+            desc: String(item.data?.report_desc || '').slice(0, 300)
+        }));
+
+        const compactHistory = (context.history || [])
+            .slice(0, 6)
+            .map(h => ({
+                timestamp: h.timestamp,
+                action: h.action,
+                topic: h.topic
+            }));
+
         const payload = {
             question,
-            project: {
-                name: context.project?.manifest?.projectName || context.project?.manifest?.name || 'Unbekannt',
-                lists: context.allLists.map(l => ({
-                    id: l.meta?.id,
-                    name: l.meta?.name,
-                    phase: l.meta?.phase,
-                    finalized: !!l.meta?.finalized
-                }))
-            },
-            allItemDetails: context.taskItems.map(item => ({
-                id: item.id,
-                listId: item.__listId,
-                listName: item.__listName,
-                parentId: item.parentId,
-                type: item.type,
-                data: item.data,
-                comments: item.comments || [],
-                isDeleted: !!item.isDeleted
-            })),
-            history: context.history
+            projectName: context.project?.manifest?.projectName || context.project?.manifest?.name || 'Unbekannt',
+            relevantItems: compactItems,
+            recentHistory: compactHistory
         };
+        let prompt =
+            `Du bist ein präziser KI-Assistent für Projekt-Terminplanung. ` +
+            `Antworte immer auf Deutsch in klarer Sprache. ` +
+            `Gib KEIN JSON aus und wiederhole NICHT den Kontext. ` +
+            `Nutze nur die bereitgestellten Daten. ` +
+            `Wenn etwas unklar ist, sag es klar.
 
-        return `Du bist ein präziser KI-Assistent für Projekt-Terminplanung. Antworte immer auf Deutsch.\nNutze ALLE bereitgestellten Itemdetails und Verlaufseinträge.\nWenn Informationen fehlen, benenne konkret was fehlt.\n\nKontext JSON:\n${JSON.stringify(payload)}\n\nFrage:\n${question}`;
+` +
+            `Kontext JSON:
+${JSON.stringify(payload, null, 2)}
+
+` +
+            `Frage:
+${question}`;
+
+        const MAX_PROMPT_LEN = 12000;
+        if (prompt.length > MAX_PROMPT_LEN) {
+            prompt = prompt.slice(0, MAX_PROMPT_LEN) + `\n\n[Kontext gekuerzt]`;
+        }
+
+        return prompt;
     }
 
     async generateAnswer(question, context) {
@@ -425,8 +473,17 @@ class LoptasticAIAssistant {
                         messages: [{ role: 'user', content: prompt }],
                         temperature: 0.2
                     });
-                    const llm = result?.choices?.[0]?.message?.content?.trim();
-                    if (llm) return `${llm}\n\n[WebLLM: ${this.webllmModel || 'aktiv'}]`;
+                    let llm = result?.choices?.[0]?.message?.content?.trim();
+                    if (llm) {
+                        const startsJson = llm.startsWith('{') || llm.startsWith('[') || llm.startsWith('```json');
+                        if (startsJson) {
+                            llm = `Ich gebe die Antwort in Klartext aus.
+${this.ruleBasedAnswer(question, context)}`;
+                        }
+                        return `${llm}
+
+[WebLLM: ${this.webllmModel || 'aktiv'}]`;
+                    }
                 } catch (err) {
                     console.warn('WebLLM Antwort fehlgeschlagen, fallback auf Regeln:', err);
                     UIManager.showToast('WebLLM Antwort fehlgeschlagen – nutze Regelmodus.', 'warning');
