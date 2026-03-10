@@ -3,10 +3,9 @@ import { UIManager } from './uiManager.js';
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 const CLOSED_STATUS_KEYWORDS = ['erledigt', 'abgeschlossen', 'done', 'closed', 'verworfen', 'abgebrochen', 'cancelled', 'storniert'];
-
 const QUESTION_STOPWORDS = new Set([
-    'was','ist','sind','der','die','das','den','dem','ein','eine','einer','eines','und','oder','mit','von','zu','im','in','am','an',
-    'für','fuer','bei','auf','über','ueber','wie','welche','welcher','welches','gibt','es','mir','bitte','zeige','zeig','alle','zur','zum','des'
+    'was', 'ist', 'sind', 'der', 'die', 'das', 'den', 'dem', 'ein', 'eine', 'einer', 'eines', 'und', 'oder', 'mit', 'von', 'zu', 'im', 'in', 'am', 'an',
+    'für', 'fuer', 'bei', 'auf', 'über', 'ueber', 'wie', 'welche', 'welcher', 'welches', 'gibt', 'es', 'mir', 'bitte', 'zeige', 'zeig', 'alle', 'zur', 'zum', 'des'
 ]);
 
 function normalizeText(value) {
@@ -112,12 +111,8 @@ function summarizeHistory(changelog = {}, itemMap = new Map()) {
     });
 
     entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    return entries.slice(0, 100);
+    return entries;
 }
-
-
-
-
 
 async function tryLoadTensorFlow() {
     if (window.tf) return window.tf;
@@ -136,83 +131,22 @@ async function tryLoadTensorFlow() {
     }
 }
 
-function getWebGLRendererInfo() {
+async function tryLoadWebLLM() {
     try {
-        const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl2', { powerPreference: 'high-performance' })
-            || canvas.getContext('webgl', { powerPreference: 'high-performance' });
-        if (!gl) return 'unbekannt';
-
-        const ext = gl.getExtension('WEBGL_debug_renderer_info');
-        if (!ext) return 'Renderer nicht auslesbar';
-        const renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
-        return renderer || 'unbekannt';
+        return await import('https://esm.run/@mlc-ai/web-llm');
     } catch (err) {
-        return 'unbekannt';
+        console.warn('WebLLM konnte nicht geladen werden:', err);
+        return null;
     }
-}
-
-async function preferHighPerformanceTfBackend(tf) {
-    try {
-        if (typeof tf.env === 'function') {
-            tf.env().set('WEBGL_CONTEXT_ATTRIBUTES', {
-                alpha: false,
-                antialias: false,
-                premultipliedAlpha: false,
-                preserveDrawingBuffer: false,
-                depth: false,
-                stencil: false,
-                failIfMajorPerformanceCaveat: false,
-                powerPreference: 'high-performance'
-            });
-        }
-    } catch (err) {
-        console.warn('Konnte WEBGL_CONTEXT_ATTRIBUTES nicht setzen:', err);
-    }
-
-    const backends = typeof tf.engine === 'function' ? tf.engine().registryFactory : {};
-    const hasWebGPU = !!backends?.webgpu;
-    const hasWebGL = !!backends?.webgl;
-
-    if (hasWebGPU) {
-        try {
-            const ok = await tf.setBackend('webgpu');
-            if (ok) {
-                await tf.ready();
-                return 'webgpu';
-            }
-        } catch (err) {
-            console.warn('TF.js webgpu Backend nicht nutzbar, fallback auf webgl/cpu:', err);
-        }
-    }
-
-    if (hasWebGL) {
-        try {
-            const ok = await tf.setBackend('webgl');
-            if (ok) {
-                await tf.ready();
-                return 'webgl';
-            }
-        } catch (err) {
-            console.warn('TF.js webgl Backend nicht nutzbar, fallback auf cpu:', err);
-        }
-    }
-
-    try {
-        await tf.setBackend('cpu');
-        await tf.ready();
-    } catch (err) {
-        console.warn('TF.js cpu Backend konnte nicht aktiviert werden:', err);
-    }
-    return tf.getBackend?.() || 'cpu';
 }
 
 class LoptasticAIAssistant {
     constructor() {
-        this.engine = 'tfjs';
+        this.engine = 'webllm';
         this.isBusy = false;
         this.tfBackend = null;
-        this.tfRendererInfo = null;
+        this.webllmEngine = null;
+        this.webllmModel = null;
     }
 
     async init() {
@@ -276,8 +210,7 @@ class LoptasticAIAssistant {
 
             const predDate = this.deriveDeadline(pred, itemMap, memo, visiting) || parseDate(pred.data?.report_deadline);
             if (!predDate) return;
-            const shifted = new Date(predDate.getTime() + getLagDays(dep) * ONE_DAY);
-            predecessorDates.push(shifted);
+            predecessorDates.push(new Date(predDate.getTime() + getLagDays(dep) * ONE_DAY));
         });
 
         if (!own && predecessorDates.length > 0) {
@@ -309,10 +242,7 @@ class LoptasticAIAssistant {
             if (!effectiveDeadline) {
                 findings.push({ severity: 'warn', message: `Fehlende/ungültige Frist bei ${topic}` });
             } else if (effectiveDeadline < now && !closed) {
-                findings.push({
-                    severity: 'error',
-                    message: `Überfälliger offener Termin bei ${topic} (Frist: ${item.data?.report_deadline || effectiveDeadline.toISOString().slice(0, 10)})`
-                });
+                findings.push({ severity: 'error', message: `Überfälliger offener Termin bei ${topic}` });
             }
 
             const deps = Array.isArray(item.data?.dependencies) ? item.data.dependencies : [];
@@ -324,7 +254,7 @@ class LoptasticAIAssistant {
 
                 const predecessor = itemMap.get(dep.id);
                 if (!predecessor) {
-                    findings.push({ severity: 'error', message: `Ungültige Verkettung: ${topic} verweist auf nicht vorhandenes Element ${dep.id}` });
+                    findings.push({ severity: 'error', message: `Ungültige Verkettung: ${topic} -> ${dep.id}` });
                     return;
                 }
 
@@ -332,10 +262,7 @@ class LoptasticAIAssistant {
                 if (effectiveDeadline && predecessorDeadline) {
                     const minStart = new Date(predecessorDeadline.getTime() + getLagDays(dep) * ONE_DAY);
                     if (effectiveDeadline < minStart) {
-                        findings.push({
-                            severity: 'error',
-                            message: `Terminlogik verletzt: ${topic} liegt vor dem zulässigen Termin nach Vorgänger ${predecessor.data?.report_topic || predecessor.id}`
-                        });
+                        findings.push({ severity: 'error', message: `Terminlogik verletzt: ${topic} vor Vorgänger ${predecessor.data?.report_topic || predecessor.id}` });
                     }
                 }
             });
@@ -348,7 +275,7 @@ class LoptasticAIAssistant {
             if (tf) {
                 findings.push(...this.tfRiskHints(taskItems, tf));
             } else {
-                findings.push({ severity: 'info', message: 'TensorFlow.js nicht verfügbar – Regelanalyse wurde genutzt.' });
+                findings.push({ severity: 'info', message: 'TensorFlow.js nicht verfügbar – Regelanalyse aktiv.' });
             }
         }
 
@@ -366,7 +293,7 @@ class LoptasticAIAssistant {
 
         const dfs = (id, path = []) => {
             if (stack.has(id)) {
-                findings.push({ severity: 'error', message: `Zyklische Verkettung erkannt: ${[...path, id].join(' -> ')}` });
+                findings.push({ severity: 'error', message: `Zyklische Verkettung: ${[...path, id].join(' -> ')}` });
                 return;
             }
             if (visited.has(id)) return;
@@ -375,9 +302,7 @@ class LoptasticAIAssistant {
 
             const item = map.get(id);
             const deps = Array.isArray(item?.data?.dependencies) ? item.data.dependencies : [];
-            deps.forEach(dep => {
-                if (map.has(dep.id)) dfs(dep.id, [...path, id]);
-            });
+            deps.forEach(dep => map.has(dep.id) && dfs(dep.id, [...path, id]));
             stack.delete(id);
         };
 
@@ -388,7 +313,6 @@ class LoptasticAIAssistant {
     tfRiskHints(taskItems, tf) {
         const durations = taskItems.map(i => Number(i.data?.estimated_duration?.value || 0)).filter(Boolean);
         if (durations.length < 3) return [];
-
         const tensor = tf.tensor1d(durations);
         const mean = tensor.mean().arraySync();
         const std = tf.moments(tensor).variance.sqrt().arraySync() || 1;
@@ -400,7 +324,7 @@ class LoptasticAIAssistant {
             if (!duration) return;
             const z = (duration - mean) / std;
             if (Math.abs(z) > 2.2) {
-                hints.push({ severity: 'warn', message: `Auffällige Dauer (TensorFlow-Ausreißer): ${item.data?.report_topic || item.id} mit ${duration}` });
+                hints.push({ severity: 'warn', message: `Auffällige Dauer: ${item.data?.report_topic || item.id} (${duration})` });
             }
         });
         return hints;
@@ -409,7 +333,6 @@ class LoptasticAIAssistant {
     async ask(question) {
         if (this.isBusy) return;
         this.isBusy = true;
-
         const answerEl = document.getElementById('ai-answer-output');
         const input = document.getElementById('ai-question-input');
         answerEl.textContent = 'Denke nach ...';
@@ -428,28 +351,85 @@ class LoptasticAIAssistant {
         }
     }
 
-    async generateAnswer(question, context) {
-        if (this.engine === 'tfjs') {
-            const tf = await tryLoadTensorFlow();
-            if (!tf) {
-                UIManager.showToast('TensorFlow.js nicht ladbar – nutze Regelmodus.', 'warning');
-                return `TensorFlow.js konnte nicht geladen werden.
+    async initWebLLMEngine() {
+        if (this.webllmEngine) return this.webllmEngine;
+        const webllm = await tryLoadWebLLM();
+        if (!webllm) return null;
 
-Antwort aus lokalem Regelmodus:
-${this.ruleBasedAnswer(question, context)}`;
+        const modelCandidates = [
+            'Llama-3.2-1B-Instruct-q4f16_1-MLC',
+            'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',
+            'Qwen2.5-1.5B-Instruct-q4f16_1-MLC'
+        ];
+
+        for (const model of modelCandidates) {
+            try {
+                this.webllmEngine = await webllm.CreateMLCEngine(model);
+                this.webllmModel = model;
+                UIManager.showToast(`WebLLM aktiv (${model})`, 'success');
+                return this.webllmEngine;
+            } catch (err) {
+                console.warn(`WebLLM Modell ${model} fehlgeschlagen:`, err);
             }
+        }
+        return null;
+    }
 
-            if (!this.tfBackend) {
-                this.tfBackend = await preferHighPerformanceTfBackend(tf);
-                this.tfRendererInfo = getWebGLRendererInfo();
-                UIManager.showToast(`TensorFlow aktiv (${this.tfBackend})`, 'info');
+    buildWebLLMPrompt(question, context) {
+        const payload = {
+            question,
+            project: {
+                name: context.project?.manifest?.projectName || context.project?.manifest?.name || 'Unbekannt',
+                lists: context.allLists.map(l => ({
+                    id: l.meta?.id,
+                    name: l.meta?.name,
+                    phase: l.meta?.phase,
+                    finalized: !!l.meta?.finalized
+                }))
+            },
+            allItemDetails: context.taskItems.map(item => ({
+                id: item.id,
+                listId: item.__listId,
+                listName: item.__listName,
+                parentId: item.parentId,
+                type: item.type,
+                data: item.data,
+                comments: item.comments || [],
+                isDeleted: !!item.isDeleted
+            })),
+            history: context.history
+        };
+
+        return `Du bist ein präziser KI-Assistent für Projekt-Terminplanung. Antworte immer auf Deutsch.\nNutze ALLE bereitgestellten Itemdetails und Verlaufseinträge.\nWenn Informationen fehlen, benenne konkret was fehlt.\n\nKontext JSON:\n${JSON.stringify(payload)}\n\nFrage:\n${question}`;
+    }
+
+    async generateAnswer(question, context) {
+        if (this.engine === 'webllm') {
+            const engine = await this.initWebLLMEngine();
+            if (engine) {
+                const prompt = this.buildWebLLMPrompt(question, context);
+                try {
+                    const result = await engine.chat.completions.create({
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: 0.2
+                    });
+                    const llm = result?.choices?.[0]?.message?.content?.trim();
+                    if (llm) return `${llm}\n\n[WebLLM: ${this.webllmModel || 'aktiv'}]`;
+                } catch (err) {
+                    console.warn('WebLLM Antwort fehlgeschlagen, fallback auf Regeln:', err);
+                    UIManager.showToast('WebLLM Antwort fehlgeschlagen – nutze Regelmodus.', 'warning');
+                }
+            } else {
+                UIManager.showToast('WebLLM nicht verfügbar – nutze Regelmodus.', 'warning');
             }
         }
 
-        const base = this.ruleBasedAnswer(question, context);
-        if (this.engine !== 'tfjs') return base;
+        if (this.engine === 'tfjs') {
+            const tf = await tryLoadTensorFlow();
+            if (tf && !this.tfBackend && tf.getBackend) this.tfBackend = tf.getBackend();
+        }
 
-        return `${base}\n\n[TensorFlow Backend: ${this.tfBackend || 'unbekannt'} | Renderer: ${this.tfRendererInfo || 'unbekannt'}]`;
+        return this.ruleBasedAnswer(question, context);
     }
 
     ruleBasedAnswer(question, context) {
@@ -465,31 +445,7 @@ ${this.ruleBasedAnswer(question, context)}`;
 
         if (q.includes('überfällig') || q.includes('ueberfaellig') || q.includes('deadline') || q.includes('frist')) {
             if (!overdue.length) return 'Es gibt aktuell keine überfälligen offenen Termine.';
-            return `Überfällige offene Termine (${overdue.length}):
-- ` + overdue.slice(0, 15).map(i => `${i.data?.report_topic || i.id} [${i.__listName}] (Frist: ${i.data?.report_deadline || 'abgeleitet'})`).join('
-- ');
-        }
-
-        if (q.includes('verkett') || q.includes('abhäng') || q.includes('abhaeng')) {
-            const withDeps = items.filter(i => Array.isArray(i.data?.dependencies) && i.data.dependencies.length > 0);
-            if (!withDeps.length) return 'Es sind keine Verkettungen/Abhängigkeiten definiert.';
-            return `Es gibt ${withDeps.length} Elemente mit Verkettungen. Beispiele:
-` + withDeps.slice(0, 10).map(i => {
-                const deps = i.data.dependencies.map(d => d.id).join(', ');
-                return `- ${i.data?.report_topic || i.id} [${i.__listName}]: ${deps}`;
-            }).join('
-');
-        }
-
-        if (q.includes('liste') || q.includes('listen')) {
-            const byList = new Map();
-            items.forEach(item => {
-                const key = item.__listName || 'Unbekannt';
-                byList.set(key, (byList.get(key) || 0) + 1);
-            });
-            return `Ich sehe ${context.allLists.length} aktive Listen:
-- ` + [...byList.entries()].map(([name, count]) => `${name}: ${count} Aufgaben`).join('
-- ');
+            return `Überfällige offene Termine (${overdue.length}):\n- ` + overdue.slice(0, 15).map(i => `${i.data?.report_topic || i.id} [${i.__listName}] (Frist: ${i.data?.report_deadline || 'abgeleitet'})`).join('\n- ');
         }
 
         const ranked = items.map(item => {
@@ -505,54 +461,18 @@ ${this.ruleBasedAnswer(question, context)}`;
             let score = 0;
             keywords.forEach(k => {
                 if (hay.includes(k)) score += 2;
-                if ((item.data?.report_topic || '').toLowerCase().includes(k)) score += 1;
+                if (normalizeText(item.data?.report_topic).includes(k)) score += 1;
             });
-
-            if ((q.includes('status') || q.includes('zustand')) && item.data?.report_status) score += 0.5;
-            if ((q.includes('verantwort') || q.includes('zuständig') || q.includes('zustaendig')) && item.data?.report_responsible) score += 0.5;
-            if ((q.includes('wann') || q.includes('fällig') || q.includes('faellig')) && (item.data?.report_deadline || this.deriveDeadline(item, context.itemMap))) score += 0.5;
-
             return { item, score };
         }).filter(r => r.score > 0).sort((a, b) => b.score - a.score);
 
         const top = ranked.slice(0, 8).map(r => r.item);
-
-        if ((q.includes('status') || q.includes('zustand')) && top.length) {
-            return 'Status-Übersicht zu deiner Anfrage:
-- ' + top.map(i => `${i.data?.report_topic || i.id} [${i.__listName}]: ${i.data?.report_status || 'kein Status'}`).join('
-- ');
-        }
-
-        if ((q.includes('verantwort') || q.includes('zuständig') || q.includes('zustaendig')) && top.length) {
-            return 'Verantwortlichkeiten zu deiner Anfrage:
-- ' + top.map(i => `${i.data?.report_topic || i.id} [${i.__listName}]: ${i.data?.report_responsible || 'nicht gesetzt'}`).join('
-- ');
-        }
-
-        if ((q.includes('wann') || q.includes('fällig') || q.includes('faellig') || q.includes('termin')) && top.length) {
-            return 'Termin-/Fristinfo zu deiner Anfrage:
-- ' + top.map(i => `${i.data?.report_topic || i.id} [${i.__listName}]: ${i.data?.report_deadline || 'abgeleitet/keine explizite Frist'}`).join('
-- ');
-        }
-
         if (top.length) {
-            return `Ich habe ${ranked.length} thematisch passende Einträge gefunden (Top ${top.length}):
-- ` + top.map(i => {
-                const deadline = i.data?.report_deadline || 'keine Frist';
-                const status = i.data?.report_status || 'kein Status';
-                return `${i.data?.report_topic || i.id} [${i.__listName}] | Frist: ${deadline} | Status: ${status}`;
-            }).join('
-- ');
+            return `Ich habe ${ranked.length} passende Einträge gefunden:\n- ` + top.map(i => `${i.data?.report_topic || i.id} [${i.__listName}] | Frist: ${i.data?.report_deadline || 'keine Frist'} | Status: ${i.data?.report_status || 'kein Status'}`).join('\n- ');
         }
 
-        if (!keywords.length) {
-            return 'Bitte stelle eine konkretere Frage, z. B. „Welche Aufgaben von Müller sind überfällig?“ oder „Status von Aufgabe X“. '; 
-        }
-
-        const latestChanges = context.history.slice(0, 8).map(h => `${h.timestamp}: ${h.action} – ${h.topic}`).join('
-');
-        return `Ich konnte keine direkten Treffer auf deine Stichwörter (${keywords.join(', ')}) finden. Letzte Änderungen:
-${latestChanges || 'Keine Historie verfügbar.'}`;
+        const latestChanges = context.history.slice(0, 8).map(h => `${h.timestamp}: ${h.action} – ${h.topic}`).join('\n');
+        return `Ich konnte keine direkten Treffer finden. Letzte Änderungen:\n${latestChanges || 'Keine Historie verfügbar.'}`;
     }
 
     renderFindings(findings) {
