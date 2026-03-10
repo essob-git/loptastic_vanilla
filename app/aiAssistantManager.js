@@ -119,6 +119,11 @@ function isWebGPUUnsupportedError(err) {
     return msg.includes('webgpu is not supported') || msg.includes('webgpu') && msg.includes('not supported');
 }
 
+function isOutOfMemoryError(err) {
+    const msg = String(err?.message || err || '').toLowerCase();
+    return msg.includes('not enough memory') || msg.includes('out of memory') || msg.includes('allocation') && msg.includes('failed');
+}
+
 async function tryLoadTensorFlow() {
     if (window.tf) return window.tf;
     try {
@@ -141,6 +146,7 @@ class LoptasticAIAssistant {
         this.engine = 'rules';
         this.webllmEngine = null;
         this.webllmUnavailableReason = null;
+        this.webllmDisabledForSession = false;
         this.isBusy = false;
     }
 
@@ -359,8 +365,16 @@ class LoptasticAIAssistant {
 
     async generateAnswer(question, context) {
         if (this.engine === 'webllm') {
+            if (this.webllmDisabledForSession) {
+                return `${this.webllmUnavailableReason || 'WebLLM ist für diese Sitzung deaktiviert.'}
+
+Antwort aus lokalem Regelmodus:
+${this.ruleBasedAnswer(question, context)}`;
+            }
+
             if (!supportsWebGPU()) {
                 this.webllmUnavailableReason = 'WebLLM benötigt WebGPU (nicht WebGL). In dieser Umgebung ist WebGPU nicht verfügbar.';
+                this.webllmDisabledForSession = true;
                 UIManager.showToast('WebLLM nicht verfügbar (WebGPU fehlt) – nutze Regelmodus.', 'warning');
                 return `${this.webllmUnavailableReason}
 
@@ -380,9 +394,13 @@ ${this.ruleBasedAnswer(question, context)}`;
                 }
             } catch (err) {
                 const webgpuIssue = isWebGPUUnsupportedError(err);
+                const oomIssue = isOutOfMemoryError(err);
                 this.webllmUnavailableReason = webgpuIssue
                     ? 'WebLLM-Start fehlgeschlagen: Browser unterstützt hier kein WebGPU. WebGL v1/v2 allein reicht für WebLLM nicht aus.'
-                    : `WebLLM-Start fehlgeschlagen: ${err?.message || err}`;
+                    : oomIssue
+                        ? 'WebLLM-Start fehlgeschlagen: Nicht genug GPU-Speicher verfügbar. Entscheidend ist primär VRAM (z. B. auf der T1000), nicht nur CPU/RAM.'
+                        : `WebLLM-Start fehlgeschlagen: ${err?.message || err}`;
+                this.webllmDisabledForSession = true;
                 console.warn(this.webllmUnavailableReason, err);
                 UIManager.showToast('WebLLM Fehler – nutze Regelmodus.', 'warning');
                 return `${this.webllmUnavailableReason}
@@ -392,6 +410,7 @@ ${this.ruleBasedAnswer(question, context)}`;
             }
 
             this.webllmUnavailableReason = 'WebLLM konnte nicht geladen werden (CDN/Import fehlgeschlagen).';
+            this.webllmDisabledForSession = true;
             UIManager.showToast('WebLLM nicht ladbar – nutze Regelmodus.', 'warning');
             return `${this.webllmUnavailableReason}
 
