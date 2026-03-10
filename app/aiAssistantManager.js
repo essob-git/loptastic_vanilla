@@ -109,6 +109,16 @@ async function tryLoadWebLLM() {
     }
 }
 
+
+function supportsWebGPU() {
+    return !!(navigator && navigator.gpu);
+}
+
+function isWebGPUUnsupportedError(err) {
+    const msg = String(err?.message || err || '').toLowerCase();
+    return msg.includes('webgpu is not supported') || msg.includes('webgpu') && msg.includes('not supported');
+}
+
 async function tryLoadTensorFlow() {
     if (window.tf) return window.tf;
     try {
@@ -130,6 +140,7 @@ class LoptasticAIAssistant {
     constructor() {
         this.engine = 'rules';
         this.webllmEngine = null;
+        this.webllmUnavailableReason = null;
         this.isBusy = false;
     }
 
@@ -348,15 +359,44 @@ class LoptasticAIAssistant {
 
     async generateAnswer(question, context) {
         if (this.engine === 'webllm') {
-            const webllm = await tryLoadWebLLM();
-            if (webllm) {
-                if (!this.webllmEngine) {
-                    this.webllmEngine = await webllm.CreateMLCEngine('Llama-3.2-1B-Instruct-q4f16_1-MLC');
-                }
-                const prompt = this.buildPrompt(question, context);
-                const result = await this.webllmEngine.chat.completions.create({ messages: [{ role: 'user', content: prompt }] });
-                return result.choices?.[0]?.message?.content || 'Keine Antwort verfügbar.';
+            if (!supportsWebGPU()) {
+                this.webllmUnavailableReason = 'WebLLM benötigt WebGPU (nicht WebGL). In dieser Umgebung ist WebGPU nicht verfügbar.';
+                UIManager.showToast('WebLLM nicht verfügbar (WebGPU fehlt) – nutze Regelmodus.', 'warning');
+                return `${this.webllmUnavailableReason}
+
+Antwort aus lokalem Regelmodus:
+${this.ruleBasedAnswer(question, context)}`;
             }
+
+            try {
+                const webllm = await tryLoadWebLLM();
+                if (webllm) {
+                    if (!this.webllmEngine) {
+                        this.webllmEngine = await webllm.CreateMLCEngine('Llama-3.2-1B-Instruct-q4f16_1-MLC');
+                    }
+                    const prompt = this.buildPrompt(question, context);
+                    const result = await this.webllmEngine.chat.completions.create({ messages: [{ role: 'user', content: prompt }] });
+                    return result.choices?.[0]?.message?.content || 'Keine Antwort verfügbar.';
+                }
+            } catch (err) {
+                const webgpuIssue = isWebGPUUnsupportedError(err);
+                this.webllmUnavailableReason = webgpuIssue
+                    ? 'WebLLM-Start fehlgeschlagen: Browser unterstützt hier kein WebGPU. WebGL v1/v2 allein reicht für WebLLM nicht aus.'
+                    : `WebLLM-Start fehlgeschlagen: ${err?.message || err}`;
+                console.warn(this.webllmUnavailableReason, err);
+                UIManager.showToast('WebLLM Fehler – nutze Regelmodus.', 'warning');
+                return `${this.webllmUnavailableReason}
+
+Antwort aus lokalem Regelmodus:
+${this.ruleBasedAnswer(question, context)}`;
+            }
+
+            this.webllmUnavailableReason = 'WebLLM konnte nicht geladen werden (CDN/Import fehlgeschlagen).';
+            UIManager.showToast('WebLLM nicht ladbar – nutze Regelmodus.', 'warning');
+            return `${this.webllmUnavailableReason}
+
+Antwort aus lokalem Regelmodus:
+${this.ruleBasedAnswer(question, context)}`;
         }
         return this.ruleBasedAnswer(question, context);
     }
